@@ -1,4 +1,4 @@
-# Introduction 
+# Introduksjon
 Dette repoet skal inneholde skills for LMR sine tjenester
 
 ## VIKTIG: GitHub-repoet er en speiling
