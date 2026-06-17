@@ -1,17 +1,3 @@
----
-name: domenemodell-lese-skrive
-description: >
-  Henter, leser og oppdaterer domenemodeller (.docx) på SharePoint for LMR-domenene via Microsoft Graph API.
-  BRUK DENNE SKILLEN når brukeren nevner «domenemodell», spør om tabeller eller entiteter i et repo er dokumentert,
-  vil sjekke avvik mellom kode og domenemodell, vil oppdatere domenemodellen etter en migrering,
-  eller vil sammenligne domenemodellen med CLAUDE.md, skills eller kildekode.
-  Gjelder repos som Fhi.Lmr.Uttrekksdatabase, Fhi.Lmr.Pasientregister, Fhi.Lmr.Grunndata, Fhi.Lmr.Kontroll
-  og alle andre Fhi.Lmr.* og Fhi.Grossist*-repos.
-  Trigger også når brukeren sier «er dokumentasjonen oppdatert», «hent domenemodellen», «sjekk om modellen stemmer»,
-  «oppdater word-dokumentet på sharepoint» eller «legg til tabell/kolonne i domenemodellen».
-  Ikke bruk denne skillen for generelle SharePoint-spørsmål, README-skriving eller code review uten domenemodellfokus.
----
-
 # Domenemodell – lese og skrive
 
 ## Hva er en domenemodell her?

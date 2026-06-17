@@ -1,0 +1,13 @@
+{
+  "name": "fhi-lmr",
+  "owner": {
+    "name": "Folkehelseinstituttet"
+  },
+  "plugins": [
+    {
+      "name": "lmr",
+      "source": "./",
+      "description": "Systemkunnskap om Legemiddelregisteret (LMR): repoer, tjenester, meldingsflyter, arkitektur og integrasjoner."
+    }
+  ]
+}

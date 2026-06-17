@@ -1,0 +1,8 @@
+{
+  "name": "lmr",
+  "version": "0.1.0",
+  "description": "Systemkunnskap om Legemiddelregisteret (LMR): repoer, tjenester, meldingsflyter, arkitektur og integrasjoner.",
+  "author": {
+    "name": "Folkehelseinstituttet"
+  }
+}
