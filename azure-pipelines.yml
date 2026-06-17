@@ -1,0 +1,15 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- checkout: self
+  persistCredentials: true
+
+- script: |
+    git remote add github https://github.com/FHI/Fhi.Legemiddelregisteret.AI.git
+    git push github HEAD:main --force
+  displayName: Mirror to GitHub
