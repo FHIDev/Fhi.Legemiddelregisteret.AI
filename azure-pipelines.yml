@@ -4,12 +4,25 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
+variables:
+- group: Fhi.Lmr.AI - Secrets
 
+steps:
 - checkout: self
-  persistCredentials: true
 
 - script: |
-    git remote add github https://github.com/FHI/Fhi.Legemiddelregisteret.AI.git
+    mkdir -p ~/.ssh
+
+    cat > ~/.ssh/id_rsa << 'EOF'
+    $(SSH_PRIVATE_KEY)
+    EOF
+
+    chmod 600 ~/.ssh/id_rsa
+
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    git remote remove github || true
+    git remote add github git@github.com:FHIDev/Fhi.Legemiddelregisteret.AI.git
+
     git push github HEAD:main --force
   displayName: Mirror to GitHub
