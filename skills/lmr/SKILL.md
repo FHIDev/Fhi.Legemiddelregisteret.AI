@@ -56,54 +56,6 @@ Se [MELDINGSFLYT-APOTEK.md](./references/MELDINGSFLYT-APOTEK.md), [MELDINGSFLYT-
 
 Alle repos: `https://fhi.visualstudio.com/DefaultCollection/Fhi.Legemiddelregisteret/_git/<repo>`
 
-### Fhi.Lmr.Meldingsmottak
-
-Ansvar: Mottak og splitting av meldinger fra apotek og institusjoner.
-
-- Mottar Farmapro-meldinger (XML) og Eik-meldinger (JSON)
-- Splitter reseptmeldinger i 3 deler: pasientmelding, rekvirentmelding, utleveringsmelding
-- Splitter Eik farmasøytiske tjenestemeldinger i 2 deler: pasientmelding, tjenestemelding
-- Mottar også lokalvaremeldinger (informasjon om apoteks lokalvarer)
-
-### Fhi.Lmr.Meldingsformidler
-
-Ansvar: Transport- og orkestreringstjeneste for meldinger mellom LMR sine tjenester og eksterne systemer.
-
-Se repo-skillen `lmr-meldingsformidler` for fullstendig dokumentasjon av flyter, klienter, helsesjekker og integrasjoner.
-
-### Fhi.Lmr.FhirMottak
-
-Ansvar: Motta FHIR Bundle-meldinger fra institusjoner (sykehus/sykehjem) og videresende til Meldingsformidler.
-
-- Inngangspunktet for administreringsdata fra institusjoner
-- Mottar HL7 FHIR R4 Bundles via API
-- Videresender til Meldingsformidler for splitting og distribusjon
-
-### Fhi.Lmr.Pasientregister
-
-Ansvar: Lagre og vedlikeholde informasjon om pasienter.
-
-- Har informasjon om identiteten til pasientene
-- En pasient kan ha flere identiteter, registeret kobler en pasientid til flere identiteter
-- Behandler en Pasientmelding og lagrer informasjon om pasientene
-- Genererer en pasientliste som overføres til Utleveringslageret (av Meldingsformidler)
-
-### Fhi.Lmr.Rekvirentregister
-
-Ansvar: Lagre og vedlikeholde informasjon om rekvirenter (leger).
-
-- Har informasjon om identiteten til rekvirenten
-- Behandler en Rekvirentmelding og lagrer informasjon om rekvirentene
-- Genererer en rekvirentliste som overføres til Utleveringslageret (av Meldingsformidler)
-
-### Fhi.Lmr.Utleveringslager
-
-Ansvar: Lagre og behandle opplysninger om legemiddelutleveringer fra apotek.
-
-- Lager for alle utleveringene til pasienter
-- Har ikke pasient- og rekvirent-identiteter, men kobler data via pasientid og rekvirentid
-- Prosesserer en utleveringsmelding sammen med en pasientliste og en rekvirentliste
-
 ### Fhi.Lmr.Administreringslager
 
 Ansvar: Lagre og behandle opplysninger om legemiddeladministreringer fra institusjoner (sykehus/sykehjem).
@@ -116,11 +68,43 @@ Ansvar: Lagre og behandle opplysninger om legemiddeladministreringer fra institu
 
 Se repo-skillen `lmr-administreringslager` for fullstendig domenekunnskap.
 
+### Fhi.Lmr.Apoteksimulator
+
+Ansvar: Simulerer apotek for test og utvikling. Sender meldinger til LMR som om de kom fra et ekte apotek.
+
+### Fhi.Lmr.Dataprodukter
+
+Ansvar: Dataprodukter fra LMR.
+
+### Fhi.Lmr.FhirMottak
+
+Ansvar: Motta FHIR Bundle-meldinger fra institusjoner (sykehus/sykehjem) og videresende til Meldingsformidler.
+
+- Inngangspunktet for administreringsdata fra institusjoner
+- Mottar HL7 FHIR R4 Bundles via API
+- Videresender til Meldingsformidler for splitting og distribusjon
+
 ### Fhi.Lmr.Grunndata
 
 Ansvar: Grunnlagsdata i LMR — vedlikeholder kodeverk synkronisert fra FHI-kodeverk.
 
 Se [KODEVERKSYNKRONISERING.md](./references/KODEVERKSYNKRONISERING.md) for detaljer om synkroniseringsmekanismen.
+
+### Fhi.Lmr.Individdatauttrekk
+
+Ansvar: Uttrekk av individdata fra LMR. Mottar forespørsler via Ratatosk-meldingsbussen og produserer krypterte filuttrekk (CSV med RSA-signatur).
+
+### Fhi.Lmr.Innbyggertjenester
+
+Ansvar: Tjenester rettet mot innbyggere.
+
+### Fhi.Lmr.Institusjonsimulator
+
+Ansvar: Simulerer institusjoner (sykehus/sykehjem) for test og utvikling.
+
+### Fhi.Lmr.InternStatistikk
+
+Ansvar: Intern statistikk og rapportering for LMR.
 
 ### Fhi.Lmr.Kontroll
 
@@ -132,44 +116,68 @@ Alias: Kontroll-siden
 - Se status på behandlingen av meldinger
 - Se resultat av helsesjekker
 
+### Fhi.Lmr.Krl.Admin
+
+Ansvar: Webapplikasjon - Administrasjonsside for KRL
+
 ### Fhi.Lmr.Logging
 
 Ansvar: Lagre logg fra alle LMR-tjenester.
+
+### Fhi.Lmr.Meldingsformidler
+
+Ansvar: Transport- og orkestreringstjeneste for meldinger mellom LMR sine tjenester og eksterne systemer.
+
+Se repo-skillen `lmr-meldingsformidler` for fullstendig dokumentasjon av flyter, klienter, helsesjekker og integrasjoner.
+
+### Fhi.Lmr.Meldingsmottak
+
+Ansvar: Mottak og splitting av meldinger fra apotek og institusjoner.
+
+- Mottar Farmapro-meldinger (XML) og Eik-meldinger (JSON)
+- Splitter reseptmeldinger i 3 deler: pasientmelding, rekvirentmelding, utleveringsmelding
+- Splitter Eik farmasøytiske tjenestemeldinger i 2 deler: pasientmelding, tjenestemelding
+- Mottar også lokalvaremeldinger (informasjon om apoteks lokalvarer)
+
+### Fhi.Lmr.Pasientregister
+
+Ansvar: Lagre og vedlikeholde informasjon om pasienter.
+
+- Har informasjon om identiteten til pasientene
+- En pasient kan ha flere identiteter, registeret kobler en pasientid til flere identiteter
+- Behandler en Pasientmelding og lagrer informasjon om pasientene
+- Genererer en pasientliste som overføres til Utleveringslageret (av Meldingsformidler)
+
+### Fhi.Lmr.Rak
+
+Ansvar: Webapplikasjon for fastleger hvor de får oversikt over egen antibiotikaforskrivning 
+
+### Fhi.Lmr.Rekvirentregister
+
+Ansvar: Lagre og vedlikeholde informasjon om rekvirenter (leger).
+
+- Har informasjon om identiteten til rekvirenten
+- Behandler en Rekvirentmelding og lagrer informasjon om rekvirentene
+- Genererer en rekvirentliste som overføres til Utleveringslageret (av Meldingsformidler)
+
+### Fhi.Lmr.Tilganger
+
+Ansvar: Tilgangsstyring — holder oversikt over hvilke brukere som skal ha tilgang til løsningen, integrert med HelseId.
+
+### Fhi.Lmr.Utleveringslager
+
+Ansvar: Lagre og behandle opplysninger om legemiddelutleveringer fra apotek.
+
+- Lager for alle utleveringene til pasienter
+- Har ikke pasient- og rekvirent-identiteter, men kobler data via pasientid og rekvirentid
+- Prosesserer en utleveringsmelding sammen med en pasientliste og en rekvirentliste
+
+### Fhi.Lmr.Uttrekksdatabase
+
+Ansvar: Database for uttrekk av data fra LMR.
 
 ### Fhi.Lmr.Varseltjeneste
 
 Ansvar: Samle inn hendelser fra andre tjenester og håndtere varsler.
 
 Poller kildetjenestene for hendelser, grupperer dem til varsler og utfører handlinger (f.eks. reprosessering) på vegne av Kontroll-siden. Se [HENDELSER-VARSLER.md](./references/HENDELSER-VARSLER.md).
-
-### Fhi.Lmr.Tilganger
-
-Ansvar: Tilgangsstyring — holder oversikt over hvilke brukere som skal ha tilgang til løsningen, integrert med HelseId.
-
-### Fhi.Lmr.Individdatauttrekk
-
-Ansvar: Uttrekk av individdata fra LMR. Mottar forespørsler via Ratatosk-meldingsbussen og produserer krypterte filuttrekk (CSV med RSA-signatur).
-
-### Fhi.Lmr.Innbyggertjenester
-
-Ansvar: Tjenester rettet mot innbyggere.
-
-### Fhi.Lmr.InternStatistikk
-
-Ansvar: Intern statistikk og rapportering for LMR.
-
-### Fhi.Lmr.Dataprodukter
-
-Ansvar: Dataprodukter fra LMR.
-
-### Fhi.Lmr.Uttrekksdatabase
-
-Ansvar: Database for uttrekk av data fra LMR.
-
-### Fhi.Lmr.Apoteksimulator
-
-Ansvar: Simulerer apotek for test og utvikling. Sender meldinger til LMR som om de kom fra et ekte apotek.
-
-### Fhi.Lmr.Institusjonsimulator
-
-Ansvar: Simulerer institusjoner (sykehus/sykehjem) for test og utvikling.
