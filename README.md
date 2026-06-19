@@ -33,3 +33,25 @@ Kjør disse slash-kommandoene i Claude Code:
    ```
 
 Deretter kan du bekrefte installasjonen med `/plugin`. Pluginen aktiverer riktig skill (`lmr` eller `lmdi-fhir`) automatisk ved relevante spørsmål.
+
+## Versjonering og oppdatering
+
+Pluginen versjoneres på commit-SHA: hver commit i kilderepoet teller som en ny versjon. Det er ikke noe `version`-felt å bumpe manuelt, og enhver endring i en skill blir dermed tilgjengelig som en oppdatering automatisk.
+
+Slik holder du din Claude Code oppdatert:
+
+1. Hent nyeste fra marketplace:
+
+   ```
+   /plugin marketplace update fhi-lmr
+   ```
+
+2. Oppdater selve pluginen:
+
+   ```
+   /plugin update lmr@fhi-lmr
+   ```
+
+Hvis du allerede har siste versjon, rapporterer `/plugin update` det. Du ser installert tilstand og tilgjengelige oppdateringer i `/plugin`-menyen.
+
+> Merk: Siden GitHub-repoet er en speiling, må endringer gjøres i Azure DevOps-kilderepoet for at de skal nå brukerne.

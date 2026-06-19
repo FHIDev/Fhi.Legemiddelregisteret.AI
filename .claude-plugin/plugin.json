@@ -1,6 +1,5 @@
 {
   "name": "lmr",
-  "version": "0.1.0",
   "description": "Skills for Legemiddelregisteret (LMR): systemkunnskap om repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, samt LMDI-implementasjonsguiden for FHIR-innsending av legemiddeldata fra institusjon.",
   "author": {
     "name": "Folkehelseinstituttet"
