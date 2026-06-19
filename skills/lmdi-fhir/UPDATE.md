@@ -93,6 +93,10 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
+### 2026-06-19
+- Gjort skillen selvstendig: `references/` er nå det autoritative grunnlaget i SKILL.md, ikke et avledet lag som måtte verifiseres mot FSH før svar. Fjernet instruksjonene som ba agenten mistro referansefilene og åpne FSH i `LMDI/input/fsh/` først (§1.2-rekkefølge, §1.3-stoppbetingelse, §3 trinn 1). Dette stoppet at agenten lette etter LMDI-repoet i feil arbeidsmappe.
+- §1.4 erstattet «git status på arbeidstre» (pekte på feil relativ sti) med en versjonssjekk mot raw-URL: `sushi-config.yaml` på `main` for å oppdage nyere IG-versjon, og FSH pinnet til commit `cb419e640` for valgfri kildeverifisering når LMDI-repoet ikke finnes lokalt.
+
 ### 2026-06-17
 - Flyttet til plugin-repoet `Fhi.Legemiddelregisteret.AI` (`skills/lmdi-fhir/`), som nå er kilden for skillen. To-repo-modellen og prosedyrestier oppdatert tilsvarende.
 
