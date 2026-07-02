@@ -66,23 +66,11 @@ Implementasjonsguide for avsendere (eksternt): [LMDI på GitHub](https://github.
 
 ## Splitting i Meldingsmottak
 
-Splitting utføres av `FhirBundleInstitusjonsmeldingSplitter` (`Fhi.Lmr.Meldingsmottak.Applikasjon/Institusjon/Splitting/`).
+Meldingsmottak ekstraherer identiteter per `MedicationAdministration`, masker `Identifier.Value` i bundlen og produserer tre delmeldinger. Én post per administrering — ingen deduplicering av pasienter eller rekvirenter.
 
-Splittingen skjer i to steg: ekstraher identiteter og `Administreringsreferanse` per `MedicationAdministration` → masker `Identifier.Value` i bundle og serialiser tilbake. Én post per administrering — ingen deduplicering av pasienter eller rekvirenter.
-
-Se [MELDINGSSPLITTING-INSTITUSJON-FHIR.md](./MELDINGSSPLITTING-INSTITUSJON-FHIR.md) for fullstendig teknisk beskrivelse av splitte-steg, OID-konstanter og anonymiseringslogikk.
+Se [MELDINGSSPLITTING-INSTITUSJON-FHIR.md](./MELDINGSSPLITTING-INSTITUSJON-FHIR.md) for kontrakten (delmeldinger, kobling, maskering, begrensninger). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
 Se [MELDINGSKONTRAKTER-INSTITUSJON.md](./MELDINGSKONTRAKTER-INSTITUSJON.md) for meldingskontraktene (`PasientmeldingFraInstitusjonsmelding`, `RekvirentmeldingFraInstitusjonsmelding`, `PasientlisteFhir`, `RekvirentlisteFhir`) og hvordan Administreringslager kobler alt sammen.
-
-**Tre delmeldinger produseres:**
-
-| Delmelding | Innhold | Destinasjon |
-|---|---|---|
-| `PasientmeldingFraInstitusjonsmelding` | FNR/DNR + `Administreringsreferanse` + `Administeringsdato` per administrering | Pasientregister |
-| `RekvirentmeldingFraInstitusjonsmelding` | HPR-nummer + `Administreringsreferanse` per administrering | Rekvirentregister |
-| `AdministreringsmeldingFhirBundle` | FHIR Bundle med maskerte `Identifier.Value`-felter — struktur og referanser uendret | Administreringslager |
-
-Rekvirentmelding produseres kun dersom bundlen inneholder `Practitioner`-ressurser med HPR-nummer.
 
 ## Parallellitet i meldingslevering
 
@@ -94,7 +82,7 @@ Meldingsformidler leverer alle tre delmeldinger uavhengig og parallelt via separ
 |---|---|
 | FhirMottak | Inngangsport for FHIR-meldinger fra regionale helseforetak (`V1RequestHandler`) |
 | Meldingsformidler | Orkestrerer all transport mellom tjenestene |
-| Meldingsmottak | Mottar og splitter meldinger (`FhirBundleInstitusjonsmeldingSplitter`) |
+| Meldingsmottak | Mottar og splitter meldinger fra institusjoner |
 | Pasientregister | Lagrer pasientidentiteter, tildeler PasientId, produserer Pasientliste |
 | Rekvirentregister | Lagrer rekvirentidentiteter, tildeler RekvirentId, produserer Rekvirentliste |
 | Administreringslager | Lagrer legemiddeldata om administreringer — uten identiteter, kobler via PasientId og RekvirentId |
@@ -123,9 +111,8 @@ Bundleinnholdet lagres kryptert i `Kryptert.Institusjonsmeldingsinnhold` som `va
 
 ```sql
 -- Overordnet status for institusjonsmelding
--- StatusKode: 1=Mottatt, 2=UnderProsessering, 3=Slettet, 4=Stoppet,
---             5=KlarForOverføringAvMeldingsdeler, 6=MeldingsdelerErOverført,
---             7=FerdigBehandlet, 8=AvbruttProsessering
+-- StatusKode-verdiene: se enumen MeldingStatus i Meldingsmottak-repoet
+-- (Fhi.Lmr.Meldingsmottak.Domene/Entities/Enums/MeldingStatus.cs)
 SELECT MeldingsId, StatusKode, AntallGangerPrøvd,
        UnderProsessering, PrøvIgjenTidspunkt,
        MeldingsDelerErKlarForOverføring, FerdigBehandlet,

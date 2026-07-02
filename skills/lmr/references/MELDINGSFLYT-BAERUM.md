@@ -69,9 +69,9 @@ Meldingen deserialiseres, dekomprimeres (gzip), valideres mot forventet CSV-head
 
 ## Splitting i Meldingsmottak
 
-Splitting utføres av `BærumKommuneInstitusjonsmeldingSplitter`. Personnummer (kolonne-indeks 2) maskeres til `00000000000`. `Administreringsreferanse` er radnummeret som streng (`"1"`, `"2"`, `"3"` ...). Ingen rekvirentmelding — CSV-formatet inneholder ingen HPR-nummer.
+Personnummer maskeres til `00000000000`, og `Administreringsreferanse` er radnummeret som streng (`"1"`, `"2"`, `"3"` ...). Ingen rekvirentmelding — CSV-formatet inneholder ingen HPR-nummer.
 
-Se [MELDINGSSPLITTING-BAERUM.md](./MELDINGSSPLITTING-BAERUM.md) for fullstendig teknisk beskrivelse, inkludert datoformat og CsvHelper-konfigurasjon.
+Se [MELDINGSSPLITTING-BAERUM.md](./MELDINGSSPLITTING-BAERUM.md) for kontrakten (delmeldinger og kobling). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
 Se [MELDINGSKONTRAKTER-INSTITUSJON.md](./MELDINGSKONTRAKTER-INSTITUSJON.md) for meldingskontraktene og hvordan Administreringslager kobler pasientlisten mot CSV-dataene.
 
@@ -85,6 +85,6 @@ Bærum kommune-flyten har **ikke** rekvirentmelding — CSV-formatet inneholder 
 |---|---|
 | FhirMottak | Mottar CSV fra Bærum kommune via API (`BarumKommuneRequestHandler`) |
 | Meldingsformidler | Orkestrerer all transport mellom tjenestene |
-| Meldingsmottak | Mottar og splitter meldinger (`BærumKommuneInstitusjonsmeldingSplitter`) |
+| Meldingsmottak | Mottar og splitter meldinger fra Bærum kommune (CSV) |
 | Pasientregister | Lagrer pasientidentiteter, tildeler PasientId, produserer Pasientliste |
 | Administreringslager | Lagrer legemiddeldata om administreringer — uten identiteter, kobler via PasientId |

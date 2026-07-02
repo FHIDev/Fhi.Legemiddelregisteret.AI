@@ -44,7 +44,7 @@ Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten.
 
 ## Splitting
 
-Se [MELDINGSSPLITTING-APOTEK.md](./MELDINGSSPLITTING-APOTEK.md) for teknisk dokumentasjon av splittingen — anonymiseringslogikk, meldingstyper, kobling mellom delmeldinger og sammenligning av Farmapro vs. Eik.
+Se [MELDINGSSPLITTING-APOTEK.md](./MELDINGSSPLITTING-APOTEK.md) for kontrakten — hvilke delmeldinger som produseres, kobling mellom dem og maskeringsverdiene nedstrøms ser. Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
 ## Tjenester involvert
 

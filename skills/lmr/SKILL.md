@@ -36,6 +36,7 @@ Teknisk veiledning (last inn ved behov for den aktuelle oppgaven):
 Repo-spesifikk dokumentasjon (finnes i de enkelte repoene):
 - Meldingsformidler: `Fhi.Lmr.Meldingsformidler/.claude/skills/lmr-meldingsformidler/SKILL.md`
 - Administreringslager: `Fhi.Lmr.Administreringslager/.claude/skills/lmr-administreringslager/skill.md`
+- Meldingsmottak: `Fhi.Lmr.Meldingsmottak/.claude/skills/lmr-meldingsmottak/SKILL.md`
 
 Ekstern dokumentasjon:
 - LMDI — FHIR R4 implementasjonsguide for de som sender data til FhirMottak: https://github.com/folkehelseinstituttet/LMDI
@@ -132,12 +133,9 @@ Se repo-skillen `lmr-meldingsformidler` for fullstendig dokumentasjon av flyter,
 
 ### Fhi.Lmr.Meldingsmottak
 
-Ansvar: Mottak og splitting av meldinger fra apotek og institusjoner.
+Ansvar: Mottak og splitting av meldinger fra apotek (Eik og Farmapro) og institusjoner.
 
-- Mottar Farmapro-meldinger (XML) og Eik-meldinger (JSON)
-- Splitter reseptmeldinger i 3 deler: pasientmelding, rekvirentmelding, utleveringsmelding
-- Splitter Eik farmasøytiske tjenestemeldinger i 2 deler: pasientmelding, tjenestemelding
-- Mottar også lokalvaremeldinger (informasjon om apoteks lokalvarer)
+Se repo-skillen `lmr-meldingsmottak` for fullstendig domenekunnskap (kilder, splitting, statusmodell, forretningsregler).
 
 ### Fhi.Lmr.Pasientregister
 

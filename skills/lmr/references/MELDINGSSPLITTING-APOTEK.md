@@ -2,72 +2,29 @@
 
 LMR har **ikke lov** til å lagre identitetsopplysninger (FNR, DNR, HPR-nummer) i samme database som utleveringsdata. Splitteren i Meldingsmottak er den eneste tjenesten som ser ekte identiteter — utleveringsmeldingen som sendes til Utleveringslager inneholder ingen.
 
-## Farmapro (XML)
+Denne fila beskriver kontrakten nedstrøms tjenester ser. Implementasjonsdetaljer (splitterklasser, skjemaversjoner, maskeringslogikk) er dokumentert i repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet og i splitterkoden der.
 
-**Splitterklasse:** `ReseptmeldingSplitter`
-**Plassering:** `Fhi.Lmr.Meldingsmottak.Applikasjon/Farmapro/Reseptmelding/Splitt/`
+## Hva som splittes
 
-Farmapro sender krypterte XML-meldinger. Splitteren dekrypterer (RSA + symmetrisk nøkkel fra KeyVault) og parser XML via tre generatorer:
-
-| Generator | Produserer | Innhold |
-|---|---|---|
-| `PasientmeldingGenerator` | `PasientmeldingFarmapro` | FNR/DNR + `UtleveringsnummerIMelding` |
-| `UtleveringsmeldingGenerator` | `UtleveringsmeldingFarmapro` | Anonymisert XML + `UtleveringsnummerIMelding` |
-| `RekvirentmeldingGenerator` | `RekvirentmeldingFarmapro` | HPR-nummer + `UtleveringsnummerIMelding` |
-
-**Anonymisering:** regex-masking direkte på XML-strengen:
-```
-<FodselsNr>          → 99999999999  (11 niere)
-<HelsePersonellNr>   → 999999999   (9 niere)
-<DummyFodselsNr>     → 99999999999
-<DummyHelsepersonellNr> → 999999999
-```
-For dyreresepter maskes også `<FodselsAr>`, `<Kjonn>` og `<Kommune>`.
-
-**Kobling mellom delmeldinger:** `UtleveringsnummerIMelding` — sekvensielt heltall (1, 2, 3 ...) tildelt per utlevering i meldingen. Alle tre delmeldinger bruker samme nummer som kobling.
-
-**Resepttyper:** `TilMenneskeUtenRefusjon`, `TilMenneskeMedRefusjon`, `TilDyr`
-**Rekvisisjonstyper:** `SykehusRekvisisjon`, `EgenPraksisRekvisisjon`, `ForskrivingTilSkipRekvisisjon`
-
-Farmasøytiske tjenestemeldinger fra Eik splittes i kun **to** delmeldinger: Pasientmelding + Tjenestemelding — ingen rekvirentmelding.
-
----
-
-## Eik (JSON)
-
-**Splitterklasse:** `ReseptmeldingSplittetjeneste` (dispatcher) + versjonsspesifikke implementasjoner
-**Plassering:** `Fhi.Lmr.Meldingsmottak.Applikasjon/Eik/Melding/Splitt/`
-
-Eik sender JSON-meldinger. Splittingen er versjonsstyrt via strategy-pattern:
-
-| Versjon | Implementasjon |
+| Meldingstype | Delmeldinger |
 |---|---|
-| V1.06 | `GenererSplittetEikReseptmeldingV106Tjeneste` |
-| V1.07 | `GenererSplittetEikReseptmeldingV107Tjeneste` |
-| V2.0  | `GenererSplittetEikReseptmeldingV20Tjeneste`  |
+| Reseptmelding (Farmapro XML og Eik JSON) | Pasientmelding + Rekvirentmelding + Utleveringsmelding |
+| Rekvisisjonsmelding (Eik) | Pasientmelding + Rekvirentmelding + Utleveringsmelding |
+| Farmasøytisk tjenestemelding (Eik) | Pasientmelding + Tjenestemelding — ingen rekvirentmelding |
+| Lokalvaremelding (Farmapro) | Splittes ikke — lagres kun kryptert |
 
-**Anonymisering:** feltmanipulasjon på deserialisert objekt FØR re-serialisering:
-- `PasientMedIdent.Id` → `EikAnonymisering.FodselsnummerFjernet = "00000000000"` (11 nuller)
-- `norskRekvirent.Helsepersonellnummer` → `0`
+## Kobling mellom delmeldinger
 
-Rekvirentdata ekstraheres til rekvirentmeldingen _før_ HPR-nummeret nullstilles i utleveringsobjektet.
+- `UtleveringsnummerIMelding` — sekvensielt heltall (1, 2, 3 ...) tildelt per utlevering i meldingen. Alle delmeldinger bruker samme nummer som kobling.
+- Eik bruker i tillegg `RekvisisjonsId` (GUID) for rekvisisjoner og ordinasjoner.
 
-**Kobling mellom delmeldinger:**
-- `UtleveringsnummerIMelding` (sekvensielt heltall) for pasient/utlevering-koblingen
-- `RekvisisjonsId` (GUID) for rekvisisjoner og ordinasjoner
+## Maskerte verdier nedstrøms
 
-**Utleveringstyper:** `UtleveringTilMenneske`, `UtleveringTilDyr`, `UtleveringTilRekvirent`
-
----
-
-## Sammenligning Farmapro vs. Eik
+Utleveringsmeldingen inneholder maskerte identiteter, og maskeringsverdiene skiller seg per kilde — nyttig å kjenne igjen ved feilsøking nedstrøms:
 
 | | Farmapro | Eik |
 |---|---|---|
-| **Format** | XML | JSON |
-| **Anonymisering** | Regex på XML-streng | Feltmanipulasjon på objekt |
 | **Maskeringsverdi FNR** | `99999999999` (niere) | `00000000000` (nuller) |
 | **Maskeringsverdi HPR** | `999999999` (niere) | `0` (null) |
-| **Kobling** | `UtleveringsnummerIMelding` | `UtleveringsnummerIMelding` + `RekvisisjonsId` |
-| **Rekvirentmelding** | Ja | Ja |
-| **Antall delmeldinger** | 3 | 3 |
+
+For dyreresepter maskeres flere felter (fødselsår, kjønn, kommune m.m.) — se splitterkoden i Meldingsmottak.
