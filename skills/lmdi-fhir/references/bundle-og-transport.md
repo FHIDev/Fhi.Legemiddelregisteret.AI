@@ -25,7 +25,7 @@ Legemiddel  ──── medicationReference ──► MedicationRequest
 (klassifisert med ATC-extension)
 ```
 
-Diagnose og Virkestoff er valgfrie (tas med når indikasjon eller rent virkestoff er relevant).
+Helsepersonell, Diagnose og Virkestoff er valgfrie. Helsepersonell tas med når rekvirenten er kjent; Diagnose og Virkestoff tas med når indikasjon eller rent virkestoff er relevant.
 
 ### Referanseform
 Fra `Bundle-Scenario-Sykehjem-Oksykodon` i `LegemiddelregisterBundle.fsh`:
@@ -70,7 +70,7 @@ ISO 8601 med tidssone, f.eks. `"2024-02-07T13:28:17.239+02:00"`.
 | MedicationAdministration | `request` | Legemiddelrekvirering | 0..1 MS | Rekvireringen administrering er basert på |
 | MedicationAdministration | `reasonReference` | Diagnose | 0..* | Indikasjon |
 | MedicationRequest | `subject` | Pasient | 1..1 MS | |
-| MedicationRequest | `requester` | Helsepersonell | 1..1 MS | |
+| MedicationRequest | `requester` | Helsepersonell | 0..1 MS | Oppgis når rekvirenten er kjent |
 | MedicationRequest | `medication[x]` | Legemiddel | 1..1 MS | |
 | MedicationRequest | `encounter` | Episode | 0..1 | |
 | MedicationRequest | `reasonReference` | Diagnose | 0..* | |

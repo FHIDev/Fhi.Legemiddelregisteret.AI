@@ -67,6 +67,8 @@ Disse er ikke invariants, men tvinges gjennom kardinalitet, `only`-klausuler og 
 | Organisasjon | `partOf` | Organisasjon |
 | Legemiddel | `ingredient.itemReference` | Virkestoff \| Legemiddel |
 
+`Legemiddelrekvirering.requester` er 0..1 MS fra IG 1.1.3. Referansemålet Helsepersonell valideres når feltet finnes; feltet kan utelates når rekvirenten ikke er kjent.
+
 ### Absolutte `0..0`-deaktiveringer (utdrag; se `profiler.md` for komplett liste)
 
 - Ingen `Patient.name`, `Patient.telecom`, `Patient.photo`, `Patient.address.line`, `Patient.address.postalCode`, `Patient.address.city`.

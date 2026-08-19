@@ -12,7 +12,7 @@ Dette dokumentet svarer på konkrete "når bruker jeg X og ikke Y?"-spørsmål. 
 | `status` | Fra standard VS `medicationrequest-status` (f.eks. `active`, `entered-in-error`) | Begrenset til `completed` eller `entered-in-error` (`LegemiddeladministreringStatus`) |
 | Tidsfelt | `authoredOn` (dateTime) | `effectiveDateTime` eller `effectivePeriod`, invariant `time-required` ned til minutt |
 | Dose-representasjon | `dosageInstruction.dose*` (plan) | `dosage.dose` (faktisk gitt) + `dosage.rateRatio` for infusjon |
-| Hvem utførte | `requester 1..1 MS only Reference(Helsepersonell)` | `performer` er **deaktivert** (`0..0`) — hvem som administrerte loggføres ikke |
+| Hvem utførte | `requester 0..1 MS only Reference(Helsepersonell)` — oppgis når rekvirenten er kjent | `performer` er **deaktivert** (`0..0`) — hvem som administrerte loggføres ikke |
 | Indikasjon | `reasonReference only Reference(Diagnose)` | `reasonReference only Reference(Diagnose)` |
 | Relasjoner seg imellom | — | `MedicationAdministration.request only Reference(Legemiddelrekvirering)` kobler administreringen til sin ordinering |
 

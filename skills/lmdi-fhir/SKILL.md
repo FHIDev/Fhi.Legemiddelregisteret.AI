@@ -1,6 +1,6 @@
 ---
 name: lmdi-fhir
-description: Kildebasert ekspert på LMDI-implementasjonsguiden (Legemiddeldata fra institusjon til Legemiddelregisteret). Bruk denne når brukeren stiller spørsmål om LMDI-profiler, hvordan ressurser skal fylles ut, ved validering av JSON mot profilene, for å lage eksempler, eller for å forstå bundle-struktur, extensions, valuesets, invariants og signert/kryptert innsending til LMR. Selvstendig: bygger på et kuratert øyeblikksbilde av LMDI-kildene i `references/` — versjon 1.1.2.
+description: Kildebasert ekspert på LMDI-implementasjonsguiden (Legemiddeldata fra institusjon til Legemiddelregisteret). Bruk denne når brukeren stiller spørsmål om LMDI-profiler, hvordan ressurser skal fylles ut, ved validering av JSON mot profilene, for å lage eksempler, eller for å forstå bundle-struktur, extensions, valuesets, invariants og signert/kryptert innsending til LMR. Selvstendig: bygger på et kuratert øyeblikksbilde av LMDI-kildene i `references/` — versjon 1.1.3.
 ---
 
 # LMDI – Legemiddeldata fra institusjon til Legemiddelregisteret
@@ -9,7 +9,7 @@ Arbeidsinstruks og navigasjon for LMDI-spørsmål. Faktainnhold ligger i `refere
 
 **Grunnlag**: `references/` er et kuratert øyeblikksbilde av LMDI-kildene (FSH-filer, `sushi-config.yaml`, `pagecontent/*.md`). Opprinnelig opphav er repoet [`folkehelseinstituttet/LMDI`](https://github.com/folkehelseinstituttet/LMDI), men det trengs bare ved verifisering (§1.3) eller versjonssjekk (§1.4).
 
-**Versjon**: IG `1.1.2` (FHIR `4.0.1`), bygd fra commit `cb419e640`. Sjekk for nyere versjon ved behov — se §1.4.
+**Versjon**: IG `1.1.3` (FHIR `4.0.1`), bygd fra commit `e02c00ad9`. Sjekk for nyere versjon ved behov — se §1.4.
 
 ---
 
@@ -28,7 +28,7 @@ Arbeidsinstruks og navigasjon for LMDI-spørsmål. Faktainnhold ligger i `refere
 
 ### 1.2 Prioritert kilderekkefølge ved konflikt
 
-1. Denne skillens `references/` — autoritativt grunnlag (øyeblikksbilde av LMDI 1.1.2).
+1. Denne skillens `references/` — autoritativt grunnlag (øyeblikksbilde av LMDI 1.1.3).
 2. Verifisering mot opprinnelig kilde **når det trengs** (uklarhet, eller mistanke om at `references/` er utdatert) — se §1.3/§1.4.
 3. `[FHIR-basis]`: generell FHIR R4 (spec/no-basis) for det LMDI ikke dekker.
 
@@ -37,26 +37,26 @@ Arbeidsinstruks og navigasjon for LMDI-spørsmål. Faktainnhold ligger i `refere
 Svar fra `references/` (`profiler.md`, `validering.md`, m.fl.) — de er laget nettopp for dette, og er autoritative for skillen. Verifiser mot opprinnelig kilde **bare** når svaret er tvilsomt eller brukeren ber om kildebekreftelse:
 
 - Hvis LMDI-repoet finnes lokalt: les den relevante FSH-fila der.
-- Ellers (valgfritt): hent fila fra raw-URL pinnet til 1.1.2 (se §1.4).
+- Ellers (valgfritt): hent fila fra raw-URL pinnet til 1.1.3 (se §1.4).
 
 Finner du avvik mellom `references/` og kilden: **si det til brukeren** og følg `UPDATE.md`.
 
 ### 1.4 Kilder og versjonssjekk
 
-`references/` er bygd fra LMDI 1.1.2 (commit `cb419e640`). LMDI-repoet trengs ikke for å svare.
+`references/` er bygd fra LMDI 1.1.3 (commit `e02c00ad9`). LMDI-repoet trengs ikke for å svare.
 
-**Sjekk for nyere IG-versjon** (ved tvil eller på forespørsel) — hent `version:` fra kilden og sammenlign med `1.1.2`:
+**Sjekk for nyere IG-versjon** (ved tvil eller på forespørsel) — hent `version:` fra kilden og sammenlign med `1.1.3`:
 
 ```
 https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/main/LMDI/sushi-config.yaml
 ```
 
-Er versjonen på `main` nyere enn `1.1.2`: **fortell brukeren** at skillen kan være utdatert og bør oppdateres etter `UPDATE.md`.
+Er versjonen på `main` nyere enn `1.1.3`: **fortell brukeren** at skillen kan være utdatert og bør oppdateres etter `UPDATE.md`.
 
 **Verifisere en strukturdetalj mot kilden** (valgfritt, §1.3) — les FSH lokalt hvis LMDI-repoet finnes, ellers hent fila pinnet til samme versjon som `references/`:
 
 ```
-https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/cb419e640bf72894499a20cc67815250584c83fc/LMDI/input/fsh/
+https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/e02c00ad998e8406ac9730a8411b46697fa04d18/LMDI/input/fsh/
 ```
 
 ---
@@ -176,7 +176,7 @@ Når relevant, inkluder:
 
 ## 7. Oppdatering av skillen
 
-Når FSH-kildene har endret seg, eller brukeren ber om at skillen oppdateres: følg prosedyren i `UPDATE.md` (samme katalog). Den beskriver to-repo-modellen (skillen versjonsstyres i wiki-repoet), proveniens, trinnvis re-synkronisering og changelog.
+Når FSH-kildene har endret seg, eller brukeren ber om at skillen oppdateres: følg prosedyren i `UPDATE.md` (samme katalog). Den beskriver to-repo-modellen (skillen versjonsstyres i plugin-repoet), proveniens, trinnvis re-synkronisering og changelog.
 
 ---
 

@@ -16,10 +16,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Legemiddelregisteret.
 | Felt | Verdi |
 |---|---|
 | Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `cb419e640bf72894499a20cc67815250584c83fc` |
-| Analysedato | 2026-06-12 |
+| HEAD commit (LMDI) | `e02c00ad998e8406ac9730a8411b46697fa04d18` |
+| Analysedato | 2026-08-19 |
 | `git status --short LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` | ingen endringer (stop-regel ikke utløst) |
-| IG-versjon | 1.1.2 (fra `sushi-config.yaml`) |
+| IG-versjon | 1.1.3 (fra `sushi-config.yaml`) |
 
 ## Prosedyre
 
@@ -73,7 +73,7 @@ SKILL_DIR="/c/dev/Fhi.Legemiddelregisteret.AI/skills/lmdi-fhir"
 grep -rn "<utgått-frase>" "$SKILL_DIR"
 ```
 
-Historiske eksempler på slike fraser: `fh.no/lokaltVirkemiddel` (URL endret i 1.1.0), `organisatoriskNiva` som aktivt felt (deaktivert i 1.1.0), `nprEpisodeIdentifier 0..1` (ble 0..* i 1.1.2).
+Historiske eksempler på slike fraser: `fh.no/lokaltVirkemiddel` (URL endret i 1.1.0), `organisatoriskNiva` som aktivt felt (deaktivert i 1.1.0), `nprEpisodeIdentifier 0..1` (ble 0..* i 1.1.2), `requester 1..1` på Legemiddelrekvirering (ble 0..1 i 1.1.3).
 
 ### Trinn 6: Rapportér til brukeren
 
@@ -92,6 +92,10 @@ Commit skill-endringene i `Fhi.Legemiddelregisteret.AI` med beskrivende norsk me
 Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json` eller no-basis-pakken (`~/.fhir/packages/hl7.fhir.no.basis#2.2.0/` eller `node_modules/hl7.fhir.no.basis/`), gjør det i stedet for å markere som usikkert. Verifiser minst: baseDefinition-relasjoner, canonical-URL-er på lokalt definerte CS/VS, extension-URL-er fra no-basis.
 
 ## Changelog for skillen
+
+### 2026-08-19
+- Oppdatert til IG 1.1.3: `MedicationRequest.requester` er endret fra 1..1 MS til 0..1 MS. Feltet er fortsatt Must Support og begrenset til `Reference(Helsepersonell)` når det finnes.
+- Oppdatert profiloppslag, referansetopologi, profilsammenligning, valideringsnotat og versjonsmetadata mot LMDI `main @ e02c00ad9`.
 
 ### 2026-06-19
 - Gjort skillen selvstendig: `references/` er nå det autoritative grunnlaget i SKILL.md, ikke et avledet lag som måtte verifiseres mot FSH før svar. Fjernet instruksjonene som ba agenten mistro referansefilene og åpne FSH i `LMDI/input/fsh/` først (§1.2-rekkefølge, §1.3-stoppbetingelse, §3 trinn 1). Dette stoppet at agenten lette etter LMDI-repoet i feil arbeidsmappe.

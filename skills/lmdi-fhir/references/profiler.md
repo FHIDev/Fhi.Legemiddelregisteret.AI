@@ -218,7 +218,7 @@ Typisk brukt for rene virkestoff der man vil referere dem fra `Legemiddel.ingred
 - `intent 1..1 MS`
 - `medication[x] 1..1 MS only Reference(Legemiddel)`
 - `subject 1..1 MS only Reference(Pasient)`
-- `requester 1..1 MS only Reference(Helsepersonell)`
+- `requester 0..1 MS only Reference(Helsepersonell)` — oppgis når rekvirenten er kjent; mottakere kan ikke forutsette at feltet finnes
 
 ### Valgfrie referanser
 - `encounter only Reference(Episode)`
