@@ -68,6 +68,21 @@ Begge er tillatt samtidig. Invariant `lmdi-medication-code-or-ingredient` krever
 
 **Kort regel**: Har du en offisiell kode (FEST, varenummer, SCT, lokal katalog) → bruk `code`. Har du ikke kode men vet hvilke virkestoffer som inngår → bruk `ingredient`. Har du begge deler → sett begge.
 
+## 5b. `strength` (styrke) vs `strength.extension[mengde]` (mengde)
+
+Begge sitter på `Medication.ingredient.strength`. Detaljer i `extensions.md` og `validering.md` (`rat-1`).
+
+| Spørsmålet du svarer på | Bruk | Form |
+|---|---|---|
+| «Hvor sterk er ingrediensen i sluttproduktet?» | `strength` (Ratio) | `numerator` + `denominator`, f.eks. 5 mg / 1 mL |
+| «Hvor mye av utgangslegemidlet gikk med?» | `strength.extension[mengde].valueQuantity` | Volum eller masse, f.eks. 12,5 mL |
+| «Fylt opp til, sporbar mengde» | `strength.extension[mengde].valueCodeableConcept` | `qs` eller `trace` |
+
+**Kort regel**: Vet du konsentrasjonen i blandingen → `strength` som Ratio. Vet du bare hvor mye
+konsentrat som ble tilsatt → `extension[mengde]` med volum, la `ingredient.item` peke på
+utgangslegemidlet, og sett `Medication.amount` slik at konsentrasjonen kan regnes ut. Ikke press
+mengde inn i en Ratio med kunstig nevner — det er semantisk feil.
+
 ## 6. `MedicationRequest.priorPrescription` vs nytt `MedicationRequest`
 
 - `priorPrescription only Reference(Legemiddelrekvirering)` brukes når én rekvirering erstatter eller fortsetter en tidligere.

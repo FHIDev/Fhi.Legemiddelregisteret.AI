@@ -189,6 +189,17 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
 - `ingredient.itemCodeableConcept from LegemiddelKoder (preferred)`
 - Skal brukes hvis `code` mangler. Bør brukes i tillegg når `code.coding[LokaltLegemiddel]` er satt (bedre sporbarhet).
 
+#### `ingredient.strength` — styrke vs. mengde (1.1.3)
+- `strength` (Ratio, 0..1, uendret kardinalitet) = **styrken** av ingrediensen i legemidlet.
+- `strength.extension` inneholder slicen `mengde` (0..1) — `IngrediensStyrke`-extension for **mengde**
+  (volum eller mengde virkestoff), som `Quantity` eller kodet (`qs`, `trace`). Se `extensions.md`.
+- R4 har ikke `strength[x]`; i R5/R6 er dette étt element med tre typer. Extension-en dekker de to
+  typene R4 mangler.
+- Når bare mengde oppgis, skrives `strength` **uten** `numerator`/`denominator`. Det er gyldig R4:
+  invarianten `rat-1` krever teller+nevner **eller** minst én extension.
+- Ved volum bør `Medication.amount` settes på det sammensatte legemidlet, ellers kan ikke
+  ingrediensens styrke i blandingen utledes.
+
 ### `batch` MS
 - `manufacturer 0..0`, `text 0..0`
 

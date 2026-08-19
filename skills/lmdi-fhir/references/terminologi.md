@@ -81,6 +81,7 @@ Disse brukes i `code.coding`-slicing på `Legemiddel`, men har ingen egen FSH-`I
 | `http://terminology.hl7.org/CodeSystem/medication-admin-status` | MedicationAdministration.status |
 | `http://terminology.hl7.org/CodeSystem/substance-category` | Substance.category |
 | `http://terminology.hl7.org/CodeSystem/condition-clinical` | Condition.clinicalStatus |
+| `http://hl7.org/fhir/CodeSystem/medication-ingredientstrength` | Kodet mengde ingrediens (`qs`, `trace`) — R5-kodeverk, bundet preferred via `lmdi-ingredient-strength`. Kan ikke slås opp av R4-verktøy, se `extensions.md` |
 
 ## Aliases (fra `LMDI/input/fsh/aliases.fsh`)
 
@@ -92,6 +93,7 @@ Disse brukes i `code.coding`-slicing på `Legemiddel`, men har ingen egen FSH-`I
 - `$organization-type` = `http://terminology.hl7.org/CodeSystem/organization-type`
 - `$LMDISubstance` = `http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-substance`
 - `$LMDIMedication` = `http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-medication`
+- `$IngrediensStyrkeKoder` = `http://hl7.org/fhir/CodeSystem/medication-ingredientstrength`
 
 ## no-basis-extensions brukt i adresser (verifisert mot no-basis 2.2.0)
 

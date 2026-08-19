@@ -43,6 +43,21 @@ http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-substance
 
 ---
 
+## Base-invariant som er lett å trå feil på: `rat-1`
+
+**Sted**: R4-datatypen `Ratio` — gjelder blant annet `Medication.ingredient.strength` og
+`Medication.amount`. Ikke definert i LMDI, men avgjørende når mengde uttrykkes med
+`strength.extension[mengde]` (se `extensions.md`).
+
+**FHIRPath**: `(numerator.empty() xor denominator.exists()) and (numerator.exists() or extension.exists())`
+
+**Regel**: Teller og nevner skal enten begge finnes eller begge mangle. Mangler begge, **skal** det
+finnes minst én extension. Det er derfor gyldig å skrive `strength` med bare
+`extension[mengde].valueQuantity` og uten `numerator`/`denominator` — men **ikke** å oppgi bare
+`numerator` uten `denominator`.
+
+---
+
 ## Profilbaserte "implisitte" regler
 
 Disse er ikke invariants, men tvinges gjennom kardinalitet, `only`-klausuler og `0..0`-deaktiveringer.

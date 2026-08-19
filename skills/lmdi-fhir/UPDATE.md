@@ -7,19 +7,19 @@ Følg denne prosedyren når brukeren ber om at skillen oppdateres mot FSH-endrin
 | Hva | Hvor |
 |---|---|
 | Kilde-sannhet (FSH, sushi-config, pagecontent) | `C:\dev\LMDI` (repo `HL7Norway/LMDI` el.l.) |
-| Skill-filene (denne katalogen) | `C:\dev\Fhi.Legemiddelregisteret.AI\skills\lmdi-fhir` — versjonsstyres i **plugin-repoet** (`Fhi.Legemiddelregisteret.AI`), som er kilden for skillen |
+| Skill-filene (denne katalogen) | `C:\dev\Fhi.Lmr.AI\skills\lmdi-fhir` — versjonsstyres i **plugin-repoet** (`Fhi.Lmr.AI`, Azure DevOps: `fhi/Fhi.Legemiddelregisteret/_git/Fhi.Lmr.AI`), som er kilden for skillen |
 
-Endringer i skill-filene committes og pushes altså i `Fhi.Legemiddelregisteret.AI`, ikke i LMDI-repoet eller wiki-repoet.
+Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-repoet, wiki-repoet eller det gamle `Fhi.Legemiddelregisteret.AI`.
 
 ## Proveniens (oppdatér ved hver kjøring)
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `e02c00ad998e8406ac9730a8411b46697fa04d18` |
+| Branch (LMDI) | `roar/101-ingrediens-styrke` — **ikke merget til `main`** |
+| HEAD commit (LMDI) | `6221813bf310cccd66f10ce461d12f177667d54e` (én commit foran `e02c00ad9` på `main`) |
 | Analysedato | 2026-08-19 |
-| Verifiseringsmetode | GitHub-API mot `main` (`compare cb419e640...e02c00ad9`) — intet lokalt LMDI-arbeidstre ble brukt, så stop-regelen i Trinn 1 er ikke kjørt |
-| IG-versjon | 1.1.3 (fra `sushi-config.yaml`) |
+| Verifiseringsmetode | Lokalt LMDI-arbeidstre. `git status --short LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` tom, stop-regelen i Trinn 1 ikke utløst. Verifisert mot `LMDI/fsh-generated/resources/*.json` og qa.html fra full IG-bygg |
+| IG-versjon | 1.1.3 (fra `sushi-config.yaml`, ingen bump) |
 
 ## Prosedyre
 
@@ -69,7 +69,7 @@ Rekkefølge og arbeidsdeling — **ikke dupliser innhold på tvers, lenk heller*
 Søk i skill-katalogen etter fraser som avhenger av gamle URL-er / kardinaliteter / navn:
 
 ```bash
-SKILL_DIR="/c/dev/Fhi.Legemiddelregisteret.AI/skills/lmdi-fhir"
+SKILL_DIR="/c/dev/Fhi.Lmr.AI/skills/lmdi-fhir"
 grep -rn "<utgått-frase>" "$SKILL_DIR"
 ```
 
@@ -85,13 +85,23 @@ Historiske eksempler på slike fraser: `fh.no/lokaltVirkemiddel` (URL endret i 1
 
 ### Trinn 7: Commit i plugin-repoet
 
-Commit skill-endringene i `Fhi.Legemiddelregisteret.AI` med beskrivende norsk melding. Push etter avtale med brukeren.
+Commit skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale med brukeren.
 
 ## Verifiseringsstrategi
 
 Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json` eller no-basis-pakken (`~/.fhir/packages/hl7.fhir.no.basis#2.2.0/` eller `node_modules/hl7.fhir.no.basis/`), gjør det i stedet for å markere som usikkert. Verifiser minst: baseDefinition-relasjoner, canonical-URL-er på lokalt definerte CS/VS, extension-URL-er fra no-basis.
 
 ## Changelog for skillen
+
+### 2026-08-19 (senere — issue #101)
+- Ny extension `lmdi-ingredient-strength` («Mengde ingrediens») på `Medication.ingredient.strength`,
+  `value[x]` = `CodeableConcept | Quantity`. Speiler de to typene R4 mangler i forhold til R5/R6
+  `strength[x]`. Oppdatert `extensions.md`, `profiler.md`, `terminologi.md`, `sammenligning.md`
+  (ny §5b styrke vs mengde), `validering.md` (base-invarianten `rat-1`), `eksempler.md`
+  (`Legemiddel-Smerteblanding`, `Legemiddel-MorfinKonsentrat`, `Virkestoff-Natriumklorid`).
+- Skillen flyttet til `Fhi.Lmr.AI`; stier i to-repo-modellen, Trinn 5 og Trinn 7 rettet.
+- **Merk**: denne oppdateringen bygger på branchen `roar/101-ingrediens-styrke`, ikke `main`.
+  Blir PR-en endret før merge, må skillen re-verifiseres mot `main`.
 
 ### 2026-08-19
 - Oppdatert til IG 1.1.3: `MedicationRequest.requester` er endret fra 1..1 MS til 0..1 MS. Feltet er fortsatt Must Support og begrenset til `Reference(Helsepersonell)` når det finnes.

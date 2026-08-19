@@ -11,6 +11,7 @@ Kilde: `LMDI/input/fsh/extensions/*.fsh`. Canonical-mønster: `http://hl7.no/fhi
 | Del av behandlingsregime | `lmdi-del-av-behandlingsregime` | `MedicationRequest` | `string` | `lmdi-ext-del-av-behandlingsregime.fsh` |
 | Klinisk studie | `lmdi-klinisk-studie` | `MedicationRequest` | `boolean` | `lmdi-ext-klinisk-studie.fsh` |
 | NPR Episode Identifier | `npr-episode-identifier` | `Encounter` | (kompleks) | `lmdi-ext-npr-episode-identifier.fsh` |
+| Mengde ingrediens | `lmdi-ingredient-strength` | `Medication.ingredient.strength` | `CodeableConcept` \| `Quantity` | `lmdi-ext-ingredient-strength.fsh` |
 
 ---
 
@@ -104,3 +105,59 @@ extension[nprEpisodeIdentifier][1].extension[stringIdentifier].valueString = "NP
 
 ### Praksisregel (fra `^definition`)
 Extensionen kan gjentas (0..* på Episode fra 1.1.2), slik at flere NPR-ID-er kan oppgis for samme episode. Innen hver forekomst: oppgi både string- og uuid-representasjonen hvis begge finnes.
+
+---
+
+## IngrediensStyrke (`lmdi-ingredient-strength`)
+
+Status: `draft`. Context: **`Medication.ingredient.strength`** — den eneste extensionen i IG-en med
+context dypere enn ressursrot.
+
+- `value[x] only CodeableConcept or Quantity`
+- Binding preferred på `value[x]`: `http://hl7.org/fhir/ValueSet/medication-ingredientstrength`
+  (R5-kodeverk, kun kodene `qs` og `trace`)
+
+Bindingen ligger på `value[x]`, ikke på `valueCodeableConcept`: med to tillatte typer finnes det
+ikke noe eget `valueCodeableConcept`-element. Bindingen gjelder da bare de kodede typene.
+
+### Hvorfor extension
+FHIR R5/R6 har `Medication.ingredient.strength[x]` med tre typer: `Ratio`, `CodeableConcept`,
+`Quantity`. I R4 er `strength` en ren `Ratio`, og valgtyper kan ikke slices. Extensionen tilfører
+de to typene R4 mangler, mens `strength` selv fortsatt bærer Ratio-varianten.
+
+`strength` uten `numerator`/`denominator` er gyldig fordi R4-invarianten `rat-1` sier:
+«Numerator and denominator SHALL both be present, or both are absent. If both are absent, there
+SHALL be some extension present.»
+
+### Bruk — mengde som volum
+```
+ingredient[1].itemReference = Reference(Legemiddel-MorfinKonsentrat)
+ingredient[1].strength.extension[mengde].valueQuantity.value = 12.5
+ingredient[1].strength.extension[mengde].valueQuantity.unit = "milliliter"
+ingredient[1].strength.extension[mengde].valueQuantity.system = "http://unitsofmeasure.org"
+ingredient[1].strength.extension[mengde].valueQuantity.code = #mL
+```
+
+### Bruk — kodet mengde
+```
+ingredient[2].itemReference = Reference(Virkestoff-Natriumklorid)
+ingredient[2].strength.extension[mengde].valueCodeableConcept = $IngrediensStyrkeKoder#qs "QS"
+```
+
+### Praksisregel (fra `^description`)
+Angir enten mengden virkestoff i det rekvirerte/administrerte legemidlet (f.eks. 100 mg), eller
+hvilket volum av ingrediensen som er brukt for å produsere det (f.eks. 10 mL). **Når volum
+benyttes** skal `ingredient.item` peke på «utgangslegemidlet» på en slik måte at dets styrke kan
+utledes — ellers kan ikke mengde virkestoff og styrke i sluttproduktet beregnes. Sett også
+`Medication.amount` (totalvolum) på det sammensatte legemidlet.
+
+### Kjent QA-støy
+R4-verktøy kan ikke slå opp R5-kanonikalen. Bygget gir 3 feil som er akseptert og delvis
+undertrykt i `input/ignoreWarnings.txt`:
+- 2 × «A definition could not be found for Canonical URL .../ValueSet/medication-ingredientstrength»
+  på selve extensionen
+- 1 × «No definition could be found for URL value .../CodeSystem/medication-ingredientstrength»
+  på `qs`-koden i eksempelet
+
+Bindingen er `preferred`, så dette blokkerer ikke validering av instanser. `Quantity`-varianten gir
+ingen meldinger i det hele tatt.

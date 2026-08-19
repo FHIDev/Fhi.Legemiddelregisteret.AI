@@ -87,7 +87,7 @@ Canonical-mønster: `http://hl7.no/fhir/ig/lmdi/StructureDefinition/<id>`.
 | Tema | Fil |
 |---|---|
 | Per-profil detaljer (MS, deaktiverte felter, slicing) | `references/profiler.md` |
-| Extensions (ATC, NPR, kjemoterapi) | `references/extensions.md` |
+| Extensions (ATC, NPR, kjemoterapi, mengde ingrediens) | `references/extensions.md` |
 | ValueSets / CodeSystems / NamingSystems / OID-er / aliases | `references/terminologi.md` |
 | Invariants, sjekklister, feilsøking, maskinell validering | `references/validering.md` |
 | Bundle-struktur, referansetopologi, transport/krypto/API | `references/bundle-og-transport.md` |
