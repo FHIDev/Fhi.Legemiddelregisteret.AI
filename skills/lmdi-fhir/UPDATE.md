@@ -15,10 +15,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `roar/101-ingrediens-styrke` — **ikke merget til `main`** |
-| HEAD commit (LMDI) | `6221813bf310cccd66f10ce461d12f177667d54e` (én commit foran `e02c00ad9` på `main`) |
+| Branch (LMDI) | `main` |
+| HEAD commit (LMDI) | `ad8dde0c71354bd04ce34fd687fc57c5dc72285f` |
 | Analysedato | 2026-08-19 |
-| Verifiseringsmetode | Lokalt LMDI-arbeidstre. `git status --short LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` tom, stop-regelen i Trinn 1 ikke utløst. Verifisert mot `LMDI/fsh-generated/resources/*.json` og qa.html fra full IG-bygg |
+| Verifiseringsmetode | Opprinnelig mot lokalt LMDI-arbeidstre (`fsh-generated/resources/*.json` + qa.html fra full IG-bygg) på branchen. Etter merge re-verifisert mot `main` via GitHub-API (`compare e02c00ad9...ad8dde0c7`) — FSH-kilde, aliases og `ignoreWarnings.txt` uendret fra branchen |
 | IG-versjon | 1.1.3 (fra `sushi-config.yaml`, ingen bump) |
 
 ## Prosedyre
@@ -93,6 +93,15 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
+### 2026-08-19 (sist — etter merge av PR #106)
+- Re-verifisert mot `main @ ad8dde0c7`: extension-FSH, `mengde`-slicen på `ingredient.strength`,
+  aliaset `$IngrediensStyrkeKoder` og de tre eksempelinstansene er uendret fra branchen.
+- Versjonspin i `SKILL.md` flyttet fra `e02c00ad9` til `ad8dde0c7` — `e02c00ad9` inneholder ikke
+  extensionen, så den gamle pinnen pekte på en kilde som motsa `references/`.
+- **Merk**: extensionen kom inn på `main` uten versjonsbump — `sushi-config.yaml` står fortsatt på
+  1.1.3 med dato 2026-08-14. IG-versjonen alene skiller derfor ikke denne skillen fra en som
+  mangler extensionen; bruk HEAD-commiten i proveniensen.
+
 ### 2026-08-19 (senere — issue #101)
 - Ny extension `lmdi-ingredient-strength` («Mengde ingrediens») på `Medication.ingredient.strength`,
   `value[x]` = `CodeableConcept | Quantity`. Speiler de to typene R4 mangler i forhold til R5/R6
@@ -100,8 +109,8 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
   (ny §5b styrke vs mengde), `validering.md` (base-invarianten `rat-1`), `eksempler.md`
   (`Legemiddel-Smerteblanding`, `Legemiddel-MorfinKonsentrat`, `Virkestoff-Natriumklorid`).
 - Skillen flyttet til `Fhi.Lmr.AI`; stier i to-repo-modellen, Trinn 5 og Trinn 7 rettet.
-- **Merk**: denne oppdateringen bygger på branchen `roar/101-ingrediens-styrke`, ikke `main`.
-  Blir PR-en endret før merge, må skillen re-verifiseres mot `main`.
+- Bygde opprinnelig på branchen `roar/101-ingrediens-styrke`. PR #106 ble merget samme dag, og
+  innholdet er re-verifisert mot `main @ ad8dde0c7` uten avvik.
 
 ### 2026-08-19
 - Oppdatert til IG 1.1.3: `MedicationRequest.requester` er endret fra 1..1 MS til 0..1 MS. Feltet er fortsatt Must Support og begrenset til `Reference(Helsepersonell)` når det finnes.
