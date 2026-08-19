@@ -18,7 +18,7 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Legemiddelregisteret.
 | Branch (LMDI) | `main` |
 | HEAD commit (LMDI) | `e02c00ad998e8406ac9730a8411b46697fa04d18` |
 | Analysedato | 2026-08-19 |
-| `git status --short LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` | ingen endringer (stop-regel ikke utløst) |
+| Verifiseringsmetode | GitHub-API mot `main` (`compare cb419e640...e02c00ad9`) — intet lokalt LMDI-arbeidstre ble brukt, så stop-regelen i Trinn 1 er ikke kjørt |
 | IG-versjon | 1.1.3 (fra `sushi-config.yaml`) |
 
 ## Prosedyre
