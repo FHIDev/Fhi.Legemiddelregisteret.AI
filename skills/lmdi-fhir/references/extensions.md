@@ -156,12 +156,19 @@ utledes — ellers kan ikke mengde virkestoff og styrke i sluttproduktet beregne
 `Medication.amount` (totalvolum) på det sammensatte legemidlet.
 
 ### Kjent QA-støy
-R4-verktøy kan ikke slå opp R5-kanonikalen. Bygget gir 3 feil som er akseptert og delvis
-undertrykt i `input/ignoreWarnings.txt`:
-- 2 × «A definition could not be found for Canonical URL .../ValueSet/medication-ingredientstrength»
-  på selve extensionen
-- 1 × «No definition could be found for URL value .../CodeSystem/medication-ingredientstrength»
-  på `qs`-koden i eksempelet
+R4-verktøy kan ikke slå opp R5-kanonikalen. Fram til 1.1.4 ga bindingen på `value[x]` to meldinger
+om at ValueSet-kanonikalen ikke lot seg resolve, og de var undertrykt i `input/ignoreWarnings.txt`.
+Da bindingen ble fjernet, forsvant grunnlaget for begge, og undertrykkingene ble tatt ut:
+`ignoreWarnings.txt` har **ingen** oppføringer for `medication-ingredientstrength` i 1.1.4.
 
-Bindingen er `preferred`, så dette blokkerer ikke validering av instanser. `Quantity`-varianten gir
-ingen meldinger i det hele tatt.
+Det som kan stå igjen, er meldingen om selve kodeverket der `qs` brukes i eksempelet
+(`Legemiddel-Smerteblanding`):
+
+```
+No definition could be found for URL value .../CodeSystem/medication-ingredientstrength
+```
+
+Dette er ikke etterprøvd mot et IG-bygg etter at bindingen ble fjernet — sjekk `output/qa.txt`
+hvis det har betydning. Uansett er det byggetids-støy: uten binding stiller extensionen ingen krav
+til kodeverket, så validering av instanser påvirkes ikke. `Quantity`-varianten gir ingen meldinger
+i det hele tatt.

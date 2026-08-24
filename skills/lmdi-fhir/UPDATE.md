@@ -129,7 +129,23 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-08-24 (sist — rettet ugyldig frontmatter)
+### 2026-08-24 (sist — full gjennomgang mot IG 1.1.4)
+Hele `references/` verifisert mot `fsh-generated/resources/*.json` på `1f597673e`: 10 profiler,
+6 extensions, 7 ValueSets, 2 CodeSystems, 5 NamingSystems, 50 eksempelinstanser, 5 invariants og
+11 slicing-definisjoner stemte uten avvik. Fire rettinger:
+- **Rettet feil**: `extensions.md` §«Kjent QA-støy» påsto «Bindingen er `preferred`» og at
+  meldingene var undertrykt i `ignoreWarnings.txt`. Begge deler var utdatert etter PR #109 —
+  extensionen har ingen binding, og `ignoreWarnings.txt` har ingen oppføringer for
+  `medication-ingredientstrength`. Avsnittet motsa fila 40 linjer lenger opp. Omskrevet, og
+  antall QA-meldinger fjernet siden det ikke er etterprøvd mot et bygg etter endringen
+  (`output/qa.txt` er fra før PR #109 ble merget).
+- `bundle-og-transport.md`: nytt punkt om hvor sertifikatene hentes (`certificates.zip` fra
+  nedlastingssiden) — krypto-kjeden forutsatte LMRs offentlige nøkkel uten å si hvor den kom fra.
+- `profiler.md`: Organisasjonens adresse ble beskrevet som «samme regler som Pasient», men
+  Organisasjon har ingen `LmdiAddressUse`-binding på `address.use`. Presisert.
+- `SKILL.md` §1.4: raw-URL-en pekte på en katalog, som ikke kan listes over raw.githubusercontent.
+
+### 2026-08-24 (rettet ugyldig frontmatter)
 - **Rettet feil**: `description` i `SKILL.md` inneholdt «Selvstendig: bygger på …» — kolon-mellomrom
   inne i en usitert YAML-skalar. Frontmatteren lot seg dermed ikke parse (`mapping values are not
   allowed here`), og skillen ble ikke tilbudt i sesjonen. Kolonet er byttet mot tankestrek.

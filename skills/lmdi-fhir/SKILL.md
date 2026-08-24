@@ -53,11 +53,13 @@ https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/main/LMDI/sushi-con
 
 Er versjonen på `main` nyere enn `1.1.4`: **fortell brukeren** at skillen kan være utdatert og bør oppdateres etter `UPDATE.md`.
 
-**Verifisere en strukturdetalj mot kilden** (valgfritt, §1.3) — les FSH lokalt hvis LMDI-repoet finnes, ellers hent fila pinnet til samme versjon som `references/`:
+**Verifisere en strukturdetalj mot kilden** (valgfritt, §1.3) — les FSH lokalt hvis LMDI-repoet finnes, ellers hent fila pinnet til samme versjon som `references/`. Raw-URL-er kan ikke liste kataloger, så føy på filnavnet du trenger:
 
 ```
-https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/1f597673ed5e2dbb8caf7a16541bfcd40e40f44a/LMDI/input/fsh/
+https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/1f597673ed5e2dbb8caf7a16541bfcd40e40f44a/LMDI/input/fsh/<underkatalog>/<fil>.fsh
 ```
+
+Eksempel: `.../LMDI/input/fsh/profiles/lmdi-Medication.fsh`
 
 ---
 

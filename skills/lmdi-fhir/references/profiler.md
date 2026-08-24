@@ -99,7 +99,8 @@ Helsepersonell uten HPR-nummer er gyldig (`identifier` er 0..*, men closed). Eks
 - `lmdi-org-identifier` (error): **Minst én av ENH eller RSH** må finnes.
 
 ### Adresse
-Samme regler som Pasient: `type = #physical`, `district` + `municipalitycode`, `urbanDistrict`. Deaktivert: `address.text/line/city/postalCode/country`.
+Som Pasient: `type = #physical` (required binding `LmdiAddressType`), `district` + `municipalitycode`, `urbanDistrict`. Deaktivert: `address.text/line/city/postalCode/country`.
+**Unntak**: Organisasjon har ingen binding på `address.use` — `LmdiAddressUse`-bindingen (`home|temp|old`) gjelder bare Pasient.
 
 ### Deaktiverte
 `text`, `active`, `telecom`, `contact`, `endpoint`

@@ -119,6 +119,12 @@ ISO 8601 med tidssone, f.eks. `"2024-02-07T13:28:17.239+02:00"`.
 6. **RSA-PKCS1-v1.5**: signer hashen med avsenders private nøkkel. Ut: `signature`.
 7. Binære felter kodes til Base64.
 
+### Sertifikater
+LMRs offentlige sertifikat (steg 4) lastes ned fra IG-ens nedlastingsside — `certificates.zip`,
+BASE64-enkodet `.cer`, med sertifikater for både test- og produksjonsmiljøet. Kilde:
+`pagecontent/nedlastinger.md`. Avsenders eget signeringssertifikat (steg 6) må samsvare med
+`senderOrganizationIdentifier`.
+
 ---
 
 ## 4. Autentisering og API
