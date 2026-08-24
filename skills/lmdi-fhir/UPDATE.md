@@ -109,9 +109,19 @@ descriptionen ikke kommer med.
 Commit deretter skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale
 med brukeren. Pushen trigger `azure-pipelines.yml`, som speiler til GitHub
 (`FHIDev/Fhi.Legemiddelregisteret.AI`) — kilden marketplacen `fhi-lmr` leser fra. Verifiser
-speilingen med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret.AI main`, og
-hent inn på nytt lokalt med `claude plugin marketplace update fhi-lmr` **og** `claude plugin
-update lmr` (begge lagene, deretter restart).
+speilingen med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret.AI main` — den tar
+noen minutter, og pipelineresultatet er ikke synlig fra Claude Code.
+
+Hent så inn på nytt lokalt. Begge lagene må oppdateres, i denne rekkefølgen, og pluginen må
+kvalifiseres med marketplace-navnet (`claude plugin update lmr` alene feiler med
+«Plugin "lmr" not found»):
+
+```bash
+claude plugin marketplace update fhi-lmr
+claude plugin update lmr@fhi-lmr
+```
+
+Restart Claude Code for å ta det i bruk.
 
 ## Verifiseringsstrategi
 
