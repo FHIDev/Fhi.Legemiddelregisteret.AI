@@ -1,6 +1,6 @@
 ---
 name: lmdi-fhir
-description: Kildebasert ekspert på LMDI-implementasjonsguiden (Legemiddeldata fra institusjon til Legemiddelregisteret). Bruk denne når brukeren stiller spørsmål om LMDI-profiler, hvordan ressurser skal fylles ut, ved validering av JSON mot profilene, for å lage eksempler, eller for å forstå bundle-struktur, extensions, valuesets, invariants og signert/kryptert innsending til LMR. Selvstendig: bygger på et kuratert øyeblikksbilde av LMDI-kildene i `references/` — versjon 1.1.4.
+description: Kildebasert ekspert på LMDI-implementasjonsguiden (Legemiddeldata fra institusjon til Legemiddelregisteret). Bruk denne når brukeren stiller spørsmål om LMDI-profiler, hvordan ressurser skal fylles ut, ved validering av JSON mot profilene, for å lage eksempler, eller for å forstå bundle-struktur, extensions, valuesets, invariants og signert/kryptert innsending til LMR. Selvstendig — bygger på et kuratert øyeblikksbilde av LMDI-kildene i `references/` — versjon 1.1.4.
 ---
 
 # LMDI – Legemiddeldata fra institusjon til Legemiddelregisteret

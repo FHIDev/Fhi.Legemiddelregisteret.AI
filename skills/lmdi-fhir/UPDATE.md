@@ -83,9 +83,35 @@ Historiske eksempler på slike fraser: `fh.no/lokaltVirkemiddel` (URL endret i 1
 - Versjonsendring (hvis noen).
 - Usikkerheter (f.eks. ny parent uten alias — må verifiseres mot generert artefakt).
 
-### Trinn 7: Commit i plugin-repoet
+### Trinn 7: Verifiser frontmatter, så commit i plugin-repoet
 
-Commit skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale med brukeren.
+Før commit: kontrollér at YAML-frontmatteren i alle `SKILL.md` faktisk lar seg parse. Ugyldig
+frontmatter gjør at skillen ikke tilbys i sesjonen, uten noen feilmelding — og `claude plugin
+validate` fanger det **ikke** (den rapporterer «Validation passed»).
+
+```bash
+python -c "
+import yaml,io,re,glob
+for p in glob.glob(r'C:\dev\Fhi.Lmr.AI\skills\*\SKILL.md'):
+    fm=re.search(r'^---\r?\n(.*?)\r?\n---',io.open(p,encoding='utf-8').read(),re.S).group(1)
+    try: print('OK  ',p,list(yaml.safe_load(fm)))
+    except Exception as e: print('FAIL',p,type(e).__name__,e)
+"
+```
+
+Vanligste fallgruve: kolon-mellomrom (`: `) inne i en usitert `description`. Bruk tankestrek i
+stedet for kolon i løpende tekst.
+
+Kryssjekk med `claude plugin details lmr`: er `always-on`-tallet for en skill lavt i forhold til
+hvor lang descriptionen er (til sammenligning: `lmr` ≈ 100 tok for 202 tegn), er det et tegn på at
+descriptionen ikke kommer med.
+
+Commit deretter skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale
+med brukeren. Pushen trigger `azure-pipelines.yml`, som speiler til GitHub
+(`FHIDev/Fhi.Legemiddelregisteret.AI`) — kilden marketplacen `fhi-lmr` leser fra. Verifiser
+speilingen med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret.AI main`, og
+hent inn på nytt lokalt med `claude plugin marketplace update fhi-lmr` **og** `claude plugin
+update lmr` (begge lagene, deretter restart).
 
 ## Verifiseringsstrategi
 
@@ -93,7 +119,15 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-08-24 (sist — IG 1.1.4, etter merge av PR #111)
+### 2026-08-24 (sist — rettet ugyldig frontmatter)
+- **Rettet feil**: `description` i `SKILL.md` inneholdt «Selvstendig: bygger på …» — kolon-mellomrom
+  inne i en usitert YAML-skalar. Frontmatteren lot seg dermed ikke parse (`mapping values are not
+  allowed here`), og skillen ble ikke tilbudt i sesjonen. Kolonet er byttet mot tankestrek.
+  `lmr`-skillen i samme plugin var upåvirket.
+- Trinn 7 utvidet med en frontmatter-parsesjekk før commit, siden `claude plugin validate` ikke
+  fanger denne feilklassen, og med stegene for speiling og lokal plugin-oppdatering.
+
+### 2026-08-24 (IG 1.1.4, etter merge av PR #111)
 - **Rettet feil**: `extensions.md` og `terminologi.md` dokumenterte fortsatt en `preferred`-binding
   på `value[x]` i `lmdi-ingredient-strength`. Bindingen ble fjernet i PR #109 (commit `97157fda9`)
   fordi R5-valuesettet ikke lot seg resolve i en R4-IG, og fordi den lå på `value[x]` og dermed
