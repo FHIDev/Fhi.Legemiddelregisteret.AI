@@ -11,7 +11,7 @@ Kilde: `LMDI/sushi-config.yaml`
 | `id` | `hl7.fhir.no.lmdi` |
 | `canonical` | `http://hl7.no/fhir/ig/lmdi` |
 | `title` | `Legemiddeldata fra institusjon til Legemiddelregisteret` |
-| `status` / `version` | `active` / `1.1.3` |
+| `status` / `version` | `active` / `1.1.4` |
 | `fhirVersion` | `4.0.1` |
 | `language` | `no` (engelsk som oversettelseslag, se `oversettelser.md`) |
 | `license` / `publisher` | `CC-BY-4.0` / Folkehelseinstituttet |
@@ -81,7 +81,8 @@ Disse brukes i `code.coding`-slicing på `Legemiddel`, men har ingen egen FSH-`I
 | `http://terminology.hl7.org/CodeSystem/medication-admin-status` | MedicationAdministration.status |
 | `http://terminology.hl7.org/CodeSystem/substance-category` | Substance.category |
 | `http://terminology.hl7.org/CodeSystem/condition-clinical` | Condition.clinicalStatus |
-| `http://hl7.org/fhir/CodeSystem/medication-ingredientstrength` | Kodet mengde ingrediens (`qs`, `trace`) — R5-kodeverk, bundet preferred via `lmdi-ingredient-strength`. Kan ikke slås opp av R4-verktøy, se `extensions.md` |
+| `http://hl7.org/fhir/CodeSystem/medication-ingredientstrength` | Kodet mengde ingrediens (`qs`, `trace`) — R5-kodeverk, **anbefalt** for `lmdi-ingredient-strength` (ingen binding fra 1.1.4). Kan ikke slås opp av R4-verktøy, se `extensions.md` |
+| `urn:oid:2.16.578.1.12.4.1.1.7502` | Bestanddel i legemiddelblanding uten eksakt mengde — norsk alternativ for kodet mengde, anbefalt i `^comment` på `lmdi-ingredient-strength` |
 
 ## Aliases (fra `LMDI/input/fsh/aliases.fsh`)
 

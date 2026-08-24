@@ -16,10 +16,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 | Felt | Verdi |
 |---|---|
 | Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `ad8dde0c71354bd04ce34fd687fc57c5dc72285f` |
-| Analysedato | 2026-08-19 |
-| Verifiseringsmetode | Opprinnelig mot lokalt LMDI-arbeidstre (`fsh-generated/resources/*.json` + qa.html fra full IG-bygg) på branchen. Etter merge re-verifisert mot `main` via GitHub-API (`compare e02c00ad9...ad8dde0c7`) — FSH-kilde, aliases og `ignoreWarnings.txt` uendret fra branchen |
-| IG-versjon | 1.1.3 (fra `sushi-config.yaml`, ingen bump) |
+| HEAD commit (LMDI) | `1f597673ed5e2dbb8caf7a16541bfcd40e40f44a` |
+| Analysedato | 2026-08-24 |
+| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` etter merge av PR #111. `sushi .` kjørt (0 errors, 2 warnings); genererte artefakter i `fsh-generated/resources/` lest direkte for å bekrefte at bindingen på `lmdi-ingredient-strength` er borte, og at identifier-slicing på Pasient/Helsepersonell er uendret. `git diff ad8dde0c7..main` brukt til å avgrense endringene |
+| IG-versjon | 1.1.4 (fra `sushi-config.yaml`, dato 2026-08-21) |
 
 ## Prosedyre
 
@@ -92,6 +92,26 @@ Commit skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter
 Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json` eller no-basis-pakken (`~/.fhir/packages/hl7.fhir.no.basis#2.2.0/` eller `node_modules/hl7.fhir.no.basis/`), gjør det i stedet for å markere som usikkert. Verifiser minst: baseDefinition-relasjoner, canonical-URL-er på lokalt definerte CS/VS, extension-URL-er fra no-basis.
 
 ## Changelog for skillen
+
+### 2026-08-24 (sist — IG 1.1.4, etter merge av PR #111)
+- **Rettet feil**: `extensions.md` og `terminologi.md` dokumenterte fortsatt en `preferred`-binding
+  på `value[x]` i `lmdi-ingredient-strength`. Bindingen ble fjernet i PR #109 (commit `97157fda9`)
+  fordi R5-valuesettet ikke lot seg resolve i en R4-IG, og fordi den lå på `value[x]` og dermed
+  også ville ha gjeldt enhetskoden i `Quantity`-grenen. Kodeverk anbefales nå i `^comment`:
+  OID `2.16.578.1.12.4.1.1.7502` eller `medication-ingredientstrength`. Verifisert mot generert
+  artefakt (`binding` mangler helt).
+- Ny OID-rad i `terminologi.md` for `2.16.578.1.12.4.1.1.7502`.
+- Eksempler: `Virkestoff-Natriumklorid` er **fjernet** fra `lmdi-Substance.fsh` og erstattet av
+  `Legemiddel-NatriumkloridBBraun` (sterilt saltvann med FEST legemiddelmerkevare-id). Smerteblandingen
+  viser derfor nå to måter å angi ingrediens på, ikke tre, men alle tre `strength`-variantene.
+  Midazolam-ingrediensen rettet til varenummer 525858 (5 mg/ml). Oppdatert `eksempler.md`,
+  `extensions.md`.
+- `profiler.md`: seksjonsoverskriften «styrke vs. mengde» merket 1.1.4 i stedet for 1.1.3.
+- Versjonspin i `SKILL.md` flyttet fra `ad8dde0c7` (1.1.3) til `1f597673e` (1.1.4). Dermed er
+  problemet fra forrige oppføring lukket: extensionen har nå en egen IG-versjon.
+- `ignoreWarnings.txt` mistet de to undertrykkingene for `medication-ingredientstrength` — konsekvens
+  av at bindingen forsvant, ingen endring i `validering.md` nødvendig.
+
 
 ### 2026-08-19 (sist — etter merge av PR #106)
 - Re-verifisert mot `main @ ad8dde0c7`: extension-FSH, `mengde`-slicen på `ingredient.strength`,

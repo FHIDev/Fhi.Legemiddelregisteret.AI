@@ -114,11 +114,15 @@ Status: `draft`. Context: **`Medication.ingredient.strength`** — den eneste ex
 context dypere enn ressursrot.
 
 - `value[x] only CodeableConcept or Quantity`
-- Binding preferred på `value[x]`: `http://hl7.org/fhir/ValueSet/medication-ingredientstrength`
-  (R5-kodeverk, kun kodene `qs` og `trace`)
+- **Ingen binding.** Anbefalt kodeverk står i `^comment` på `value[x]`: det norske kodeverket
+  med OID `2.16.578.1.12.4.1.1.7502`, eller R5-kodeverket
+  `http://hl7.org/fhir/CodeSystem/medication-ingredientstrength` (kodene `qs` og `trace`)
 
-Bindingen ligger på `value[x]`, ikke på `valueCodeableConcept`: med to tillatte typer finnes det
-ikke noe eget `valueCodeableConcept`-element. Bindingen gjelder da bare de kodede typene.
+Bindingen ble fjernet i 1.1.4. To grunner: R5-valuesettet lot seg ikke resolve i en R4-IG, så
+IG Publisher rendret `medication-ingredientstrength (??)` uten lenke. Og bindingen lå på
+`value[x]` — med to tillatte typer finnes det ikke noe eget `valueCodeableConcept`-element å
+binde, så den ville også ha gjeldt enhetskoden i `Quantity`-grenen. IG-en anbefaler nå kodeverk
+i `comment`, slik den allerede gjør for Volven-kodeverk (jf. `form.coding[OID7448]`).
 
 ### Hvorfor extension
 FHIR R5/R6 har `Medication.ingredient.strength[x]` med tre typer: `Ratio`, `CodeableConcept`,
@@ -140,7 +144,7 @@ ingredient[1].strength.extension[mengde].valueQuantity.code = #mL
 
 ### Bruk — kodet mengde
 ```
-ingredient[2].itemReference = Reference(Virkestoff-Natriumklorid)
+ingredient[2].itemReference = Reference(Legemiddel-NatriumkloridBBraun)
 ingredient[2].strength.extension[mengde].valueCodeableConcept = $IngrediensStyrkeKoder#qs "QS"
 ```
 
