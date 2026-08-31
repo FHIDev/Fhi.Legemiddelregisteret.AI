@@ -11,9 +11,10 @@ Endringer som gjøres direkte i GitHub-speilet vil bli overskrevet.
 
 ## Pluginen lmr
 
-Repoet er en Claude Code plugin-marketplace. Pluginen `lmr` inneholder to skills:
+Repoet er en Claude Code plugin-marketplace. Pluginen `lmr` inneholder tre skills:
 
 - **`lmr`** – systemkunnskap om Legemiddelregisteret (LMR): repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, samt teknisk veiledning for autentisering, .NET 10-oppgradering og domenemodeller.
+- **`lmr-entraid`** – EntraId-ressursene bak tjenestene: hvordan `.Api`, `.Client.Web` og `.Client.Machine` settes opp og henger sammen, provisjonert med Bicep (Microsoft Graph-extensionen). Inneholder kjørbare referansemaler for alle fire variantene, sertifikat-scripts, og det som må bestilles fra NHN (admin consent, Groups Administrator).
 - **`lmdi-fhir`** – kildebasert ekspert på LMDI-implementasjonsguiden (Legemiddeldata fra institusjon til Legemiddelregisteret): profiler, validering av JSON mot profilene, eksempler, bundle-struktur, extensions, valuesets, invariants og signert/kryptert innsending til LMR.
 
 ## Installasjon i Claude Code
@@ -32,7 +33,15 @@ Kjør disse slash-kommandoene i Claude Code:
    /plugin install lmr@fhi-lmr
    ```
 
-Deretter kan du bekrefte installasjonen med `/plugin`. Pluginen aktiverer riktig skill (`lmr` eller `lmdi-fhir`) automatisk ved relevante spørsmål.
+## Kommandoer
+
+- **`/lmr:entraid-ny-tjeneste [tjeneste] [variant]`** – kopierer EntraId Bicep-malene og
+  skriptene ut fra pluginen til et repo du kontrollerer, og stilaserer parameterfila.
+  Malene skal ikke redigeres i plugin-katalogen; den byttes ut ved `/plugin update`.
+
+## Bekreft installasjonen
+
+Deretter kan du bekrefte installasjonen med `/plugin`. Pluginen aktiverer riktig skill (`lmr`, `lmr-entraid` eller `lmdi-fhir`) automatisk ved relevante spørsmål.
 
 ## Versjonering og oppdatering
 

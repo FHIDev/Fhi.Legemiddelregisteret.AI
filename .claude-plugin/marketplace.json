@@ -7,7 +7,7 @@
     {
       "name": "lmr",
       "source": "./",
-      "description": "Skills for Legemiddelregisteret (LMR): systemkunnskap om repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, samt LMDI-implementasjonsguiden for FHIR-innsending av legemiddeldata fra institusjon."
+      "description": "Skills for Legemiddelregisteret (LMR): systemkunnskap om repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, provisjonering av EntraId-ressurser med Bicep, samt LMDI-implementasjonsguiden for FHIR-innsending av legemiddeldata fra institusjon."
     }
   ]
 }
