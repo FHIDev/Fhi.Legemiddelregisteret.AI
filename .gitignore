@@ -1,0 +1,31 @@
+# Editor / IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Bygg
+bin/
+obj/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# INGEN hemmeligheter i git.
+# Sertifikat-privatnøkler og alt som kan bære nøkkelmateriale.
+*.pfx
+*.pem
+*.key
+*.p12
+*.crt
+*.secret
+
+# NB: *.cer er BEVISST ikke blokkert her, i motsetning til i
+# Fhi.Lmr.EntraIdMigrering. Det offentlige sertifikatet er ikke en hemmelighet,
+# og base64 av det committes i .bicepparam-filene under skills/lmr-entraid/bicep/.
+
+# Kompilert Bicep-output. Bygges lokalt for validering, committes ikke.
+skills/lmr-entraid/bicep/*.json
+skills/lmr-entraid/bicep/moduler/*.json
+!skills/lmr-entraid/bicep/bicepconfig.json
