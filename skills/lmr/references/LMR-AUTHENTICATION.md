@@ -21,7 +21,7 @@ Aktiver denne skillen når brukeren ber om å:
 ## Pakke-referanser
 
 ```xml
-<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.2.0" />
+<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.3.0" />
 <PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="10.3.1" />
 ```
 
@@ -58,7 +58,7 @@ Aktiver denne skillen når brukeren ber om å:
 | `Audience` | Forventet `aud`-claim i innkommende tokens. | Ja | — |
 | `DefaultScope` | Scope som kreves på alle endepunkter som fallback-policy (brukes hvis endepunktet ikke har eksplisitt `RequireAuthorization`). | Nei | `null` |
 | `Scopes` | Liste over scopes som registreres automatisk som authorization policies med samme navn. | Nei | `[]` |
-| `RequireDPoP` | Krev DPoP-proof i tillegg til access token. | Nei | `false` |
+| `RequireDPoP` | Krev DPoP-proof i tillegg til access token. **Kun HelseId støtter DPoP.** For **EntraID** (og Maskinporten) skal feltet **utelates helt** — det defaulter til `false`, og EntraID støtter ikke DPoP. Ikke sett `RequireDPoP: false` eksplisitt for EntraID; bare la det stå tomt. | Nei | `false` |
 | `UseAuth` | Hvis `false`: hopp over all autentisering og autorisering. Se sperre under. | Nei | `true` |
 | `AllowedNoAuthEnvironments` | Hvite-liste over miljøer der `UseAuth: false` er lovlig. | Nei | `["Development", "AzureDev", "Docker"]` |
 

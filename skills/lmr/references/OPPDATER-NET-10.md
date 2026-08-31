@@ -67,11 +67,13 @@ Finn filen `Directory.Build.Props` i rotkatalogen.
 <PackageReference Include="Fhi.HelseId.Api" Version="8.2.0" />
 ```
 
-**Legg til:**
+**Legg til** (sjekk alltid nyeste versjon i Azure Artifacts-feeden — disse er nyeste per nå):
 ```xml
-<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.1.3" />
+<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.3.0" />
 <PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="10.3.1" />
 ```
+
+> **NU1605 — DependencyInjection.Abstractions:** De nye pakkene drar inn `Microsoft.Extensions.Logging.Abstractions 10.0.5`, som krever `Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.5`. Hvis et prosjekt (typisk API- eller testprosjekt) har en eksplisitt referanse pinnet til `10.0.1`, bump den til `10.0.5` — ellers feiler restore med NU1605 (downgrade).
 
 ### 2c. Bytt ut Swashbuckle med OpenAPI/Scalar – ALLTID ved .NET 10 + Fhi.Lmr.Authentication
 
@@ -171,12 +173,16 @@ public bool UseAuth => _configAuth.AuthUse;
 public bool UseHttps => _configAuth.UseHttps;
 ```
 
-**Etter** – konstruktøren skal bare sette `Configuration`:
+**Etter** – konstruktøren setter `Configuration` og `Environment`. `IWebHostEnvironment` kreves av `AddApiAuthenticationAndAuthorization` fra og med pakkeversjon 10.2 (env-sperre for `UseAuth: false`):
 ```csharp
-public Startup(IConfiguration configuration)
+public Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
     Configuration = configuration;
+    Environment = environment;
 }
+
+public IConfiguration Configuration { get; }
+public IWebHostEnvironment Environment { get; }
 ```
 
 ### 4c. Bytt ut autentisering og Swagger i `ConfigureServices`
@@ -253,7 +259,7 @@ private void KonfigurerAuth(IServiceCollection services)
 ```csharp
 private void KonfigurerAuth(IServiceCollection services)
 {
-    services.AddApiAuthenticationAndAuthorization(Configuration);
+    services.AddApiAuthenticationAndAuthorization(Configuration, Environment);
     services.ConfigureHttpClients(Configuration);
 }
 ```
