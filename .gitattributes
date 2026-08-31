@@ -1,0 +1,4 @@
+# Shell-skript MÅ ha LF. Med core.autocrlf=true (standard på Windows) ville de
+# ellers fått CRLF ved utsjekk, og bash feiler da med "bad interpreter: ...^M".
+# Skriptene distribueres via plugin-katalogen og kjøres fra Git Bash.
+*.sh text eol=lf
