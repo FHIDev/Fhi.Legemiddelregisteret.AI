@@ -13,6 +13,10 @@ Dersom en kode mangler lokalt (klassifikasjonen er ikke synkronisert enda), retu
 
 ## Oversikt
 
+«Grunndata» betyr overalt tjenesten Fhi.Lmr.Grunndata. Konsumerende tjenester kaller aldri FHI-kodeverk
+(Fhi.Kodeverk, kodeverk-api.fhi.no) direkte - det er Grunndata som synkroniserer derfra periodisk, og
+konsumerende tjenester går kun mot Grunndatas REST-API.
+
 To-stegs-flyt:
 
 ```
@@ -33,8 +37,9 @@ Konsumerende tjeneste  ←── lagrer lokalt i egen DB, validerer koder
 |---|---|---|---|
 | Fhi.Lmr.Utleveringslager | Produksjon | `Fhi.Lmr.Utleveringslager.Api/Startup.cs` | Full DB-persistering, helsesjekk, OID-konfig |
 | Fhi.Lmr.Apoteksimulator | Simulator | `Fhi.Lmr.Apoteksimulator/Startup.cs` | Bruker in-memory repository, ingen helsesjekk |
+| Fhi.Lmr.Administreringslager | Produksjon | `Fhi.Lmr.Administreringslager.Api/Program.cs` | Periodisk bakgrunnsjobb (SynkroniserKodeverkBackgroundService); OID-er hentes fra tabellen GyldigSystemForFelt; helsesjekk uten Grunndata-kall |
 
-De øvrige 17 LMR-mikrotjenestene bruker ikke pakken.
+De øvrige 16 LMR-mikrotjenestene bruker ikke pakken.
 
 ## Grunndata sin synkronisering fra FHI-kodeverk
 
@@ -62,11 +67,15 @@ DI-registrering: `services.AddTilgangKodeverk(configuration)`
 | Klasse / Interface | Livstid | Ansvar |
 |---|---|---|
 | `IGrunndataKodeverkKlient` / `GrunndataKodeverkKlient` | Singleton | Refit-klient mot Grunndata REST API (`GET /api/kodeverk/klassifikasjonInfo`) |
-| `IKlassifikasjonService` / `KlassifikasjonService` | Scoped | On-demand sync mot Grunndata; caching og persistering |
+| `IKlassifikasjonService` / `KlassifikasjonService` | Scoped | Sync mot Grunndata, caching og persistering. `Synchronize` svelger alle feil (on-demand). `SynchronizeOrThrow` (fra 3.0.0) propagerer feil og returnerer `SynchronizeResult` (`Updated`/`Unchanged`/`NotFound`), for bakgrunnsjobber |
 | `IValidKodeverkKodeCheckService` / `ValidKodeverkKodeCheckService` | Scoped | Validerer om en konkret kode (oid + verdi) er gyldig |
-| `AktivGrunndataKodeverkKlient` | Singleton | Circuit-breaker: setter `stoppedUntil = Now + 10 min` ved feil |
+| `AktivGrunndataKodeverkKlient` | Singleton | Circuit-breaker: settes til `stoppedUntil = Now + 10 min` ved `GrunndataKodeverkKlientException`; leses kun i `ValidKodeverkKodeCheckService.IsValidCheck` |
 | `KodeverkKodeMemoryCache` | Singleton | In-memory TTL-cache for kodeverk-koder |
 | `IKodeverkRepository` | — | Interface tjenesten må implementere mot egen DB |
+
+Utleveringslager bruker versjon 1.3.9, Administreringslager 3.0.0 (første versjon med `SynchronizeOrThrow`).
+Versjonshoppet skyldes at Felles-repoet versjoneres med én felles GitVersion for alle pakkene, ikke breaking
+endringer i denne pakken.
 
 Konfigurasjonsseksjon (`GrunndataKodeverk`):
 
@@ -79,7 +88,10 @@ Konfigurasjonsseksjon (`GrunndataKodeverk`):
 }
 ```
 
-HTTP-klient mot Grunndata konfigureres under `Apis:GrunndataKodeverkApi` med HelseId/DPoP-autentisering.
+HTTP-klienten mot Grunndata konfigureres med `Fhi.Lmr.Authentication.ClientCredentials` (`ConfigureHttpClients`)
+under `Apis:GrunndataKodeverkApi`, med `OidcClientName: EntraIdClient` - Entra ID client credentials, scope
+`api://<grunndata-api-id>/.default`. Slik gjør både Utleveringslager og Administreringslager det. `HttpClientName`
+må være nøyaktig `GrunndataKodeverkKlient`, fordi pakken henter klienten med `nameof(GrunndataKodeverkKlient)`.
 
 ## On-demand sync i konsumerende tjeneste
 
@@ -110,7 +122,9 @@ Fra `KlassifikasjonService.cs` i `Fhi.Lmr.Felles.TilgangKodeverk`:
    - `KlassifikasjonFunnet=true, KlassifikasjonEndret=true` → skriv til `Klassifikasjon` og `KodeverkKode`, tøm cache
    - `KlassifikasjonFunnet=true, KlassifikasjonEndret=false` → ingen endringer
    - `KlassifikasjonFunnet=false` → sett `Gyldig=false` i cache (null-objekt)
-   - Exception → `klassifikasjon=null`, circuit-breaker aktiveres i 10 min
+   - `GrunndataKodeverkKlientException` → `klassifikasjon=null`, circuit-breaker aktiveres i 10 min
+   - Annen exception (typisk lagringsfeil i `SaveChanges`) → logges som Error, `klassifikasjon=null`, ingen circuit-breaker. I 1.3.9 ble klassifikasjonen i stedet cachet med `Lastchecked` satt, så `UpdateKodeverk` svarte `true` og neste forsøk ventet ut `UpdateIntervalInMinuttes`
+6. Cachen holder alltid kopier, aldri instansen fra repository (fra 3.0.0). En feilet lagring endrer derfor ikke cachet `Nedlasted`, og neste forsøk sender det sist lagrede tidspunktet til Grunndata
 
 **Viktig:** `Lastchecked` er ikke en DB-kolonne — den lever kun i MemoryCache. Ved omstart eller cache-utløp (etter `KlassifikasjonExpiration` minutter) vil Grunndata alltid bli kontaktet på nytt.
 
@@ -155,6 +169,55 @@ Når ingen `Klassifikasjon`-rad finnes i DB:
 
 **En OID som mangler i `Klassifikasjon`-tabellen er derfor ikke nødvendigvis en feil** — det betyr bare at ingen melding med den OIDen har ankommet ennå. Første melding vil populere tabellen automatisk.
 
+## Periodisk jobb i Administreringslager
+
+Utleveringslager synkroniserer utelukkende on-demand, som beskrevet over: `Synchronize(oid)` kalles først
+når en melding faktisk kontrolleres mot den OIDen. Administreringslager har i tillegg en egen periodisk
+bakgrunnsjobb.
+
+`SynkroniserKodeverkBackgroundService` i `Fhi.Lmr.Administreringslager.Api` styres av konfigurasjonsseksjonen
+`SynkroniserKodeverk`:
+
+```json
+"SynkroniserKodeverk": {
+  "SkalSynkroniseringstjenesteKjore": true,
+  "AntallMinutterMellomKjoringer": 60
+}
+```
+
+Jobben kjører ved oppstart og deretter periodisk med det konfigurerte intervallet. Hver kjøring henter
+distinkte `KodeverkOid` fra tabellen `GyldigSystemForFelt` (kolonnene Feltsti, System, KodeverkOid - styrer
+hvilke felt som skal valideres mot hvilket kodeverk) og kaller pakkens
+`IKlassifikasjonService.SynchronizeOrThrow(oid)` (pakke 3.0.0) for hver OID, ikke `Synchronize`.
+`Synchronize` svelger både feil mot Grunndata og lagringsfeil, så jobben kunne ikke rapportere om
+synkroniseringen lyktes. `SynchronizeOrThrow` deler cache og throttling med `Synchronize`, men lar feil
+propagere og returnerer `Updated`, `Unchanged` eller `NotFound`. Jobben teller unntak og `NotFound`
+(OID-en er i bruk her, men ukjent i Grunndata) som feilet per OID; feil for én OID stopper ikke de andre.
+
+Pakken avgjør fortsatt om Grunndata faktisk kontaktes for en gitt OID (`UpdateIntervalInMinuttes`,
+`Lastchecked` i minnecache, se over), så et kort jobbintervall koster lite: de fleste kjøringene er bare
+cache-oppslag.
+
+Circuit-breakeren i pakken (`AktivGrunndataKodeverkKlient`) gjelder ikke jobben. `IsActive` leses kun i
+`ValidKodeverkKodeCheckService.IsValidCheck`, altså on-demand-valideringen; verken `Synchronize` eller
+`SynchronizeOrThrow` sjekker den eller `AktivSynkronisering`. `GrunndataKodeverk:AktivSynkronisering: false`
+slår derfor ikke av jobben. Det gjør bare `SkalSynkroniseringstjenesteKjore: false`.
+
+Helsesjekken `KodeverkSynkronisering` i Administreringslager leser lokal DB (`Klassifikasjon`-rader med
+`Nedlasted`) og singletonen `KodeverkSynkroniseringStatus` (bakgrunnsjobben skriver `SistKjørt` og
+`SisteResultat`, sjekken leser), og kaller aldri Grunndata selv. Den er Degraded hvis jobben er skrudd på
+og minst ett av dette gjelder:
+
+- en OID i `GyldigSystemForFelt` mangler tilhørende `Klassifikasjon`-rad
+- `SisteResultat.AntallFeilet > 0`
+- `SistKjørt` er null (jobben har aldri kjørt) eller eldre enn to ganger `AntallMinutterMellomKjoringer`
+
+Manglende rad fanger ikke en ødelagt synkronisering, fordi radene blir liggende fra forrige vellykkede
+kjøring; det er de to siste betingelsene som gjør det. `AntallFeilet` vises i sjekkens `data`.
+
+Jobben er skrudd av i Development-miljøet, fordi endepunkttestene starter hele appen (`Program.cs`) og
+ikke skal kalle Grunndata under kjøring.
+
 ## Legge til en ny OID
 
 Følgende må gjøres for at en ny OID skal fungere i Utleveringslager:
@@ -167,6 +230,17 @@ Følgende må gjøres for at en ny OID skal fungere i Utleveringslager:
 
 `Klassifikasjon`- og `KodeverkKode`-tabellene **skal ikke** populeres via migreringer — de fylles automatisk av synkmekanismen når første melding ankommer. Seed av `KodeverkKode` via migrasjon ble tidligere forsøkt (`KodeverkKodeConfiguration.cs`) og bevisst fjernet.
 
+Tilsvarende for Administreringslager:
+
+| Steg | Hva | Hvor |
+|---|---|---|
+| 1 | Legg OIDen til `OidListe` i Grunndata-konfigurasjon | `Fhi.Lmr.Grunndata` `appsettings.json` |
+| 2 | Legg en ny seed-rad til (`HasData`) i `GyldigSystemForFeltConfiguration` | `Fhi.Lmr.Administreringslager.Infrastruktur` |
+| 3 | Lag EF-migrasjon som inserter raden i `GyldigSystemForFelt` | `Fhi.Lmr.Administreringslager.Infrastruktur` |
+
+Heller ikke her skal `Klassifikasjon`- og `KodeverkKode`-tabellene seedes via migrasjon - de fylles av
+synkroniseringsjobben (eller on-demand-sync ved meldingsprosessering) etter at OIDen er lagt til.
+
 ## OID-konfigurasjon
 
 OIDer konfigureres på to steder:
@@ -175,7 +249,9 @@ OIDer konfigureres på to steder:
 Hvilke OIDer Grunndata holder oppdatert fra FHI-kodeverk. Alle OIDer som noen tjeneste trenger, må stå her.
 
 **2. `GyldigKodeverkKoderPerFeltData.cs` i tjenesten**
-Definerer hvilke OIDer tjenesten faktisk validerer mot, og til hvilke felt. I Utleveringslager er dette delt i tre grupper:
+Definerer hvilke OIDer tjenesten faktisk validerer mot, og til hvilke felt. Administreringslager har ingen
+slik fil; der henter bakgrunnsjobben OID-ene fra tabellen `GyldigSystemForFelt` (Feltsti, System, KodeverkOid),
+seedet via `HasData` i `GyldigSystemForFeltConfiguration`. I Utleveringslager er dette delt i tre grupper:
 
 | Gruppe | Eksempel-OIDer | Beskrivelse |
 |---|---|---|
@@ -210,6 +286,14 @@ Logg-strenger å søke etter (i Utleveringslager sine logger):
 | `OppdaterRepoistory  <oid>` | Sync lyktes — data skrevet til DB |
 
 Ingen treff på `SynchronizeWithGrunndata Oid=<oid>` betyr at ingen melding har trigget oppslag mot den OIDen ennå — dette er normalt for nye OIDer og er ikke en feil.
+
+Administreringslager logger i tillegg fra bakgrunnsjobben (pakkens strenger over gjelder også der):
+
+| Logg-streng | Nivå | Betyr |
+|---|---|---|
+| `Kodeverksynkronisering fullført for <n> OID-er, <m> feilet` | Information | Én kjøring er ferdig; `m > 0` gir Degraded i helsesjekken |
+| `Kodeverksynkronisering feilet for OID <oid>` | Warning | `SynchronizeOrThrow` kastet, unntaket ligger i loggen |
+| `Kodeverk for OID <oid> finnes ikke i Grunndata` | Warning | Grunndata svarte «ikke funnet»; OIDen mangler i Grunndatas `OidListe` |
 
 ### Manuell trigger
 
