@@ -15,11 +15,11 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `1f597673ed5e2dbb8caf7a16541bfcd40e40f44a` |
-| Analysedato | 2026-08-24 |
-| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` etter merge av PR #111. `sushi .` kjørt (0 errors, 2 warnings); genererte artefakter i `fsh-generated/resources/` lest direkte for å bekrefte at bindingen på `lmdi-ingredient-strength` er borte, og at identifier-slicing på Pasient/Helsepersonell er uendret. `git diff ad8dde0c7..main` brukt til å avgrense endringene |
-| IG-versjon | 1.1.4 (fra `sushi-config.yaml`, dato 2026-08-21) |
+| Branch (LMDI) | `roar/apne-form-coding` (ikke merget til `main` ennå) |
+| HEAD commit (LMDI) | `02346e2a1cebc6509b1096709bdf91a7b3bdcc03` |
+| Analysedato | 2026-09-21 |
+| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på branchen. `sushi .` kjørt (0 errors, 2 warnings); `StructureDefinition-lmdi-medication.json` lest direkte for å bekrefte `Medication.form.coding` med `slicing.rules = open` og begge slices intakte. Eneste FSH-endring siden `1f597673e` er i `lmdi-Medication.fsh` (`git diff 1f597673e..HEAD`) |
+| IG-versjon | 1.1.5 (fra `sushi-config.yaml`, dato 2026-09-21) |
 
 ## Prosedyre
 
@@ -129,7 +129,17 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-08-24 (sist — full gjennomgang mot IG 1.1.4)
+### 2026-09-21 (sist — IG 1.1.5, branch `roar/apne-form-coding`)
+- `Medication.form.coding`: slicingen er endret fra `closed` til `open`. Slicene `OID7448` og `SCT`
+  beholdes, men andre kodesystemer for legemiddelform er nå tillatt. `system 1..1` / `code 1..1`
+  gjelder fortsatt alle codings. `^comment` (norsk og engelsk) omskrevet i FSH. Oppdatert
+  `profiler.md` §Legemiddel/`form`.
+- Versjon 1.1.5 i `SKILL.md`, `terminologi.md` og proveniensen. Versjonspin flyttet fra
+  `1f597673e` til `02346e2a1`.
+- **Merk**: bygd på branchen før merge. Når PR-en er merget, bør pinnen flyttes til merge-commiten
+  på `main`, slik det ble gjort for 1.1.4 (se oppføringen 2026-08-19).
+
+### 2026-08-24 (full gjennomgang mot IG 1.1.4)
 Hele `references/` verifisert mot `fsh-generated/resources/*.json` på `1f597673e`: 10 profiler,
 6 extensions, 7 ValueSets, 2 CodeSystems, 5 NamingSystems, 50 eksempelinstanser, 5 invariants og
 11 slicing-definisjoner stemte uten avvik. Fire rettinger:

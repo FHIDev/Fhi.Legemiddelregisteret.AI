@@ -181,8 +181,9 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
 
 ### `form`
 - `form.text 0..0`
-- `form.coding 1..*`, closed slicing
+- `form.coding 1..*`, open slicing på system (closed t.o.m. 1.1.4)
 - Slices (0..1): `OID7448` (Legemiddelform, OID 7448), `SCT`
+- Andre kodesystemer for legemiddelform er tillatt fra 1.1.5. `system 1..1` og `code 1..1` gjelder alle codings, også de som ikke treffer en slice.
 
 ### `ingredient`
 - `ingredient.item[x] only Reference or CodeableConcept`

@@ -11,7 +11,7 @@ Kilde: `LMDI/sushi-config.yaml`
 | `id` | `hl7.fhir.no.lmdi` |
 | `canonical` | `http://hl7.no/fhir/ig/lmdi` |
 | `title` | `Legemiddeldata fra institusjon til Legemiddelregisteret` |
-| `status` / `version` | `active` / `1.1.4` |
+| `status` / `version` | `active` / `1.1.5` |
 | `fhirVersion` | `4.0.1` |
 | `language` | `no` (engelsk som oversettelseslag, se `oversettelser.md`) |
 | `license` / `publisher` | `CC-BY-4.0` / Folkehelseinstituttet |
