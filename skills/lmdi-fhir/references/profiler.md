@@ -136,7 +136,7 @@ Pasienten referes **ikke** fra Episode (`subject` er 0..0). Tilknytningen går v
 ### Kjerne
 - `subject 1..1 only Reference(Pasient)`
 - `code 1..1`
-- `code.coding` closed slicing på system. Slices (alle 0..1):
+- `code.coding` closed slicing på system. Slices (alle 0..1, unntatt `ICD10` som er 0..* fra 1.1.7 for å støtte multippel koding jf. Helsedirektoratets kodeveiledning):
   - `SCT` — system `http://snomed.info/sct`
   - `ICD10` — system `urn:oid:2.16.578.1.12.4.1.1.7110`
   - `ICD11` — system `http://id.who.int/icd/release/11/mms`

@@ -10,7 +10,7 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
 | Helsepersonell | `lmdi-Practitioner.fsh` | `Helsepersonell-Med-HPR`, `Helsepersonell-Uten-HPR` |
 | Organisasjon | `lmdi-Organization.fsh` | `Organisasjon-Kommune`, `Organisasjon-Sykehjem`, `Organisasjon-HF`, `Organisasjon-Sykehus`, `Organisasjon-Sykehusavdeling`, `Organisasjon-HF-2`, `Organisasjon-Sykehus-2`, `Organisasjon-Seksjon`, `Organisasjon-Post` |
 | Episode | `lmdi-Encounter.fsh` | `Episode-Sykehus`, `Episode-Sykehjem`, `Episode-Sykehus-2` |
-| Diagnose | `lmdi-Condition.fsh` | `Diagnose-ICD10`, `Diagnose-SNOMED-SCT`, `Diagnose-ICD10-Allergi` |
+| Diagnose | `lmdi-Condition.fsh` | `Diagnose-ICD10`, `Diagnose-SNOMED-SCT`, `Diagnose-ICD10-Allergi`, `Diagnose-ICD10-Multippel` |
 | Legemiddel | `lmdi-Medication.fsh` | `Legemiddel-FestLegemiddelVirkestoff`, `Legemiddel-FestLegemiddelMerkevare`, `Legemiddel-FestLegemiddelpakning`, `Legemiddel-Varenummer`, `Legemiddel-FestLegemiddeldose`, `Legemiddel-FestLmrLopenr`, `Legemiddel-SCT`, `Legemiddel-LokaltLegemiddel-FlereIngredienser`, `Legemiddel-FestLegemiddelVirkestoff-2`, `Legemiddel-Legemiddeldose-SmofKabiven`, `Legemiddel-UtenCoding`, `Lokalt-legemiddel-cellegift`, `Legemiddel-MorfinKonsentrat`, `Legemiddel-NatriumkloridBBraun`, `Legemiddel-Smerteblanding` |
 | Virkestoff | `lmdi-Substance.fsh` | `Virkestoff-Oksykodon` |
 | Legemiddelrekvirering | `lmdi-MedicationRequest.fsh` | `Rekvirering-Paracetamol`, `Rekvirering-Kjemoterapi`, `Rekvirering-Infusjon`, `Rekvirering-MedDiagnoseICD10`, `Rekvirering-EnteredInError`, `Rekvirering-Cellegift` |
@@ -29,7 +29,7 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
 | Lokalt legemiddel m/flere ingredienser | `Legemiddel-LokaltLegemiddel-FlereIngredienser` | `code.coding[LokaltLegemiddel]` + fire `ingredient`-oppføringer |
 | Legemiddel uten code | `Legemiddel-UtenCoding` | Kun `ingredient` — oppfyller `lmdi-medication-code-or-ingredient` |
 | Sammensatt smerteblanding | `Legemiddel-Smerteblanding` | 100 mL med morfin 5 mg/ml og midazolam 1 mg/ml. Viser begge måtene å angi ingrediens (`itemCodeableConcept` med FEST-varenummer, `itemReference` til Legemiddel) og alle tre `strength`-variantene: Ratio, Quantity (mL) og CodeableConcept (`qs`). `amount` = 100 mL/pose gjør utledningen mulig: 12,5 mL × 40 mg/ml = 500 mg → 5 mg/ml. Volumene går opp: 20 mL midazolam + 12,5 mL morfinkonsentrat + 67,5 mL saltvann = 100 mL |
-| Diagnose ICD-10 | `Diagnose-ICD10`, `Diagnose-ICD10-Allergi` | System `urn:oid:2.16.578.1.12.4.1.1.7110` |
+| Diagnose ICD-10 | `Diagnose-ICD10`, `Diagnose-ICD10-Allergi`, `Diagnose-ICD10-Multippel` (to ICD-10-koder) | System `urn:oid:2.16.578.1.12.4.1.1.7110` |
 | Diagnose SNOMED CT | `Diagnose-SNOMED-SCT` | |
 | Organisasjonshierarki | `Organisasjon-Post` → Seksjon → Sykehus → HF | `partOf`-kjede |
 | Flere NPR-identifikatorer per episode | `Episode-Sykehus` | To `nprEpisodeIdentifier`-forekomster: én med string + uuid, én med kun string (0..* fra 1.1.2) |

@@ -15,11 +15,11 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `roar/apne-form-coding` (ikke merget til `main` ennå) |
-| HEAD commit (LMDI) | `02346e2a1cebc6509b1096709bdf91a7b3bdcc03` |
-| Analysedato | 2026-09-21 |
+| Branch (LMDI) | `roar/icd10-slice-flere-koder` (ikke merget til `main` ennå) |
+| HEAD commit (LMDI) | `d87343df024445bea898fd89aeb9ed76aeaad03a` |
+| Analysedato | 2026-10-07 |
 | Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på branchen. `sushi .` kjørt (0 errors, 2 warnings); `StructureDefinition-lmdi-medication.json` lest direkte for å bekrefte `Medication.form.coding` med `slicing.rules = open` og begge slices intakte. Eneste FSH-endring siden `1f597673e` er i `lmdi-Medication.fsh` (`git diff 1f597673e..HEAD`) |
-| IG-versjon | 1.1.5 (fra `sushi-config.yaml`, dato 2026-09-21) |
+| IG-versjon | 1.1.7 (fra `sushi-config.yaml`, dato 2026-10-07) |
 
 ## Prosedyre
 
@@ -129,7 +129,12 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-09-21 (sist — IG 1.1.5, branch `roar/apne-form-coding`)
+### 2026-10-07 (sist — IG 1.1.7, branch `roar/icd10-slice-flere-koder`)
+- `Diagnose.code.coding`: slicen `ICD10` er endret fra 0..1 til 0..* (issue #117), for multippel koding jf. Helsedirektoratets kodeveiledning. Nytt eksempel `Diagnose-ICD10-Multippel`. Oppdatert `profiler.md` og `eksempler.md`.
+- Versjon 1.1.7 i `SKILL.md`, `terminologi.md` og proveniensen; pinnen flyttet til `d87343df0`. IG 1.1.6 (presisering av tekst på Legemiddeladministrering) er ikke gjennomgått i denne oppdateringen.
+- **Merk**: bygd på branchen før merge; flytt pinnen til merge-commiten på `main` etter merge.
+
+### 2026-09-21 (IG 1.1.5, branch `roar/apne-form-coding`)
 - `Medication.form.coding`: slicingen er endret fra `closed` til `open`. Slicene `OID7448` og `SCT`
   beholdes, men andre kodesystemer for legemiddelform er nå tillatt. `system 1..1` / `code 1..1`
   gjelder fortsatt alle codings. `^comment` (norsk og engelsk) omskrevet i FSH. Oppdatert
