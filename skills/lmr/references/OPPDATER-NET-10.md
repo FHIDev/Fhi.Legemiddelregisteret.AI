@@ -582,6 +582,18 @@ GitVersion: $[dependencies.Build.Build.outputs['Version.GitVersionVal']]
 
 ---
 
+## Steg 8: Oppdater agentfilene
+
+Oppgraderingen endrer målrammeverk, autentisering, konfigurasjonsnøkler og pipelines, som
+`CLAUDE.md` og repo-skillen ofte beskriver. Gjør dette i samme branch, i hvert repo som er
+oppgradert:
+
+1. Oppdater `CLAUDE.md` og repo-skillen (`.claude/skills/lmr-<navn>/`) der de beskriver noe av
+   det som er endret over.
+2. Kjør `/lmr:gjennomga-agentoppsett` og rett funnene som gjelder endringen.
+
+---
+
 ## Avklarende spørsmål
 
 Spør brukeren om dette er uklart eller varierer:

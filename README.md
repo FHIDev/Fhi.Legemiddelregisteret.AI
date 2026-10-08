@@ -38,6 +38,21 @@ Kjør disse slash-kommandoene i Claude Code:
 - **`/lmr:entraid-ny-tjeneste [tjeneste] [variant]`** – kopierer EntraId Bicep-malene og
   skriptene ut fra pluginen til et repo du kontrollerer, og stilaserer parameterfila.
   Malene skal ikke redigeres i plugin-katalogen; den byttes ut ved `/plugin update`.
+- **`/lmr:gjennomga-agentoppsett [sti til Test-Agentfiler.ps1]`** – gjennomgår agentoppsettet
+  (`CLAUDE.md`, `AGENTS.md`, `.claude/settings.json` og repo-skillene) i repoet du står i.
+  Kommandoen kontrollerer hver påstand mot koden, kjører `Test-Agentfiler.ps1` fra
+  Fhi.Lmr.DevOps og evalueringene i skillene, og rapporterer én linje per funn sortert etter
+  alvorlighet. Den endrer ingen filer.
+
+### Når gjennomgangen skal kjøres
+
+Regelen om å oppdatere agentfilene i samme commit fanger ikke alt, særlig ikke når én endring
+berører mange repoer. Kjør `/lmr:gjennomga-agentoppsett`:
+
+- etter tverrgående endringer som berører flere tjenester, for eksempel ny autentisering,
+  .NET-oppgradering eller endrede meldingskontrakter, i hvert berørte repo
+- minst én gang per kvartal per repo
+- før et repo tas i bruk av nye utviklere eller agenter
 
 ## Bekreft installasjonen
 

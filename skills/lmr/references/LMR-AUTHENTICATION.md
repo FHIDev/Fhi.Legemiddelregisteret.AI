@@ -473,6 +473,20 @@ Se punkt 5 under "Ting som er lett å bomme på". Uten distribuert cache er repl
 
 ---
 
+## Siste steg: oppdater agentfilene
+
+Når autentiseringen i en tjeneste legges til eller endres (ny IDP, nye pakker, nye
+konfigurasjonsnøkler, nye scopes eller endret liste over anonyme ruter), gjør dette i samme
+branch, i hvert berørte repo:
+
+1. Oppdater `CLAUDE.md` og repo-skillen (`.claude/skills/lmr-<navn>/`) der de beskriver
+   autentiseringen. Repoet beskriver bare det som er spesifikt for tjenesten: hvilke ruter som er
+   anonyme, hvilke som bevisst ikke har `[Authorize]`, og hvilken IDP hver klient bruker. Resten
+   pekes hit.
+2. Kjør `/lmr:gjennomga-agentoppsett` og rett funnene som gjelder endringen.
+
+---
+
 ## Referanser
 
 - Kildekode + CLAUDE.md med interne detaljer: `Fhi.Legemiddelregisteret/Fhi.Lmr.Authentication`

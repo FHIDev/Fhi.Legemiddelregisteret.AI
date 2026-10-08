@@ -1,6 +1,6 @@
 ---
 name: lmr
-description: Legemiddelregisteret (LMR) system knowledge; use when asked about LMR repositories, services, ownership, cloning LMR repos, message flows, Meldingsformidler architecture, health checks, or integrations.
+description: Legemiddelregisteret (LMR) system knowledge; use when asked about LMR repositories, services, ownership, cloning LMR repos, message flows, Meldingsformidler architecture, health checks, or integrations, and when to review or update the agent setup (CLAUDE.md, repo skills) in LMR repos.
 ---
 
 # Legemiddelregisteret (LMR)
@@ -40,6 +40,26 @@ Repo-spesifikk dokumentasjon (finnes i de enkelte repoene):
 
 Ekstern dokumentasjon:
 - LMDI — FHIR R4 implementasjonsguide for de som sender data til FhirMottak: https://github.com/folkehelseinstituttet/LMDI
+
+## Agentoppsett i repoene
+
+Hvert tjeneste-repo har `CLAUDE.md` og en repo-skill under `.claude/skills/lmr-<navn>/`. Regelen
+om å oppdatere dem i samme commit som koden fanger ikke endringer som går på tvers av repoene.
+Kommandoen `/lmr:gjennomga-agentoppsett` kontrollerer agentfilene i ett repo mot koden og endrer
+ingen filer. Les [gjennomga-agentoppsett.md](../../commands/gjennomga-agentoppsett.md) når du
+skal kjøre gjennomgangen eller svare på hva den kontrollerer, hvordan rapporten ser ut og hva den
+ikke gjør. Kjør den:
+
+- etter tverrgående endringer som berører flere tjenester, for eksempel ny autentisering,
+  .NET-oppgradering eller endrede meldingskontrakter, i hvert berørte repo
+- minst én gang per kvartal per repo
+- før et repo tas i bruk av nye utviklere eller agenter
+
+Veiledninger for tverrgående endringer i denne skillen (som
+[OPPDATER-NET-10.md](./references/OPPDATER-NET-10.md) og
+[LMR-AUTHENTICATION.md](./references/LMR-AUTHENTICATION.md)) skal ha som siste steg: oppdater
+`CLAUDE.md` og repo-skillen i hvert berørte repo, og kjør `/lmr:gjennomga-agentoppsett`. Nye
+veiledninger av samme type skal ha det samme steget.
 
 ## Wiki
 

@@ -1,0 +1,38 @@
+[
+  {
+    "skills": ["lmr"],
+    "query": "Jeg har byttet Fhi.Lmr.Grunndata fra HelseID til Entra ID med Fhi.Lmr.Authentication. Koden bygger og testene er grønne. Er det noe mer jeg må gjøre før jeg lager PR?",
+    "expected_behavior": [
+      "Sier at CLAUDE.md og repo-skillen i Grunndata (.claude/skills/lmr-<navn>/) må oppdateres der de beskriver autentiseringen, i samme branch, med henvisning til avsnittet «Siste steg: oppdater agentfilene» i skills/lmr/references/LMR-AUTHENTICATION.md",
+      "Sier at /lmr:gjennomga-agentoppsett skal kjøres i repoet og at funnene som gjelder endringen rettes",
+      "Sier at repoet bare skal beskrive det tjenestespesifikke (anonyme ruter, ruter som bevisst ikke har [Authorize], IDP per klient) og peke til lmr-skillen for resten"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Hvor ofte skal vi gjennomgå CLAUDE.md og repo-skillene i LMR-repoene, og hvordan gjør vi det?",
+    "expected_behavior": [
+      "Svarer at gjennomgangen gjøres med /lmr:gjennomga-agentoppsett (commands/gjennomga-agentoppsett.md)",
+      "Nevner alle tre tidspunktene fra avsnittet «Agentoppsett i repoene» i skills/lmr/SKILL.md: etter tverrgående endringer som berører flere tjenester (for eksempel ny autentisering, .NET-oppgradering eller endrede meldingskontrakter), minst én gang per kvartal per repo, og før et repo tas i bruk av nye utviklere eller agenter",
+      "Sier at kommandoen bare leser og ikke endrer filer",
+      "Finner ikke på andre intervaller eller mekanismer enn de som står i skillen og kommandoen"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Kjør /lmr:gjennomga-agentoppsett i Fhi.Lmr.Logging og rett feilene du finner med en gang.",
+    "expected_behavior": [
+      "Sier at kommandoen bare leser og ikke retter noe, og at rettinger er en ny oppgave etter at rapporten er levert (commands/gjennomga-agentoppsett.md, avsnittet «Regler»)",
+      "Beskriver at rapporten har én linje per funn i formatet [høy|middels|lav] [kategori] fil:linje – hva som står – hva koden viser (kildefil) – foreslått endring, sortert etter alvorlighet, med «(usikkert)» på funn som ikke er verifisert",
+      "Sier at svaret avsluttes med det som ikke kunne verifiseres"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Jeg skal skrive en ny veiledning i lmr-skillen for å flytte alle tjenestene til en ny versjon av meldingskontraktene. Er det noe den må inneholde utover selve migreringsstegene?",
+    "expected_behavior": [
+      "Sier at veiledningen skal ha et siste steg om å oppdatere CLAUDE.md og repo-skillen i hvert berørte repo og kjøre /lmr:gjennomga-agentoppsett, med henvisning til avsnittet «Agentoppsett i repoene» i skills/lmr/SKILL.md",
+      "Viser til at OPPDATER-NET-10.md (Steg 8) og LMR-AUTHENTICATION.md (Siste steg) har det samme steget"
+    ]
+  }
+]
