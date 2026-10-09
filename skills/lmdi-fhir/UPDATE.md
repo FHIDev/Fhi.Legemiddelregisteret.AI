@@ -15,10 +15,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `roar/icd10-slice-flere-koder` (ikke merget til `main` ennå) |
-| HEAD commit (LMDI) | `d87343df024445bea898fd89aeb9ed76aeaad03a` |
-| Analysedato | 2026-10-07 |
-| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på branchen. `sushi .` kjørt (0 errors, 2 warnings); `StructureDefinition-lmdi-medication.json` lest direkte for å bekrefte `Medication.form.coding` med `slicing.rules = open` og begge slices intakte. Eneste FSH-endring siden `1f597673e` er i `lmdi-Medication.fsh` (`git diff 1f597673e..HEAD`) |
+| Branch (LMDI) | `main` |
+| HEAD commit (LMDI) | `86c0bb2f966e5f0c51a0c7ed06846c6e9ae470bb` |
+| Analysedato | 2026-10-09 |
+| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff d87343df0..origin/main -- LMDI/input/fsh` gjennomgått. `StructureDefinition-lmdi-medicationadministration.json` fra publisert `package.tgz` (1.1.7) lest for å bekrefte at `identifier` og `status` bare har endret tekst, ikke kardinalitet. `sushi .` er ikke kjørt i denne oppdateringen |
 | IG-versjon | 1.1.7 (fra `sushi-config.yaml`, dato 2026-10-07) |
 
 ## Prosedyre
@@ -129,7 +129,13 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-10-07 (sist — IG 1.1.7, branch `roar/icd10-slice-flere-koder`)
+### 2026-10-09 (sist — IG 1.1.7, `main @ 86c0bb2f9`)
+- Pinnen flyttet fra branch-commiten `d87343df0` til `main` (`86c0bb2f9`), slik 2026-10-07-oppføringen ba om. Ingen endret versjonsnummer.
+- IG 1.1.6 gjennomgått (ble hoppet over 2026-10-07): ny seksjon «Korrigering og annullering» på Legemiddeladministrering i `profiler.md`. `identifier` skal beholdes ved ny rapportering, `entered-in-error` ved annullering, og utelatelse annullerer ikke. Kun tekst i profilen, ingen endret kardinalitet.
+- `Diagnose-ICD10-Multippel` rettet i LMDI (#123): SNOMED CT og to ICD-10-koder (M06.99, M24.19). `eksempler.md` oppdatert.
+- **Rettet feil**: raw-URL-en i `SKILL.md` §1.4 hadde en ugyldig commit-hash (`d87343df0cebc65…`, ikke samme som `d87343df024445b…` i proveniensen), så verifisering mot kilden ville gitt 404. Nå fullt hash for `86c0bb2f9`.
+
+### 2026-10-07 (IG 1.1.7, branch `roar/icd10-slice-flere-koder`)
 - `Diagnose.code.coding`: slicen `ICD10` er endret fra 0..1 til 0..* (issue #117), for multippel koding jf. Helsedirektoratets kodeveiledning. Nytt eksempel `Diagnose-ICD10-Multippel`. Oppdatert `profiler.md` og `eksempler.md`.
 - Versjon 1.1.7 i `SKILL.md`, `terminologi.md` og proveniensen; pinnen flyttet til `d87343df0`. IG 1.1.6 (presisering av tekst på Legemiddeladministrering) er ikke gjennomgått i denne oppdateringen.
 - **Merk**: bygd på branchen før merge; flytt pinnen til merge-commiten på `main` etter merge.

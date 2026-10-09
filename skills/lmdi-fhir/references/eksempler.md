@@ -29,7 +29,7 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
 | Lokalt legemiddel m/flere ingredienser | `Legemiddel-LokaltLegemiddel-FlereIngredienser` | `code.coding[LokaltLegemiddel]` + fire `ingredient`-oppføringer |
 | Legemiddel uten code | `Legemiddel-UtenCoding` | Kun `ingredient` — oppfyller `lmdi-medication-code-or-ingredient` |
 | Sammensatt smerteblanding | `Legemiddel-Smerteblanding` | 100 mL med morfin 5 mg/ml og midazolam 1 mg/ml. Viser begge måtene å angi ingrediens (`itemCodeableConcept` med FEST-varenummer, `itemReference` til Legemiddel) og alle tre `strength`-variantene: Ratio, Quantity (mL) og CodeableConcept (`qs`). `amount` = 100 mL/pose gjør utledningen mulig: 12,5 mL × 40 mg/ml = 500 mg → 5 mg/ml. Volumene går opp: 20 mL midazolam + 12,5 mL morfinkonsentrat + 67,5 mL saltvann = 100 mL |
-| Diagnose ICD-10 | `Diagnose-ICD10`, `Diagnose-ICD10-Allergi`, `Diagnose-ICD10-Multippel` (to ICD-10-koder) | System `urn:oid:2.16.578.1.12.4.1.1.7110` |
+| Diagnose ICD-10 | `Diagnose-ICD10`, `Diagnose-ICD10-Allergi`, `Diagnose-ICD10-Multippel` (SNOMED CT og to ICD-10-koder) | System `urn:oid:2.16.578.1.12.4.1.1.7110` |
 | Diagnose SNOMED CT | `Diagnose-SNOMED-SCT` | |
 | Organisasjonshierarki | `Organisasjon-Post` → Seksjon → Sykehus → HF | `partOf`-kjede |
 | Flere NPR-identifikatorer per episode | `Episode-Sykehus` | To `nprEpisodeIdentifier`-forekomster: én med string + uuid, én med kun string (0..* fra 1.1.2) |

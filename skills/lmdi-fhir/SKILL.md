@@ -9,7 +9,7 @@ Arbeidsinstruks og navigasjon for LMDI-spørsmål. Faktainnhold ligger i `refere
 
 **Grunnlag**: `references/` er et kuratert øyeblikksbilde av LMDI-kildene (FSH-filer, `sushi-config.yaml`, `pagecontent/*.md`). Opprinnelig opphav er repoet [`folkehelseinstituttet/LMDI`](https://github.com/folkehelseinstituttet/LMDI), men det trengs bare ved verifisering (§1.3) eller versjonssjekk (§1.4).
 
-**Versjon**: IG `1.1.7` (FHIR `4.0.1`), bygd fra commit `d87343df0`. Sjekk for nyere versjon ved behov — se §1.4.
+**Versjon**: IG `1.1.7` (FHIR `4.0.1`), bygd fra commit `86c0bb2f9`. Sjekk for nyere versjon ved behov — se §1.4.
 
 ---
 
@@ -43,7 +43,7 @@ Finner du avvik mellom `references/` og kilden: **si det til brukeren** og følg
 
 ### 1.4 Kilder og versjonssjekk
 
-`references/` er bygd fra LMDI 1.1.7 (commit `d87343df0`). LMDI-repoet trengs ikke for å svare.
+`references/` er bygd fra LMDI 1.1.7 (commit `86c0bb2f9`). LMDI-repoet trengs ikke for å svare.
 
 **Sjekk for nyere IG-versjon** (ved tvil eller på forespørsel) — hent `version:` fra kilden og sammenlign med `1.1.7`:
 
@@ -56,7 +56,7 @@ Er versjonen på `main` nyere enn `1.1.7`: **fortell brukeren** at skillen kan v
 **Verifisere en strukturdetalj mot kilden** (valgfritt, §1.3) — les FSH lokalt hvis LMDI-repoet finnes, ellers hent fila pinnet til samme versjon som `references/`. Raw-URL-er kan ikke liste kataloger, så føy på filnavnet du trenger:
 
 ```
-https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/d87343df0cebc6509b1096709bdf91a7b3bdcc03/LMDI/input/fsh/<underkatalog>/<fil>.fsh
+https://raw.githubusercontent.com/folkehelseinstituttet/LMDI/86c0bb2f966e5f0c51a0c7ed06846c6e9ae470bb/LMDI/input/fsh/<underkatalog>/<fil>.fsh
 ```
 
 Eksempel: `.../LMDI/input/fsh/profiles/lmdi-Medication.fsh`

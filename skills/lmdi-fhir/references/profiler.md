@@ -268,6 +268,13 @@ Typisk brukt for rene virkestoff der man vil referere dem fra `Legemiddel.ingred
 - `effectivePeriod.start 1..1 obeys time-required`
 - `effectivePeriod.end 1..1 obeys time-required`
 
+### Korrigering og annullering (presisert i 1.1.6)
+Kun tekst (`^short`/`^definition`/`^comment` og profilbeskrivelsen), ingen endret kardinalitet, MS eller binding.
+- `identifier` — identifiserer administreringen **over tid**. `[LMDI-praksis]` Avsender skal bruke **samme** identifikator ved ny rapportering av en tidligere innsendt administrering. En korrigering skal ikke sendes som ny administrering med ny identifikator. `identifier.system` bør identifisere avsenders identifikatorområde, slik at identifikatoren er entydig på tvers av avsendere.
+- Korrigering/endring: rapporter ressursen på nytt med samme `identifier` og korrigerte opplysninger.
+- Annullering/sletting: rapporter på nytt med samme `identifier` og `status = entered-in-error`.
+- En tidligere rapportert administrering annulleres **ikke** ved å utelate den fra senere innsendinger.
+
 ### MS
 - `context only Reference(Episode)` — episode det ble administrert under
 - `request only Reference(Legemiddelrekvirering)` — rekvireringen dette er basert på
