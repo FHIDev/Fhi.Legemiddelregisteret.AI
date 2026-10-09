@@ -1,76 +1,33 @@
 # SystemStatus
 
-## Konfigurasjon i Fhi.Lmr.Kontroll
+LMR-tjenestene eksponerer et anonymt `/health`-endepunkt etter et felles mønster, og Kontroll viser svarene i
+systemstatus-oversikten. Dette dokumentet beskriver mønsteret på tjenestesiden og peker til der Kontroll-siden er
+beskrevet.
 
-For å legge til en ny tjeneste i SystemStatus-oversikten i Kontroll-applikasjonen, må du gjøre tre endringer i `appsettings.{miljø}.json`:
+## Mønsteret i tjenestene
 
-### 1. Legg til scope
+- Pakken `Fhi.Lmr.Felles.Status` leverer helsesjekkene og svarformatet (`SystemStatus`, `HealthChecksResponse`).
+  `SystemStatusCheck` rapporterer kjøremiljø, byggkonfigurasjon og kildekode-tag pluss de hvitelistede
+  konfigurasjonsverdiene.
+- `/health` er anonymt (`AllowAnonymous`). Statusen står i JSON-svaret, ikke i HTTP-statuskoden. Kontroll leser svaret
+  både ved 200 og ved 503, og behandler andre statuskoder som `Unhealthy`. Hvilken statuskode en tjeneste svarer med,
+  er derfor tjenestens eget valg; repo-skillen sier hva den gjør.
+- Hviteliste: `WhiteListingServiceOption.WhiteListe` (`Fhi.Lmr.Felles.Configuration.WhiteListing`) styrer hvilke
+  konfigurasjonsnøkler som vises i `/health`. Hver oppføring brukes som regex-prefiks mot nøkkelen, så å hviteliste en
+  seksjon tar med alle nøklene under den. Siden endepunktet er anonymt, skal ingen hemmeligheter stå i listen. Det
+  gjelder særlig `OidcClients`, `PrivateKey`, connection strings og alt annet som kan misbrukes. En hviteliste med
+  `*` viser all konfigurasjon, og skal ikke brukes utenfor lokal kjøring.
 
-I `HelseIdWebKonfigurasjon.Scopes`-listen, legg til scopet for tjenesten:
+## Koble en tjeneste til Kontroll
 
-```json
-"Scopes": [
-  ...
-  "fhi:lmr.{tjenestenavn}/all"
-]
-```
+Hva som må gjøres i Kontroll for at en ny tjeneste skal vises i oversikten, er repo-spesifikt og står i skillen
+`lmr-kontroll` (`references/integrasjoner.md`, avsnittet «Systemstatus»). Kort sagt:
 
-### 2. Legg til API-konfigurasjon
+- utgående kall konfigureres under `Apis:<Tjeneste>Service` i Kontrolls appsettings, med `BaseAddress`,
+  `HttpClientName`, `OidcClientName` (`EntraIdClient` mot LMR-tjenestene) og `Scope` (`api://<api-id>/.default`),
+- tjenesten må ha en tjenesteklasse og en `case` i `HealthService.GetStatusFromService` i Kontroll,
+- tjenestenavnet må stå i `SystemStatusKonfigurasjon:Tjenester`, og listen er ulik per miljø,
+- Kontrolls app-registrering må ha app-rolle mot tjenesten (se skillen `lmr-entraid`), og tjenesten må godta Kontrolls
+  token (`DefaultScope` i `ApiTokenValidation`, se `LMR-AUTHENTICATION.md`).
 
-I `HelseIdWebKonfigurasjon.Apis`-listen, legg til API-konfigurasjonen:
-
-```json
-{
-  "Name": "{Tjenestenavn}Service",
-  "Url": "https://{miljø}-api.lmr.fhi.no/{tjenestenavn}",
-  "Scope": "fhi:lmr.{tjenestenavn}/all"
-}
-```
-
-### 3. Legg til i SystemStatusKonfigurasjon
-
-I `SystemStatusKonfigurasjon.Tjenester`-listen, legg til tjenestenavnet (alfabetisk sortert):
-
-```json
-"SystemStatusKonfigurasjon": {
-  "Tjenester": [
-    "Administreringslager",
-    "Dataprodukter",
-    ...
-  ]
-}
-```
-
-### Eksempel: Administreringslager
-
-For å legge til Administreringslager i Test-miljøet (`appsettings.Test.json`):
-
-**Scope:**
-```json
-"fhi:lmr.administreringslager/all"
-```
-
-**API-konfigurasjon:**
-```json
-{
-  "Name": "AdministreringslagerService",
-  "Url": "https://test-api.lmr.fhi.no/administreringslager",
-  "Scope": "fhi:lmr.administreringslager/all"
-}
-```
-
-**Tjenester:**
-```json
-"Administreringslager"
-```
-
-### Miljøer
-
-Husk å gjøre endringene i riktig appsettings-fil for miljøet:
-
-| Miljø | Fil |
-|-------|-----|
-| AzureDev | `appsettings.AzureDev.json` |
-| Test | `appsettings.Test.json` |
-| QA | `appsettings.QA.json` |
-| Prod | `appsettings.json` |
+Miljøfilene er `appsettings.<miljø>.json` i `Fhi.Lmr.Kontroll.Web/`.

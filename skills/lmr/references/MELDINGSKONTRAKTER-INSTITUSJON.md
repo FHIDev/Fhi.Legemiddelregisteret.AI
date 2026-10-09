@@ -2,7 +2,16 @@
 
 Dokumenterer alle meldingstyper i pipelinen fra FhirMottak til Administreringslager, inkludert kontraktene fra Pasientregister og Rekvirentregister tilbake til Administreringslager.
 
-Se [MELDINGSSPLITTING-INSTITUSJON-FHIR.md](./MELDINGSSPLITTING-INSTITUSJON-FHIR.md) og [MELDINGSSPLITTING-BAERUM.md](./MELDINGSSPLITTING-BAERUM.md) for detaljer om hvordan splittingen produserer disse meldingene.
+Se `MELDINGSSPLITTING-INSTITUSJON-FHIR.md` og `MELDINGSSPLITTING-BAERUM.md` for detaljer om hvordan splittingen produserer disse meldingene. Hvordan Administreringslager lagrer og prosesserer dem, står i repo-skillen lmr-administreringslager.
+
+## Innhold
+
+- Fra Meldingsmottak til registre og lager
+- Fra registre til Administreringslager
+- Transport — KryptertMelding-wrapper
+- Hva Administreringslager venter på (kontrakt)
+- Databasetabeller i Pasientregister og Rekvirentregister
+- Nøkkelfilstier
 
 ---
 
@@ -15,7 +24,8 @@ Sendes fra Meldingsmottak til Pasientregister.
 ```
 PasientmeldingFraInstitusjonsmelding
 ├── MeldingsId: Guid
-└── Pasientadministreringer: List<Pasientadministrering>
+├── Pasientadministreringer: List<Pasientadministrering>
+└── Kildeformat: string               ← "FhirBundle" eller "BærumCsv" (konstantene KildeformatFhirBundle og KildeformatBærumCsv)
 
 Pasientadministrering
 ├── NorskIdentitetsnummer: string    ← FNR eller DNR
@@ -44,7 +54,7 @@ RekvirentFraInstitusjonsmelding
 └── Administreringsreferanse: string ← entry.FullUrl fra MedicationAdministration-entry
 ```
 
-Produseres kun hvis FHIR-bundlen inneholder `Practitioner`-ressurser med gyldig HPR-nummer.
+FHIR-splitteren lager alltid en rekvirentmelding, også når bundlen ikke har noen `Practitioner` med gyldig HPR-nummer. Da er `Rekvirenter` en tom liste (`FhirBundleInstitusjonsmeldingSplitter.cs` i Meldingsmottak).
 
 ### `AdministreringsmeldingFhirBundle`
 
@@ -119,72 +129,31 @@ ReferanseTilRekvirentId
 
 Alle meldinger pakkes i `KryptertMelding` av Meldingsformidler før transport. `Meldingstype`-feltet brukes av mottakerne for å velge riktig deserialiseringslogikk.
 
-Relevante konstanter for institusjonsflyten:
+Relevante konstanter for institusjonsflyten (definert i `Fhi.Lmr.Felles.Meldinger/KryptertMelding/KryptertMelding.cs`):
 
 | Konstant | Verdi |
 |---|---|
-| `KryptertMelding.MeldingstypePasientmeldingFraFhirMottak` | `"PasientmeldingFraFhirMottak"` |
-| `KryptertMelding.MeldingstypeRekvirentmeldingFraFhirMottak` | `"RekvirentmeldingFraFhirMottak"` |
-| `KryptertMelding.AdministeringsmeldingFhirBundle` | `"AdministeringsmeldingFhirBundle"` |
-| `KryptertMelding.AdministeringsmeldingBærumCsv` | `"AdministeringsmeldingBærumCsv"` |
+| `KryptertMelding.MeldingstypePasientmeldingFraInstitusjonsmelding` | `"PasientmeldingFraInstitusjonsmelding"` |
+| `KryptertMelding.MeldingstypeRekvirentmeldingFraInstitusjonsmelding` | `"RekvirentmeldingFraInstitusjonsmelding"` |
+| `KryptertMelding.MeldingstypeAdministeringsmeldingFhirBundle` | `"AdministeringsmeldingFhirBundle"` |
+| `KryptertMelding.MeldingstypeAdministeringsmeldingBærumCsv` | `"AdministeringsmeldingBærumCsv"` |
 
-Merk: konstantverdiene (strengene) er ikke endret — de er del av det persisterte transportformatet og kan ikke endres uten migrering av meldinger i kø.
-
----
-
-## Mellomlagring i Administreringslager
-
-Administreringslager mellomlagrer alle deler til prosesseringen kan starte. TilBehandling-radene fjernes atomisk når meldingen er ferdigbehandlet.
-
-| Tabell | PK | Innhold | Gjelder |
-|---|---|---|---|
-| `PasientlisteTilBehandling` | `MeldingsId` | JSON: `List<ReferanseTilPasientId>` | FHIR + Bærum |
-| `RekvirentlisteTilBehandling` | `MeldingsId` | JSON: `List<ReferanseTilRekvirentId>` | Kun FHIR |
-| `Kryptert.AdministreringsmeldingFhirBundleTilBehandling` | `MeldingsId` | Bundle-JSON, komprimert+kryptert | Kun FHIR |
-| `Kryptert.AdministreringsmeldingBærumCsvTilBehandling` | `MeldingsId` | CSV-JSON, komprimert+kryptert | Kun Bærum |
-
-**Forutsetninger for prosessering:**
-- FHIR: alle tre TilBehandling-rader mottatt
-- Bærum: to TilBehandling-rader (ingen rekvirentliste)
+Verdiene er en del av transportformatet mellom tjenestene. Å endre dem krever koordinert endring i alle tjenestene og tilsvarende håndtering av meldinger som allerede ligger i kø.
 
 ---
 
-## Assembly i Administreringslager
+## Hva Administreringslager venter på (kontrakt)
 
-`ProsesserAdministreringsmeldingHandler` (bakgrunnstjeneste) kobler de tre delene.
+Administreringslager prosesserer ikke før alle delene er mottatt: for FHIR administreringsmeldingen, pasientlisten og
+rekvirentlisten, for Bærum administreringsmeldingen og pasientlisten (ingen rekvirentliste). Koblingen mellom delene går
+bare via `Administreringsreferanse`: listene slår opp `PasientId` og `RekvirentId` per referanse, og
+`Subject.Reference` i bundlen brukes ikke som oppslagsnøkkel. Administreringslager lagrer referansen på
+administreringen (`Administrering`-entiteten, tabellen `dbo.Administreringer`).
 
-**1. Bygg oppslagsdicts fra listene:**
-```csharp
-// FHIR-eksempel — nøkkel er MedAdmin-referansen (entry.FullUrl)
-pasientDict["urn:uuid:abc123"] = 12345   // PasientId
-rekvirentDict["urn:uuid:def456"] = 54321 // RekvirentId
-
-// Bærum-eksempel — nøkkel er radnummer (loop-teller)
-pasientDict["1"] = 12345
-// (ingen rekvirentDict for Bærum)
-```
-
-**2. Kobling per MedicationAdministration (FHIR):**
-- Administreringsreferansen (`entry.FullUrl`) → oppslag i `pasientDict` → `PasientIdFraPasientregisteret`
-- Administreringsreferansen → oppslag i `rekvirentDict` → `RekvirentIdFraRekvirentregisteret`
-
-Merk: I motsetning til tidligere brukes ikke `MedicationAdministration.Subject.Reference` (Patient-referansen) som oppslagsnøkkel — alle oppslag går via `Administreringsreferanse`.
-
-**3. Lagrede felt i `Administrering`-entiteten (`dbo.Administreringer`):**
-
-| Felt | Verdi | Formål |
-|---|---|---|
-| `PasientIdFraPasientregisteret` | `12345` | Anonym ID for videre bruk |
-| `RekvirentIdFraRekvirentregisteret` | `54321` | Anonym ID (null for Bærum) |
-
-**4. Lagrede felt i `AdministreringFhir`-entiteten (`fhir.AdministreringerFhir`):**
-
-| Felt | Verdi | Formål |
-|---|---|---|
-| `Administreringsreferanse` | `"urn:uuid:abc123"` | Sporbarhet — kobling til original MedAdmin-entry |
+Mellomlagring, assembly, statusmodell, feilhåndtering og feilteksten som sendes som hendelse til Varseltjenesten, er
+beskrevet i repo-skillen `lmr-administreringslager` (`references/prosessering-drift.md`).
 
 ---
-
 ## Databasetabeller i Pasientregister og Rekvirentregister
 
 | Tabell | PK | Beskrivelse |

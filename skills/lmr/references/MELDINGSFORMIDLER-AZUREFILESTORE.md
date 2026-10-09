@@ -1,60 +1,72 @@
 # Meldingsformidler — AzureFilestore-slot
 
+Dette dokumentet beskriver mønsteret, ikke miljøet: navn på ressurser, adresser og tilgangsnøkler står i
+driftsmiljøet og pipelines, ikke her. Kunnskapen gjelder bare Meldingsformidler (repo-skillen
+`lmr-meldingsformidler`, `references/kildeintegrasjoner.md`).
+
 ## Hva det er
 
-Et deployment-slot (`azurefilestore`) på App Service `legemiddelregisteret-meldingsformidler-test` (FHI-LMR-Dev, resource group `rg-legemiddelregisteret-test`).
-
-URL: `https://legemiddelregisteret-meldingsformidler-t-azurefilestore.azurewebsites.net`
+Et deployment-slot i Meldingsformidlers testmiljø som henter meldinger fra Azure File Shares i stedet for fra de
+reelle kanalene. Slotten deployes sammen med testapplikasjonen (se `Meldingsformidler.AzureDev.Publish.yml` i
+Meldingsformidler) og har egne app settings i driftsmiljøet.
 
 ## Formål
 
-Bro mellom Azure File Shares og Meldingsmottak i testmiljøer. Lar deg injisere Farmapro- og Eik-meldinger via Azure Files i stedet for de reelle kanalene (SonicMQ og WebDAV) som brukes i produksjon.
+Bro mellom Azure File Shares og Meldingsmottak i testmiljøer. Lar deg legge inn Eik- og Farmapro-meldinger via Azure
+Files i stedet for de reelle kanalene: WebDAV mot Eik FileDrop, som er standard i basekonfigurasjonen, og SonicMQ for
+Farmapro (legacy).
 
-Brukes eksklusivt i testmiljøer (AzureDev, Test, QA). Skal ikke kjøre i produksjon.
+Brukes bare i testmiljøer. Skal ikke kjøre i produksjon.
 
 ## Hvordan det fungerer
 
-Tre bakgrunnstjenester poller Azure File Shares kontinuerlig:
-- `HentFarmaproReseptmeldingerHostedService` — henter Farmapro reseptmeldinger (XML)
-- `HentFarmaproLokalvaremeldingerHostedService` — henter Farmapro lokalvaremeldinger (XML)
-- `HentEikMeldingerHostedService` — henter Eik-meldinger (JSON)
+Bakgrunnstjenestene i Meldingsformidler er konfigurert med `HostedService`-oppføringer, og `isDisabled` styrer hver
+enkelt per miljø:
 
-For hvert funnet fil: les innholdet → send til Meldingsmottak (test-instansen) → slett filen ved vellykket sending.
+- `HentEikMeldingerHostedService` henter Eik-meldinger (JSON). Den er aktiv i `appsettings.AzureDev.json`.
+- `HentFarmaproReseptmeldingerHostedService` og `HentFarmaproLokalvaremeldingerHostedService` henter Farmapro-meldinger
+  (XML). De er avslått i `appsettings.json` og i `appsettings.AzureDev.json`. Om sloten bruker Farmapro-kanalen,
+  avhenger derfor av overstyringer i driftsmiljøet, og de kan ikke leses av repoet.
 
-Konsesjonsnummeret leses fra meldingsinnholdet (XML-feltet `<Kilde>`) eller fra filnavn (prefiks `<konsesjonsnr>_`).
+For hvert funnet fil: les innholdet, send til Meldingsmottak (test-instansen) og slett filen ved vellykket sending.
+
+Konsesjonsnummeret leses fra meldingsinnholdet (XML-feltet `<Kilde>`) eller fra filnavnet (prefiks `<konsesjonsnr>_`).
 
 ## Konfigurasjon
 
-### Verdier i appsettings.AzureDev.json (bakt inn i deployen)
+Bruk konfigurasjonsnøklene som mønster. Verdiene settes per miljø.
 
-| Nøkkel | Verdi | Forklaring |
-|--------|-------|------------|
-| `FarmaproMeldingskoKonfigurasjon:Meldingskotype` | `AzureFilestore` | Skrur av SonicMQ, slår på Azure Files for Farmapro |
-| `EikFileDropKonfigurasjon:FileStorage:Katalog` | `azure-dev` | Undermappe i eikmeldinger-share |
-| `EikFileDropKonfigurasjon:FileStorage:Root` | `https://fhilegemiddelregisteret.file.core.windows.net/eikmeldinger` | File share for Eik-meldinger |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Reseptmeldingsko:Katalog` | `azure-dev/reseptmeldinger` | Undermappe for Farmapro reseptmeldinger |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Reseptmeldingsko:Root` | `https://fhilegemiddelregisteret.file.core.windows.net/farmapromeldinger` | File share for Farmapro |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Lokalvaremeldingsko:Katalog` | `azure-dev/lokalvaremeldinger` | Undermappe for lokalvaremeldinger |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Lokalvaremeldingsko:Root` | `https://fhilegemiddelregisteret.file.core.windows.net/farmapromeldinger` | Samme file share som resept |
+### I appsettings.AzureDev.json (følger deployen)
 
-### App settings i Azure Portal
+| Nøkkel | Forklaring |
+|--------|------------|
+| `FarmaproMeldingskoKonfigurasjon:Meldingskotype` | `AzureFilestore` slår av SonicMQ og slår på Azure Files for Farmapro |
+| `EikFileDropKonfigurasjon:FileStorage:Katalog` | Undermappe i file share for Eik-meldinger, én per miljø |
+| `EikFileDropKonfigurasjon:FileStorage:Root` | Adressen til file share for Eik-meldinger |
+| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Reseptmeldingsko:Katalog` / `:Root` | Undermappe og file share for Farmapro-reseptmeldinger |
+| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Lokalvaremeldingsko:Katalog` / `:Root` | Undermappe og file share for lokalvaremeldinger |
 
-Disse settes i Azure Portal (ikke i appsettings-filene) fordi de skiller seg per slot/instans:
+### App settings i driftsmiljøet (ikke i appsettings-filene)
 
-| App setting-nøkkel | Formål |
-|--------------------|--------|
-| `EikFileDropKonfigurasjon:FileDropType` | Skal settes til `AzureFilestore` (i stedet for `webdav`) |
-| `EikFileDropKonfigurasjon:FileStorage:Signatur` | SAS-token for tilgang til eikmeldinger-file share |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Reseptmeldingsko:Signatur` | SAS-token for farmapromeldinger (resept) |
-| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Lokalvaremeldingsko:Signatur` | SAS-token for farmapromeldinger (lokalvare) |
+Disse skiller seg per slot/instans og settes utenfor repoet:
+
+| Nøkkel | Formål |
+|--------|--------|
+| `EikFileDropKonfigurasjon:FileDropType` | Settes til `AzureFilestore` i stedet for `WebDav` |
+| `EikFileDropKonfigurasjon:FileStorage:Signatur` | Tilgangstoken (SAS) til file share for Eik-meldinger |
+| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Reseptmeldingsko:Signatur` | Tilgangstoken til Farmapro-reseptmeldinger |
+| `FarmaproMeldingskoKonfigurasjon:AzureFilestoreKonfigurasjon:Lokalvaremeldingsko:Signatur` | Tilgangstoken til lokalvaremeldinger |
 | `ASPNETCORE_ENVIRONMENT` | `AzureDev` for denne instansen |
 
-SAS-tokenene gis tilgang til hele storage-kontoen (`ss=fqt&srt=sco`) med lese-, skrive- og sletterettigheter (`sp=rwdlacup`). Tokenene er langtlevende og settes én gang i Azure Portal.
+Tilgangstokenene er hemmeligheter. De skal aldri sjekkes inn, og de beskrives ikke i agentfiler.
 
 ## Hvorfor et deployment-slot?
 
-Sloten bruker samme App Service Plan som `legemiddelregisteret-meldingsformidler-test` uten ekstra kostnad. Den deler infrastruktur og deployment-pipeline med test-applikasjonen, men har egne app settings som skrur av normale integrasjoner og skrur på Azure Files.
+Sloten bruker samme App Service Plan som testapplikasjonen, uten ekstra kostnad. Den deler infrastruktur og
+deployment-pipeline med testapplikasjonen, men har egne app settings som skrur av normale integrasjoner og skrur på
+Azure Files.
 
 ## Flere miljøer
 
-Mønsteret støtter én instans per testmiljø. Katalog-navnene (`azure-dev`, `test`, `qa`) skiller miljøene i de delte file shares. Andre miljøers instanser vil ha tilsvarende `appsettings.{Miljø}.json`-filer med tilpassede katalognavn og egne SAS-tokens.
+Mønsteret støtter én instans per testmiljø. Katalognavnene skiller miljøene i de delte file sharene. Andre miljøers
+instanser har tilsvarende `appsettings.<miljø>.json`-filer med egne katalognavn og egne tokens.

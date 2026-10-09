@@ -1,8 +1,8 @@
 # Meldingssplitting — øvrige institusjoner (FHIR)
 
-LMR har **ikke lov** til å lagre identitetsopplysninger (FNR, DNR, HPR-nummer) i samme database som administreringsdata. Splitteren i Meldingsmottak er den eneste tjenesten som ser ekte identiteter — administreringsmeldingen som sendes til Administreringslager inneholder ingen.
+LMR har **ikke lov** til å lagre identitetsopplysninger (FNR, DNR, HPR-nummer) i samme database som administreringsdata. Splitteren i Meldingsmottak er den eneste tjenesten som ser identitet og legemiddeldata samtidig og skiller dem: FhirMottak lagrer hele bundlen, men kryptert, og registrene lagrer bare identitetene. Administreringsmeldingen som sendes til Administreringslager inneholder ingen identiteter.
 
-Denne fila beskriver kontrakten avsendere og nedstrøms tjenester ser. Implementasjonsdetaljer (splitterklasse, OID-oppslag, ekstraksjonslogikk) er dokumentert i repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet og i splitterkoden der.
+Denne fila eier kontrakten avsendere og nedstrøms tjenester ser. Implementasjonen står i splitterkoden i Meldingsmottak (`FhirBundleInstitusjonsmeldingSplitter.cs`), og det som gjelder implementasjonen, i repo-skillen `lmr-meldingsmottak`.
 
 ## Tre delmeldinger produseres
 
@@ -14,7 +14,7 @@ Denne fila beskriver kontrakten avsendere og nedstrøms tjenester ser. Implement
 | `RekvirentmeldingFraInstitusjonsmelding` | HPR-nummer + `Administreringsreferanse` per administrering | Rekvirentregister |
 | `AdministreringsmeldingFhirBundle` | FHIR Bundle med maskerte `Identifier.Value`-felter — struktur og referanser uendret | Administreringslager |
 
-Rekvirentmelding produseres kun hvis bundlen inneholder `Practitioner`-ressurser med gyldig HPR-nummer.
+Rekvirentmelding lages alltid, også når bundlen ikke har noen `Practitioner` med gyldig HPR-nummer. Da er listen over rekvirenter tom. Pasientmeldingen og rekvirentmeldingen har bare poster for administreringer der identiteten kunne løses; se «Begrensninger».
 
 Koblingsnøkkelen `Administreringsreferanse` er FHIR-referansen til administreringen (entry `fullUrl`, eller `MedicationAdministration/{id}`).
 
@@ -31,3 +31,4 @@ Alle andre felter, IDer, referanser og struktur beholdes uendret. Bundlen serial
 
 - **Contained resources støttes ikke** — splittingen feiler. Contained resources har egne referanseregler (`#`-prefiks) og brukes ikke i LMDI-profilen.
 - **Tvetydig pasient** (har både FNR og DNR) behandles som «ingen gyldig identitet» og hoppes over.
+- **Stille tap av koblingsposter:** administreringen står alltid i administreringsmeldingen, men posten i pasient- eller rekvirentmeldingen mangler når pasienten ikke har entydig identitet, når en referanse mangler eller ikke kan løses, eller når Practitioner mangler gyldig HPR-nummer. Meldingen feiler ikke.

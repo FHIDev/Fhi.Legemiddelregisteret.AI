@@ -13,7 +13,7 @@ Bærum kommune
   v
 FhirMottak
   |
-  | Meldingsformidler leverer melding
+  | Meldingsformidler henter melding (allokerneste / merksomoverfort)
   v
 Meldingsmottak (splitter melding)
   |
@@ -24,14 +24,16 @@ Meldingsmottak (splitter melding)
                                                                 er mottatt
 ```
 
-Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten.
+Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten. FhirMottak sender ikke videre selv, men Meldingsformidler henter fra `/institusjonsmeldinger/allokerneste` og `/institusjonsmeldinger/merksomoverfort`.
+
+Hvilke av Meldingsformidlers bakgrunnstjenester som kjører, styres per miljø i Meldingsformidlers appsettings (`HostedService`-oppføringene med `isDisabled`). Flyten kan derfor være avslått i ett miljø og aktiv i et annet.
 
 ## Trinnvis beskrivelse
 
 | Trinn | Beskrivelse |
 |---|---|
 | 0 | Bærum kommune leverer melding (CSV) via API til FhirMottak |
-| 1 | Meldingsformidler leverer melding til Meldingsmottak |
+| 1 | Meldingsformidler henter meldingen fra FhirMottak og leverer den til Meldingsmottak |
 | 2 | Meldingsmottak splitter melding i to: Administreringsmelding og Pasientmelding |
 | 3 | Meldingsformidler sender Administreringsmelding til Administreringslager |
 | 4 | Meldingsformidler sender Pasientmelding til Pasientregister |
@@ -71,9 +73,9 @@ Meldingen deserialiseres, dekomprimeres (gzip), valideres mot forventet CSV-head
 
 Personnummer maskeres til `00000000000`, og `Administreringsreferanse` er radnummeret som streng (`"1"`, `"2"`, `"3"` ...). Ingen rekvirentmelding — CSV-formatet inneholder ingen HPR-nummer.
 
-Se [MELDINGSSPLITTING-BAERUM.md](./MELDINGSSPLITTING-BAERUM.md) for kontrakten (delmeldinger og kobling). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
+Se `MELDINGSSPLITTING-BAERUM.md` for kontrakten (delmeldinger og kobling). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
-Se [MELDINGSKONTRAKTER-INSTITUSJON.md](./MELDINGSKONTRAKTER-INSTITUSJON.md) for meldingskontraktene og hvordan Administreringslager kobler pasientlisten mot CSV-dataene.
+Se `MELDINGSKONTRAKTER-INSTITUSJON.md` for meldingskontraktene og hvordan Administreringslager kobler pasientlisten mot CSV-dataene.
 
 ## Forskjell fra FHIR-flyten
 

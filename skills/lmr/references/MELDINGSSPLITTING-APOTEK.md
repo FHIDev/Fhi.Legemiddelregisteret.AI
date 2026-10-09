@@ -1,8 +1,8 @@
 # Meldingssplitting — apotek (Farmapro og Eik)
 
-LMR har **ikke lov** til å lagre identitetsopplysninger (FNR, DNR, HPR-nummer) i samme database som utleveringsdata. Splitteren i Meldingsmottak er den eneste tjenesten som ser ekte identiteter — utleveringsmeldingen som sendes til Utleveringslager inneholder ingen.
+LMR har **ikke lov** til å lagre identitetsopplysninger (FNR, DNR, HPR-nummer) i samme database som utleveringsdata. Splitteren i Meldingsmottak er den eneste tjenesten som ser identitet og legemiddeldata samtidig og skiller dem: Meldingsmottak lagrer originalmeldingen bare til den er splittet, og registrene lagrer bare identitetene. Utleveringsmeldingen som sendes til Utleveringslager inneholder ingen identiteter.
 
-Denne fila beskriver kontrakten nedstrøms tjenester ser. Implementasjonsdetaljer (splitterklasser, skjemaversjoner, maskeringslogikk) er dokumentert i repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet og i splitterkoden der.
+Denne fila beskriver kontrakten nedstrøms tjenester ser. Implementasjonen står i splitterkoden i Meldingsmottak, og det som gjelder implementasjonen, i repo-skillen `lmr-meldingsmottak`.
 
 ## Hva som splittes
 
@@ -28,3 +28,7 @@ Utleveringsmeldingen inneholder maskerte identiteter, og maskeringsverdiene skil
 | **Maskeringsverdi HPR** | `999999999` (niere) | `0` (null) |
 
 For dyreresepter maskeres flere felter (fødselsår, kjønn, kommune m.m.) — se splitterkoden i Meldingsmottak.
+
+## Datoen 0001-01-01
+
+Apotekene sender dato-minimum (`0001-01-01`) når de mangler en verdi. Splitteren normaliserer den ikke, så verdien går uendret nedstrøms. Hvordan Utleveringslager kontrollerer og flagger den (feltstatus og kontroller), står i repo-skillen `lmr-utleveringslager` (`references/apotekkilder.md` og `references/datamodell.md`).

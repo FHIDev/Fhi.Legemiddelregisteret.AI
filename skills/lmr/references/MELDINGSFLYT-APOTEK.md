@@ -39,12 +39,14 @@ Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten.
 
 | Kilde | Format | Splitting |
 |---|---|---|
-| **Farmapro** | XML | Reseptmelding → Pasientmelding, Rekvirentmelding, Utleveringsmelding |
-| **Eik** | JSON | Reseptmelding → Pasientmelding, Rekvirentmelding, Utleveringsmelding. Farmasøytisk tjenestemelding → Pasientmelding, Tjenestemelding |
+| **Eik** | JSON | Reseptmelding og Rekvisisjonsmelding → Pasientmelding, Rekvirentmelding, Utleveringsmelding. Farmasøytisk tjenestemelding → Pasientmelding, Tjenestemelding |
+| **Farmapro** (legacy) | XML | Reseptmelding → Pasientmelding, Rekvirentmelding, Utleveringsmelding. Lokalvaremelding splittes ikke |
+
+Eik er den aktive kilden. Farmapro er legacy: koden er beholdt for reprosessering og sporbarhet, og Meldingsformidlers henting fra Farmapro er avslått i basekonfigurasjonen (se repo-skillene lmr-meldingsformidler og lmr-meldingsmottak).
 
 ## Splitting
 
-Se [MELDINGSSPLITTING-APOTEK.md](./MELDINGSSPLITTING-APOTEK.md) for kontrakten — hvilke delmeldinger som produseres, kobling mellom dem og maskeringsverdiene nedstrøms ser. Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
+Se `MELDINGSSPLITTING-APOTEK.md` for kontrakten — hvilke delmeldinger som produseres, kobling mellom dem og maskeringsverdiene nedstrøms ser. Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
 ## Tjenester involvert
 

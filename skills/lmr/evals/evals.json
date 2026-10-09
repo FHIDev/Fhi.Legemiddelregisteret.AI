@@ -34,5 +34,73 @@
       "Sier at veiledningen skal ha et siste steg om å oppdatere CLAUDE.md og repo-skillen i hvert berørte repo og kjøre /lmr:gjennomga-agentoppsett, med henvisning til avsnittet «Agentoppsett i repoene» i skills/lmr/SKILL.md",
       "Viser til at OPPDATER-NET-10.md (Steg 8) og LMR-AUTHENTICATION.md (Siste steg) har det samme steget"
     ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Jeg har lagt [Authorize(Roles = \"admin\")] på et endepunkt i en LMR-tjeneste som bruker Fhi.Lmr.Authentication.TokenValidation med DefaultScope satt. Beskytter endepunktet like godt som endepunkter uten attributter?",
+    "expected_behavior": [
+      "Svarer nei: pakken setter bare FallbackPolicy med DefaultScope, og den gjelder bare endepunkter uten autorisasjonsmetadata. [Authorize], [Authorize(Roles = ...)] og RequireAuthorization() uten policy-navn velger DefaultPolicy, så DefaultScope kreves ikke (Fhi.Lmr.Authentication.TokenValidation/ApiAuthentication/ServiceCollectionExtension.cs, AddAuthorization-blokken)",
+      "Anbefaler å legge rollen i ApiTokenValidation:Roles og bruke policy-navnet, fordi rolle-policyer også krever DefaultScope, eller å la endepunktet stå uten attributter (samme fil)",
+      "Nevner at et scope ikke kan stå både i Scopes og Roles, fordi oppstarten da kaster InvalidOperationException (samme fil), og at en scope-policy erstatter DefaultScope",
+      "Henviser til avsnittet «Hvem slipper inn» i skills/lmr/references/LMR-AUTHENTICATION.md"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "En institusjon har sendt en FHIR-melding og FhirMottak har tatt imot den. Hvem sender den videre til Meldingsmottak, og hvor splittes den i pasient-, rekvirent- og administreringsmelding?",
+    "expected_behavior": [
+      "Svarer at FhirMottak ikke sender videre selv: det lagrer meldingen kryptert og eksponerer /institusjonsmeldinger/allokerneste og /institusjonsmeldinger/merksomoverfort (Fhi.Lmr.FhirMottak.Api/Routing.cs)",
+      "Svarer at Meldingsformidler henter meldingen derfra og leverer den til Meldingsmottak",
+      "Svarer at splittingen skjer i Meldingsmottak (Fhi.Lmr.Meldingsmottak.Applikasjon/Institusjon/Splitting/FhirBundleInstitusjonsmeldingSplitter.cs), ikke i Meldingsformidler eller FhirMottak",
+      "Sier at rekvirentmeldingen alltid lages, men kan ha tom liste når bundlen ikke har Practitioner med gyldig HPR-nummer (skills/lmr/references/MELDINGSSPLITTING-INSTITUSJON-FHIR.md)"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Hvordan får Individdatauttrekk en forespørsel om et uttrekk, og hvordan blir filen levert til mottakeren?",
+    "expected_behavior": [
+      "Svarer at tjenesten styres med REST-kall fra Kontroll (controllerne under Fhi.Lmr.Individdatauttrekk.Api/Controllers), ikke via en Ratatosk-meldingsbuss",
+      "Svarer at filen pakkes i en passordbeskyttet zip med AES-256 (Fhi.Lmr.Individdatauttrekk.Api/Tjenester/LagreUttrekksfil/Zipper.cs, AESKeySize = 256)",
+      "Svarer at filen krypteres med Ratatosk-krypteringen (RSA-OAEP for AES-nøkkelen og AES-GCM for innholdet, Fhi.Lmr.Felles.Ratatosk/FilKryptering.cs) og overføres til sikker sone, ikke at den signeres med RSA som CSV"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Vi vil bytte nøkkelen i FeltKryptering for et miljø med ekte data i Pasientregisteret, og vurderer å bruke tilfeldig IV. Hva må vi vite?",
+    "expected_behavior": [
+      "Sier at feltkrypteringen er deterministisk, med fast nøkkel og fast vektor fra KeyPath og VectorPath, slik at samme klartekst gir samme chiffertekst (skills/lmr/references/FELTKRYPTERING.md)",
+      "Sier at Pasientregisteret er avhengig av det: KryptertIdentitetsnummer er primærnøkkel i Kryptert.Identiteter, og pasienter finnes ved å sammenligne chiffertekster (Fhi.Lmr.Pasientregister.Api/Aggregates/Pasient/EntityConfiguration/IdentitetConfiguration.cs)",
+      "Advarer mot tilfeldig IV og mot nøkkelbytte uten at alt kryptert krypteres på nytt, fordi ingen eksisterende pasient da blir funnet igjen og hver ny melding lager nye pasienter",
+      "Nevner at data kryptert med den innebygde testnøkkelen (UseEmbeddedTestKey) ikke kan leses med produksjonsnøkkelen"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Hvilken identity provider bruker Kontroll når den kaller Innbyggertjenester, Varseltjenesten og FhirMottak?",
+    "expected_behavior": [
+      "Svarer at Entra ID (EntraIdClient, scope api://<api-id>/.default) er standard for kall mellom LMR-tjenestene, for eksempel mot Varseltjenesten",
+      "Svarer at Kontroll bruker HelseIdClient mot Innbyggertjenester, som validerer HelseId (Apis:InnbyggertjenesterService i Fhi.Lmr.Kontroll.Web/appsettings.AzureDev.json)",
+      "Svarer at Kontroll bruker Maskinporten (MaskinportenClient, et eget internt scope) mot FhirMottak (Apis:FhirMottakKlient i samme fil)",
+      "Henviser til IDP-kartet i skills/lmr/references/LMR-AUTHENTICATION.md"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Vi har laget en ny LMR-tjeneste. Hva må gjøres i Kontroll for at den vises i systemstatus, og skal vi legge scopet i HelseIdWebKonfigurasjon?",
+    "expected_behavior": [
+      "Svarer at HelseIdWebKonfigurasjon ikke brukes: utgående kall konfigureres under Apis:<Tjeneste>Service med BaseAddress, HttpClientName, OidcClientName EntraIdClient og Scope api://<api-id>/.default",
+      "Nevner at Kontroll også trenger en tjenesteklasse og en case i HealthService.GetStatusFromService (Fhi.Lmr.Kontroll.Web/Tjenester/Health/HealthService.cs)",
+      "Nevner at tjenestenavnet må stå i SystemStatusKonfigurasjon:Tjenester i hver miljøfil, og at listen er ulik per miljø",
+      "Nevner at Kontrolls app-registrering må ha app-rolle mot tjenesten (skills/lmr/references/SYSTEMSTATUS.md og skillen lmr-entraid)"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Henter Meldingsformidler meldinger fra Farmapro, og hva er flyten for apotekmeldinger?",
+    "expected_behavior": [
+      "Svarer at Eik er den aktive kilden for apotek, og at Farmapro er legacy",
+      "Svarer at hentingen fra Farmapro (HentFarmaproReseptmeldingerHostedService og HentFarmaproLokalvaremeldingerHostedService) styres av isDisabled i Meldingsformidlers appsettings per miljø, og at de er avslått i appsettings.json (Fhi.Lmr.Meldingsformidler.Api/appsettings.json)",
+      "Sier at Rekvisisjonsmelding også er en Eik-meldingstype som splittes i pasient-, rekvirent- og utleveringsmelding (skills/lmr/references/MELDINGSFLYT-APOTEK.md)"
+    ]
   }
 ]

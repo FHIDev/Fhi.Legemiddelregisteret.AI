@@ -1,5 +1,17 @@
 # Kodeverksynkronisering i LMR
 
+## Innhold
+
+- Faglig formål
+- Oversikt og tjenester som bruker synkroniseringen
+- Grunndatas synkronisering fra FHI-kodeverk
+- Pakken Fhi.Lmr.Felles.TilgangKodeverk
+- On-demand sync i konsumerende tjeneste
+- Legge til en ny OID
+- OID-konfigurasjon
+- Helsesjekken GrunndataSynkronisering
+- Feilsøking
+
 ## Faglig formål
 
 LMR mottar utleveringsmeldinger fra apotek som inneholder kodede verdier: ATC-kode (legemiddelklassifikasjon), legemiddelform, doseringskode, hjemmelkode, refusjonskode, kommunenummer og mer. Disse kodene må valideres mot gyldige kodelister før meldingene kan prosesseres og lagres.
@@ -36,10 +48,10 @@ Konsumerende tjeneste  ←── lagrer lokalt i egen DB, validerer koder
 | Tjeneste | Type | Registreringsfil | Merknad |
 |---|---|---|---|
 | Fhi.Lmr.Utleveringslager | Produksjon | `Fhi.Lmr.Utleveringslager.Api/Startup.cs` | Full DB-persistering, helsesjekk, OID-konfig |
-| Fhi.Lmr.Apoteksimulator | Simulator | `Fhi.Lmr.Apoteksimulator/Startup.cs` | Bruker in-memory repository, ingen helsesjekk |
-| Fhi.Lmr.Administreringslager | Produksjon | `Fhi.Lmr.Administreringslager.Api/Program.cs` | Periodisk bakgrunnsjobb (SynkroniserKodeverkBackgroundService); OID-er hentes fra tabellen GyldigSystemForFelt; helsesjekk uten Grunndata-kall |
+| Fhi.Lmr.Apoteksimulator | Simulator | `Fhi.Lmr.Apoteksimulator.Api/Startup.cs` (også `Fhi.Lmr.Apoteksimulator.AzureSeeder/Program.cs`) | Bruker in-memory repository, ingen helsesjekk |
+| Fhi.Lmr.Administreringslager | Produksjon | `Fhi.Lmr.Administreringslager.Api/Program.cs` | Har i tillegg en periodisk bakgrunnsjobb; se repo-skillen `lmr-administreringslager` |
 
-De øvrige 16 LMR-mikrotjenestene bruker ikke pakken.
+Andre tjenester refererer ikke pakken (se `.csproj`-filene).
 
 ## Grunndata sin synkronisering fra FHI-kodeverk
 
@@ -169,54 +181,9 @@ Når ingen `Klassifikasjon`-rad finnes i DB:
 
 **En OID som mangler i `Klassifikasjon`-tabellen er derfor ikke nødvendigvis en feil** — det betyr bare at ingen melding med den OIDen har ankommet ennå. Første melding vil populere tabellen automatisk.
 
-## Periodisk jobb i Administreringslager
+## Administreringslager
 
-Utleveringslager synkroniserer utelukkende on-demand, som beskrevet over: `Synchronize(oid)` kalles først
-når en melding faktisk kontrolleres mot den OIDen. Administreringslager har i tillegg en egen periodisk
-bakgrunnsjobb.
-
-`SynkroniserKodeverkBackgroundService` i `Fhi.Lmr.Administreringslager.Api` styres av konfigurasjonsseksjonen
-`SynkroniserKodeverk`:
-
-```json
-"SynkroniserKodeverk": {
-  "SkalSynkroniseringstjenesteKjore": true,
-  "AntallMinutterMellomKjoringer": 60
-}
-```
-
-Jobben kjører ved oppstart og deretter periodisk med det konfigurerte intervallet. Hver kjøring henter
-distinkte `KodeverkOid` fra tabellen `GyldigSystemForFelt` (kolonnene Feltsti, System, KodeverkOid - styrer
-hvilke felt som skal valideres mot hvilket kodeverk) og kaller pakkens
-`IKlassifikasjonService.SynchronizeOrThrow(oid)` (pakke 3.0.0) for hver OID, ikke `Synchronize`.
-`Synchronize` svelger både feil mot Grunndata og lagringsfeil, så jobben kunne ikke rapportere om
-synkroniseringen lyktes. `SynchronizeOrThrow` deler cache og throttling med `Synchronize`, men lar feil
-propagere og returnerer `Updated`, `Unchanged` eller `NotFound`. Jobben teller unntak og `NotFound`
-(OID-en er i bruk her, men ukjent i Grunndata) som feilet per OID; feil for én OID stopper ikke de andre.
-
-Pakken avgjør fortsatt om Grunndata faktisk kontaktes for en gitt OID (`UpdateIntervalInMinuttes`,
-`Lastchecked` i minnecache, se over), så et kort jobbintervall koster lite: de fleste kjøringene er bare
-cache-oppslag.
-
-Circuit-breakeren i pakken (`AktivGrunndataKodeverkKlient`) gjelder ikke jobben. `IsActive` leses kun i
-`ValidKodeverkKodeCheckService.IsValidCheck`, altså on-demand-valideringen; verken `Synchronize` eller
-`SynchronizeOrThrow` sjekker den eller `AktivSynkronisering`. `GrunndataKodeverk:AktivSynkronisering: false`
-slår derfor ikke av jobben. Det gjør bare `SkalSynkroniseringstjenesteKjore: false`.
-
-Helsesjekken `KodeverkSynkronisering` i Administreringslager leser lokal DB (`Klassifikasjon`-rader med
-`Nedlasted`) og singletonen `KodeverkSynkroniseringStatus` (bakgrunnsjobben skriver `SistKjørt` og
-`SisteResultat`, sjekken leser), og kaller aldri Grunndata selv. Den er Degraded hvis jobben er skrudd på
-og minst ett av dette gjelder:
-
-- en OID i `GyldigSystemForFelt` mangler tilhørende `Klassifikasjon`-rad
-- `SisteResultat.AntallFeilet > 0`
-- `SistKjørt` er null (jobben har aldri kjørt) eller eldre enn to ganger `AntallMinutterMellomKjoringer`
-
-Manglende rad fanger ikke en ødelagt synkronisering, fordi radene blir liggende fra forrige vellykkede
-kjøring; det er de to siste betingelsene som gjør det. `AntallFeilet` vises i sjekkens `data`.
-
-Jobben er skrudd av i Development-miljøet, fordi endepunkttestene starter hele appen (`Program.cs`) og
-ikke skal kalle Grunndata under kjøring.
+Utleveringslager synkroniserer utelukkende on-demand, som beskrevet over. Administreringslager har i tillegg en egen periodisk bakgrunnsjobb som bruker pakkens `SynchronizeOrThrow`, og en helsesjekk som leser lokal DB. Det er repo-spesifikt og står i repo-skillen `lmr-administreringslager` (`references/prosessering-drift.md`): jobben, konfigurasjonen, helsesjekken og loggstrengene.
 
 ## Legge til en ny OID
 
@@ -230,16 +197,7 @@ Følgende må gjøres for at en ny OID skal fungere i Utleveringslager:
 
 `Klassifikasjon`- og `KodeverkKode`-tabellene **skal ikke** populeres via migreringer — de fylles automatisk av synkmekanismen når første melding ankommer. Seed av `KodeverkKode` via migrasjon ble tidligere forsøkt (`KodeverkKodeConfiguration.cs`) og bevisst fjernet.
 
-Tilsvarende for Administreringslager:
-
-| Steg | Hva | Hvor |
-|---|---|---|
-| 1 | Legg OIDen til `OidListe` i Grunndata-konfigurasjon | `Fhi.Lmr.Grunndata` `appsettings.json` |
-| 2 | Legg en ny seed-rad til (`HasData`) i `GyldigSystemForFeltConfiguration` | `Fhi.Lmr.Administreringslager.Infrastruktur` |
-| 3 | Lag EF-migrasjon som inserter raden i `GyldigSystemForFelt` | `Fhi.Lmr.Administreringslager.Infrastruktur` |
-
-Heller ikke her skal `Klassifikasjon`- og `KodeverkKode`-tabellene seedes via migrasjon - de fylles av
-synkroniseringsjobben (eller on-demand-sync ved meldingsprosessering) etter at OIDen er lagt til.
+For Administreringslager er stegene 2 og 3 annerledes (`GyldigSystemForFelt` i stedet for `GyldigKodeverkKoderPerFeltData.cs`); se repo-skillen `lmr-administreringslager` (`references/baerum-csv.md`). Steg 1 er felles. `Klassifikasjon`- og `KodeverkKode`-tabellene seedes ikke via migrasjon i noen av tjenestene.
 
 ## OID-konfigurasjon
 
@@ -286,14 +244,6 @@ Logg-strenger å søke etter (i Utleveringslager sine logger):
 | `OppdaterRepoistory  <oid>` | Sync lyktes — data skrevet til DB |
 
 Ingen treff på `SynchronizeWithGrunndata Oid=<oid>` betyr at ingen melding har trigget oppslag mot den OIDen ennå — dette er normalt for nye OIDer og er ikke en feil.
-
-Administreringslager logger i tillegg fra bakgrunnsjobben (pakkens strenger over gjelder også der):
-
-| Logg-streng | Nivå | Betyr |
-|---|---|---|
-| `Kodeverksynkronisering fullført for <n> OID-er, <m> feilet` | Information | Én kjøring er ferdig; `m > 0` gir Degraded i helsesjekken |
-| `Kodeverksynkronisering feilet for OID <oid>` | Warning | `SynchronizeOrThrow` kastet, unntaket ligger i loggen |
-| `Kodeverk for OID <oid> finnes ikke i Grunndata` | Warning | Grunndata svarte «ikke funnet»; OIDen mangler i Grunndatas `OidListe` |
 
 ### Manuell trigger
 

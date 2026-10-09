@@ -4,6 +4,16 @@ LMR mottar meldinger om legemiddeladministreringer fra sykehus og sykehjem via r
 
 Av personvernhensyn splittes innkommende meldinger i separate deler som lagres i ulike registre — identitetsopplysninger lagres aldri sammen med administreringsdata.
 
+## Innhold
+
+- Flytdiagram og trinnvis beskrivelse
+- Hva som er aktivt
+- Meldingsformat
+- Splitting i Meldingsmottak og parallellitet i levering
+- Tjenester involvert
+- Databaseskjema for feilsøking
+- Tolkning av meldingsstatus
+
 ## Flytdiagram
 
 ```
@@ -13,7 +23,7 @@ Regionalt helseforetak (sykehus/sykehjem)
   v
 FhirMottak
   |
-  | Meldingsformidler leverer melding
+  | Meldingsformidler henter melding (allokerneste / merksomoverfort)
   v
 Meldingsmottak (splitter melding)
   |
@@ -25,14 +35,18 @@ Meldingsmottak (splitter melding)
                                                                   tre er mottatt
 ```
 
-Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten.
+Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten. FhirMottak sender ikke videre selv: det eksponerer `/institusjonsmeldinger/allokerneste` og `/institusjonsmeldinger/merksomoverfort`, og Meldingsformidler henter og leverer til Meldingsmottak.
+
+## Hva som er aktivt
+
+Hvilke av Meldingsformidlers bakgrunnstjenester som kjører, styres per miljø i Meldingsformidlers appsettings (`HostedService`-oppføringene med `isDisabled`). Institusjonsflyten kan derfor være avslått i ett miljø og aktiv i et annet, og i basekonfigurasjonen er flere av institusjonstjenestene avslått. Sjekk `appsettings.<miljø>.json` i Meldingsformidler og eventuelle overstyringer i driftsmiljøet før du antar at flyten går, og se repo-skillen `lmr-meldingsformidler` for oppføringene.
 
 ## Trinnvis beskrivelse
 
 | Trinn | Beskrivelse |
 |---|---|
 | 0 | Regionalt helseforetak leverer melding (FHIR Bundle) via API til FhirMottak |
-| 1 | Meldingsformidler leverer melding til Meldingsmottak |
+| 1 | Meldingsformidler henter meldingen fra FhirMottak og leverer den til Meldingsmottak |
 | 2 | Meldingsmottak splitter melding i tre: Administreringsmelding, Pasientmelding og Rekvirentmelding |
 | 3 | Meldingsformidler sender Administreringsmelding til Administreringslager |
 | 4 | Meldingsformidler sender Pasientmelding til Pasientregister |
@@ -45,32 +59,15 @@ Alle piler mellom tjenestene er Meldingsformidler som orkestrerer transporten.
 
 FhirMottak mottar **HL7 FHIR R4 Bundles** innpakket som en `SignertKryptertBundle` — kryptert med AES-256-GCM og signert med avsenders virksomhetssertifikat. Autentisering skjer via **Maskinporten** (scope: `fhi:lmr/fhirmottak.api`).
 
-**API-endepunkter:**
-- Prod: `https://fhirmottak.lmr.fhi.no/fhirmottak/v1`
-- Test: `https://test-fhirmottak.lmr.fhi.no/fhirmottak/v1`
-
-**Ressurser i en FHIR Bundle:**
-
-| Ressurs | Innhold |
-|---|---|
-| Patient | FNR eller D-nummer, kjønn, fødselsdato, kommune |
-| Practitioner | HPR-nummer (rekvirent) |
-| MedicationAdministration | Tidspunkt, dose, administrasjonsvei, kategori |
-| Medication | Legemiddelkode fra FEST (Merkevare, Pakning, Virkestoff o.l.) |
-| Organization | Organisasjonsnummer (ENH/RESH), navn, hierarki |
-| Encounter | Episode (innleggelse/poliklinisk), tidsperiode |
-| Condition | Diagnose (ICD-10/SNOMED CT) — valgfritt |
-| MedicationRequest | Rekvirering med dosering — valgfritt |
-
-Implementasjonsguide for avsendere (eksternt): [LMDI på GitHub](https://github.com/folkehelseinstituttet/LMDI)
+Endepunktadresser per miljø og hvilke ressurser en bundle skal inneholde (Patient, Practitioner, MedicationAdministration, Medication m.fl.) står i skillen `lmdi-fhir` (`references/bundle-og-transport.md` og `references/profiler.md`). Innholdet i profilene gjentas ikke her.
 
 ## Splitting i Meldingsmottak
 
 Meldingsmottak ekstraherer identiteter per `MedicationAdministration`, masker `Identifier.Value` i bundlen og produserer tre delmeldinger. Én post per administrering — ingen deduplicering av pasienter eller rekvirenter.
 
-Se [MELDINGSSPLITTING-INSTITUSJON-FHIR.md](./MELDINGSSPLITTING-INSTITUSJON-FHIR.md) for kontrakten (delmeldinger, kobling, maskering, begrensninger). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
+Se `MELDINGSSPLITTING-INSTITUSJON-FHIR.md` for kontrakten (delmeldinger, kobling, maskering, begrensninger). Implementasjonsdetaljer: repo-skillen `lmr-meldingsmottak` i Meldingsmottak-repoet.
 
-Se [MELDINGSKONTRAKTER-INSTITUSJON.md](./MELDINGSKONTRAKTER-INSTITUSJON.md) for meldingskontraktene (`PasientmeldingFraInstitusjonsmelding`, `RekvirentmeldingFraInstitusjonsmelding`, `PasientlisteFhir`, `RekvirentlisteFhir`) og hvordan Administreringslager kobler alt sammen.
+Se `MELDINGSKONTRAKTER-INSTITUSJON.md` for meldingskontraktene (`PasientmeldingFraInstitusjonsmelding`, `RekvirentmeldingFraInstitusjonsmelding`, `PasientlisteFhir`, `RekvirentlisteFhir`) og hvordan Administreringslager kobler alt sammen.
 
 ## Parallellitet i meldingslevering
 

@@ -26,9 +26,9 @@ Stiene er relative, så `BaseAddress` må ende på skråstrek. Uten den erstatte
 
 Opprettes når en melding går til `Status.Stoppet`, dvs. når retry-forsøkene er brukt opp (styrt av `ProvIgjenIntervallerIMinutterListe`) eller meldingen stoppes eksplisitt. I Rekvirentregister gjelder dette både `Rekvirentmelding` (apotekflyt) og `RekvirentmeldingFraInstitusjonsmelding` (FHIR-/institusjonsflyt) — begge oppretter hendelse i `LagreProsesseringSomStoppet`, `LagreProsesseringSomFeilet` og `SettMeldingSomUnderProsseseringOgHentMelding` (når status allerede er/blir Stoppet).
 
-Kjent svakhet i flere av kildene (bl.a. Rekvirentregister og Utleveringslager): `Detaljer` settes til `"Feilmelding ikke tilgjengelig."` fordi feilmeldingen ikke er tilgjengelig der hendelsen opprettes (todo i koden, må leses fra logg).
+`Detaljer` fylles ulikt i kildene: Utleveringslager setter `"Feilmelding ikke tilgjengelig."` (feilmeldingen må leses fra logg), Rekvirentregister tar med meldingstypen og feilmeldingen (så apotek- og institusjonsflyten kan skilles i varselet), og Meldingsmottak setter feilmeldingen (eller `Ukjent apotek: <konsesjonsnummer>`). Klienten og kilden er fasit.
 
-Administreringslager fyller derimot `Detaljer` med en sanert feiltekst, prefikset med meldingstypen (`SanitertFeiltekst`). Saneringen er nødvendig fordi feltet lagres i Varseltjenesten og vises på kontrollsiden, mens feilmeldinger kan inneholde meldingsinnhold: SQL-feil 2628 tar med den avkortede verdien, og .NET-parsefeil som `int.Parse` siterer inndataene. Databasefeil gjengis derfor bare med feilnummer og tabell/kolonne, og siterte verdier i øvrige meldinger fjernes grådig fra første til siste anførselstegn, siden verdien selv kan inneholde anførselstegn. En verdi helt uten anførselstegn slipper likevel gjennom, så saneringen er siste skanse og ingen garanti: egne feilmeldinger bør ikke interpolere meldingsinnhold. Detaljer står i repo-skillen `lmr-administreringslager` (`references/prosessering-drift.md`).
+Administreringslager fyller `Detaljer` med en sanert feiltekst fordi feltet lagres i Varseltjenesten og vises på kontrollsiden. Detaljer (hva saneringen gjør og ikke garanterer) står i repo-skillen `lmr-administreringslager` (`references/prosessering-drift.md`). Regelen for alle kilder: egne feilmeldinger skal ikke interpolere meldingsinnhold.
 
 ## Varsler (Fhi.Lmr.Varseltjeneste)
 
@@ -45,11 +45,11 @@ Nye varseltyper krever: validator + factory + query + tjeneste i Varseltjenesten
 
 ## Visning og handlinger (Fhi.Lmr.Kontroll)
 
-Varsler vises på Kontroll-siden i `ClientApp/src/app/varsel-feature/`. Hver varseltype har sin egen komponent som velges i `varsel.component.ts` basert på `varseltype`/`kilde`:
+Varsler vises på Kontroll-siden i `ClientApp/src/app/varsel-feature/`. Hver varseltype har sin egen komponent som velges i `varsel.component.html` (`@switch` på varseltype) basert på `varseltype`/`kilde`:
 
 - `meldingprosesseringfeilet`, `ukjent-kodeverdi`, `ugyldig-melding`, `ukjent-apotek`, `dekrypteringsfeil`, m.fl.
 
-`meldingprosesseringfeilet`-komponenten deles av alle kildene til `MeldingprosesseringFeiletVarsel`. `hentMeldingsId` har én `case` per kilde og kaster på ukjent kilde, så en ny kilde krever en ny `case` der og et nytt felt på `IHendelse` i `varsel.interface.ts`. Ellers krasjer detaljvisningen i det første varselet fra kilden dukker opp.
+`meldingprosesseringfeilet`-komponenten deles av alle kildene til `MeldingprosesseringFeiletVarsel`. `hentMeldingsId` (i `meldingprosesseringfeilet.component.ts`) har én `case` per kilde og kaster på ukjent kilde, så en ny kilde krever en ny `case` der og et nytt felt på `IHendelse` i `varsel.interface.ts`. Ellers krasjer detaljvisningen i det første varselet fra kilden dukker opp.
 
 Brukeren kan utføre en handling på et åpent varsel (med begrunnelse, via `app-varsel-modal`). Handlingen går Kontroll → `VarselController` → Varseltjenesten, som har en command handler per handling.
 
@@ -61,7 +61,7 @@ For `MeldingprosesseringFeiletVarsel`: `ReprosesserFeiledeMeldingerCommandHandle
 2. kaller kildens API `POST Handlinger/reprosesserstoppedemeldinger` (switch på `varsel.Kilde`),
 3. lukker varselet.
 
-I kilden (f.eks. Rekvirentregister) finner handleren alle meldinger med `Status.Stoppet` og setter dem tilbake til `KlarForProsessering` (nullstiller `AntallGangerPrøvd`), slik at bakgrunnsprosesseringen plukker dem opp på nytt. I Rekvirentregister reprosesseres både `Rekvirentmelding` og `RekvirentmeldingFraInstitusjonsmelding`. Administreringslager gjør det samme for `Prosesseringsstatus.Stoppet` (`ReprosesserStoppedeMeldingerHandler`).
+I kilden (f.eks. Rekvirentregister) finner handleren alle meldinger med `Status.Stoppet` og setter dem tilbake til `KlarForProsessering` (nullstiller `AntallGangerPrøvd`), slik at bakgrunnsprosesseringen plukker dem opp på nytt. I Rekvirentregister reprosesseres både `Rekvirentmelding` og `RekvirentmeldingFraInstitusjonsmelding`. Administreringslager gjør det samme for sine stoppede meldinger (se repo-skillen `lmr-administreringslager`).
 
 ## Meldingsstatuser (retry-logikk i kildene)
 
@@ -71,4 +71,4 @@ Meldinger som prosesseres i bakgrunnen følger en felles statusmodell (`Rekviren
 - Ved feil: `AvbruttProsessering` (prøves igjen etter intervall) til forsøkene er brukt opp → `Stoppet` (+ hendelse opprettes)
 - «Reprosesser meldinger» setter `Stoppet` → `KlarForProsessering`
 
-Administreringslager (`Prosesseringsstatus`) har ikke `AvbruttProsessering`. Der er `UnderProsessering` med `PrøvIgjenTidspunkt` venteposisjonen ved retry. Permanente SQL-feil (2628/8152, data som ikke får plass i skjemaet) gir `Stoppet` og hendelse med én gang, uten retry. Andre feil gir `Stoppet` når forsøkene er brukt opp.
+Administreringslager har en egen statusmodell (uten `AvbruttProsessering`), som er beskrevet i repo-skillen `lmr-administreringslager`.

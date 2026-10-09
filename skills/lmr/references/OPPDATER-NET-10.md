@@ -2,18 +2,44 @@
 
 Oppgrader en .NET 8-tjeneste til .NET 10, bytt ut gamle autentiseringspakker med nye Fhi.Lmr.Authentication-pakker, og oppdater pipeline-filer til ny .NET 10-standard.
 
+## Innhold
+
+- Utløserkriterier og målbilde
+- Steg 1–2: målrammeverk og pakker
+- Steg 3–4: wrapper-filen og `Startup.cs`/`Program.cs`
+- Steg 5: appsettings (Entra ID som mål)
+- Steg 6: Swagger-attributter
+- Steg 7: pipelines
+- Steg 8: agentfilene
+- Avklarende spørsmål
+
 ## Utløserkriteria
 
-Aktiver denne skillen når brukeren ber om å:
+Les denne referansen når brukeren ber om å:
 - Oppgradere en tjeneste fra .NET 8 til .NET 10
 - Bytte ut `Fhi.ClientCredentialsKeypairs` / `Fhi.HelseId.Api` med `Fhi.Lmr.Authentication.*`
 - Migrere autentiseringskonfigurasjon fra gammel til ny pakkestruktur
 
+## Målbilde
+
+Tjenestene validerer Entra ID (`Audience` er app-registreringens GUID, `DefaultScope` er `Fhi.Lmr.<Tjeneste>.All`), og
+LMR-til-LMR-kall bruker `EntraIdClient` med scope `api://<api-id>/.default`. HelseId brukes bare der en ekstern part
+krever det; se IDP-kartet i `LMR-AUTHENTICATION.md`. Tjeneste-repoene står på `net10.0` med
+`Fhi.Lmr.Authentication`-pakkene. Avvik fra målbildet, sjekket mot `.csproj`-filene i repoene:
+
+- `Fhi.Lmr.Felles` har prosjekter på `net8.0` og `netstandard2.0` (se `TargetFramework` i `.csproj`-filene).
+- `Fhi.Lmr.Felles.ProjectTests` refererer `Fhi.HelseId.TestSupport`.
+- `Fhi.Lmr.Rak.Web` og `Fhi.Lmr.Krl.Admin` refererer ikke `Fhi.HelseId.*`-pakkene. De har egen HelseId-innlogging i
+  koden (kommentar i `Fhi.Lmr.Rak.Web.csproj`).
+
+Stegene under gjelder en tjeneste som ikke er migrert. Er den migrert, bruk stegene som sjekkliste mot
+repoet.
+
 ---
 
-## Steg 1: Directory.Build.Props – Oppdater TargetFramework
+## Steg 1: Directory.Build.props – Oppdater TargetFramework
 
-Finn filen `Directory.Build.Props` i rotkatalogen.
+Finn filen `Directory.Build.props` i rotkatalogen.
 
 **Før:**
 ```xml
@@ -67,17 +93,17 @@ Finn filen `Directory.Build.Props` i rotkatalogen.
 <PackageReference Include="Fhi.HelseId.Api" Version="8.2.0" />
 ```
 
-**Legg til** (sjekk alltid nyeste versjon i Azure Artifacts-feeden — disse er nyeste per nå):
+**Legg til** (hent nyeste versjon fra Azure Artifacts-feeden; versjonene tjenestene bruker, står i deres `.csproj`-filer):
 ```xml
-<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.3.0" />
-<PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="10.3.1" />
+<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="<versjon>" />
+<PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="<versjon>" />
 ```
 
 > **NU1605 — DependencyInjection.Abstractions:** De nye pakkene drar inn `Microsoft.Extensions.Logging.Abstractions 10.0.5`, som krever `Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.5`. Hvis et prosjekt (typisk API- eller testprosjekt) har en eksplisitt referanse pinnet til `10.0.1`, bump den til `10.0.5` — ellers feiler restore med NU1605 (downgrade).
 
-### 2c. Bytt ut Swashbuckle med OpenAPI/Scalar – ALLTID ved .NET 10 + Fhi.Lmr.Authentication
+### 2c. Bytt ut Swashbuckle med OpenAPI/Scalar – alltid når prosjektet bruker Swashbuckle
 
-> **VIKTIG:** Swashbuckle (alle versjoner) vil alltid feile med .NET 10 + `Fhi.Lmr.Authentication.*`-pakker fordi auth-pakkene drar inn `Microsoft.AspNetCore.OpenApi 10.0.0` → `Microsoft.OpenApi 2.0.0`, som fjernet `Microsoft.OpenApi.Models`-namespacet som Swashbuckle er avhengig av. Gjør alltid dette steget.
+> **VIKTIG:** Swashbuckle (alle versjoner) feiler med .NET 10 + `Fhi.Lmr.Authentication.*`-pakker fordi auth-pakkene drar inn `Microsoft.AspNetCore.OpenApi 10.0.0` → `Microsoft.OpenApi 2.0.0`, som fjernet `Microsoft.OpenApi.Models`-namespacet som Swashbuckle er avhengig av. Bruker prosjektet Swashbuckle, gjør du alltid dette steget, og deretter steg 4f og 6. Bruker det ikke Swashbuckle, hopp over 2c, 4f og 6.
 
 **Fjern alle Swashbuckle-pakker:**
 ```xml
@@ -212,7 +238,7 @@ services.AddOpenApi();
 > **EKSTREMT VIKTIG – TIMEOUT-INNSTILLINGER MÅ BEVARES!**
 > Den gamle koden brukte ofte `AddHttpClient<T>()` med eksplisitt `Timeout.InfiniteTimeSpan` eller andre custom timeout-verdier. Når man bytter til `ConfigureHttpClients()` + `IHttpClientFactory.CreateClient()`, følger IKKE timeout-innstillingene med. Alle klienter faller da tilbake til `HttpClient`-standarden på **100 sekunder**.
 >
-> **Produksjonsbug:** I Individdatauttrekk (PR 36891) førte dette til at store nøkkelfiler som krevde lang prosesseringstid i Pasientregisteret feilet med `TaskCanceledException`. Bakgrunnstjenesten (`ImporterNøkkelfilerBackgroundService`) feiltolket timeout som shutdown og stoppet hele tjenesten.
+> **Produksjonsbug:** I Individdatauttrekk førte dette til at store nøkkelfiler som krevde lang prosesseringstid i Pasientregisteret feilet med `TaskCanceledException`. Bakgrunnstjenesten (`ImporterNøkkelfilerBackgroundService`) feiltolket timeout som shutdown og stoppet hele tjenesten.
 >
 > **Sjekk ALLTID** den eksisterende koden for timeout-innstillinger på `HttpClient` før migrering:
 > - Søk etter `Timeout` i alle filer som registrerer HTTP-klienter
@@ -264,7 +290,7 @@ private void KonfigurerAuth(IServiceCollection services)
 }
 ```
 
-### 4f. Bytt ut Swagger-middleware – KUN hvis Swashbuckle ble fjernet
+### 4f. Bytt ut Swagger-middleware – når Swashbuckle ble fjernet i steg 2c
 
 **Fjern:**
 ```csharp
@@ -362,29 +388,32 @@ Nøkler som IKKE skal være i whitelist: `OidcClients`, `ClientCredentialsConfig
 
 ### 5d. Bytt ut `HelseIdApiKonfigurasjon` med `ApiTokenValidation`
 
+Alle LMR-API-ene validerer Entra ID. Gammel konfigurasjon for HelseId-validering skrives om til Entra-målbildet:
+
 ```json
-// Før:
+// Før (gammel pakke):
 "HelseIdApiKonfigurasjon": {
-  "Authority": "https://helseid-sts.nhn.no/",
-  "ApiName": "fhi:lmr.varseltjeneste",
-  "ApiScope": "fhi:lmr.varseltjeneste/all",
+  "Authority": "<helseid-sts>",
+  "ApiName": "<audience>",
+  "ApiScope": "<scope>",
   "AuthUse": "true",
   "RequireDPoPTokens": true,
   "AllowDPoPTokens": true
 }
 
-// Etter:
+// Etter (Entra ID):
 "ApiTokenValidation": {
-  "Authority": "https://helseid-sts.nhn.no/",
-  "Audience": "fhi:lmr.varseltjeneste",
-  "DefaultScope": "fhi:lmr.varseltjeneste/all",
+  "Authority": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+  "Audience": "<api-app-id>",
+  "DefaultScope": "Fhi.Lmr.<Tjeneste>.All",
   "Scopes": [],
-  "RequireDPoP": true,
   "UseAuth": true
 }
 ```
 
-> Nøkkelendringer: `AuthUse` → `UseAuth`, `ApiName` → `Audience`, `ApiScope` → `DefaultScope`, `RequireDPoPTokens`/`AllowDPoPTokens` → `RequireDPoP`. I development/lokal bør `"UseAuth": false`.
+> Nøkkelendringer: `AuthUse` → `UseAuth`, `ApiName` → `Audience`, `ApiScope` → `DefaultScope`. `Audience` er app-registreringens GUID, uten `api://`-prefiks, og `DefaultScope` er app-rollen som klientene får tildelt (ligger i `roles`-claimet). `RequireDPoPTokens`/`AllowDPoPTokens` bortfaller: Entra ID støtter ikke DPoP, så `RequireDPoP` utelates. App-registreringene settes opp etter skillen `lmr-entraid`. I development/lokal kan `"UseAuth": false` brukes, men bare i miljøene i `AllowedNoAuthEnvironments`.
+>
+> Validerer tjenesten HelseId (en ekstern part krever det), bruk HelseId-verdiene i stedet: `Authority` til HelseId, `Audience` og `DefaultScope` som registrert i HelseIds selvbetjeningsportal, og `"RequireDPoP": true`. Se `LMR-AUTHENTICATION.md`.
 
 ### 5e. Bytt ut `ClientCredentialsConfiguration` med `OidcClients` + `Apis`
 
@@ -392,16 +421,16 @@ Nøkler som IKKE skal være i whitelist: `OidcClients`, `ClientCredentialsConfig
 ```json
 "ClientCredentialsConfiguration": {
   "clientName": "...",
-  "authority": "https://helseid-sts.nhn.no/connect/token",
+  "authority": "<helseid-sts>/connect/token",
   "clientId": "<guid>",
   "grantTypes": ["client_credentials"],
-  "scopes": ["fhi:lmr.grunndata/all", ...],
+  "scopes": ["<scope>", ...],
   "privateJwk": "...",
   "Apis": [
     {
       "Name": "MeldingsmottakKlient",
-      "Url": "https://api.lmr.fhi.no/meldingsmottak/api/",
-      "Scope": "fhi:lmr.meldingsmottak/all",
+      "Url": "https://<api-host>/meldingsmottak/api/",
+      "Scope": "<scope>",
       "UseDpop": true
     }
   ],
@@ -409,40 +438,42 @@ Nøkler som IKKE skal være i whitelist: `OidcClients`, `ClientCredentialsConfig
 }
 ```
 
-**Etter:**
+**Etter (LMR-til-LMR bruker Entra ID):**
 ```json
 "OidcClients": {
-  "HelseIdClient": {
-    "Authority": "https://helseid-sts.nhn.no/",
-    "ClientId": "<guid>",
-    "PrivateKey": "..."
+  "EntraIdClient": {
+    "Authority": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+    "ClientId": "<klient-app-id>",
+    "kid": "<sertifikat-thumbprint>",
+    "PrivateKey": "settes utenfor repoet"
   }
 },
 "Apis": {
   "MeldingsmottakApi": {
-    "BaseAddress": "https://api.lmr.fhi.no/meldingsmottak/api/",
+    "BaseAddress": "https://<api-host>/meldingsmottak/api/",
     "HttpClientName": "MeldingsmottakKlient",
-    "OidcClientName": "HelseIdClient",
-    "Scope": "fhi:lmr.meldingsmottak/all",
-    "UseDPoP": true
+    "OidcClientName": "EntraIdClient",
+    "Scope": "api://<api-app-id>/.default"
   }
   // ... legg til alle Apis tjenesten bruker
 }
 ```
 
 > Nøkkelendringer:
-> - `clientId` → `ClientId`, `privateJwk` → `PrivateKey`, `authority` → `Authority` (flyttes inn under `OidcClients.HelseIdClient`)
+> - `clientId` → `ClientId`, `privateJwk` → `PrivateKey` (PEM for Entra ID), `authority` → `Authority` (flyttes inn under `OidcClients.EntraIdClient`), og `kid` (thumbprint) er påkrevd for Entra ID
 > - `Apis[].Name` → nøkkel i `Apis`-objektet (f.eks. `MeldingsmottakApi`)
 > - `Apis[].Url` → `BaseAddress`
-> - `UseDpop` → `UseDPoP`
-> - Legg til `HttpClientName` (= gammel `Name`) og `OidcClientName` (alltid `"HelseIdClient"`)
+> - Legg til `HttpClientName` (= gammel `Name`) og `OidcClientName`
+> - `Scope` er `api://<api-app-id>/.default` for Entra ID
+> - `UseDpop` bortfaller (leses ikke av `Fhi.Lmr.Authentication`)
 > - `scopes`-listen, `grantTypes` og `refreshTokenAfterMinutes` på toppnivå bortfaller
-
+> - `HelseIdClient` (`PrivateKey` som JWK) og `MaskinportenClient` brukes bare mot eksterne API-er som krever dem; se IDP-kartet i `LMR-AUTHENTICATION.md`
+> - Private nøkler hører ikke hjemme i appsettings som sjekkes inn
 ---
 
 ## Steg 6: Controllere – Bytt Swagger-attributter med OpenAPI-attributter
 
-> **VIKTIG:** Gjør dette steget KUN hvis Swashbuckle ble fjernet i steg 2c.
+> **VIKTIG:** Gjør dette steget når Swashbuckle ble fjernet i steg 2c.
 
 ### 6a. Bytt using-direktiv
 
@@ -487,6 +518,8 @@ public async Task<ActionResult> GetVarselListe(...)
 - template: templates/restoreandbuild-sdkinstall-net10.yaml@FhiLmrDevOps
 - template: templates/unittests-sdkinstall-net10.yaml@FhiLmrDevOps
 ```
+
+> **Merk:** teststeget i `unittests-sdkinstall-net10.yaml` har `continueOnError: true`, så røde tester gjør ikke bygget rødt. Les testresultatet i pipelinen, ikke bare byggestatusen.
 
 ### 7b. Publish-pipelines (f.eks. `<Tjeneste>.AzureDev.Publish.yml`, `<Tjeneste>.Nhn.Publish.yml`, og ALLE andre publish-pipelines)
 
@@ -599,7 +632,8 @@ oppgradert:
 Spør brukeren om dette er uklart eller varierer:
 
 1. **HTTP-klienter**: Hvilke HTTP-klienter bruker tjenesten mot andre APIer? (Navnene må stemme med `Apis`-seksjonen i appsettings)
-1. **Timeout-innstillinger**: Har noen av HTTP-klientene custom timeout (f.eks. `Timeout.InfiniteTimeSpan`)? Disse MÅ bevares ved migrering – standard `HttpClient`-timeout på 100 sekunder kan forårsake `TaskCanceledException` i produksjon for langvarige operasjoner.
-2. **Swashbuckle**: Bygg prosjektet etter å ha oppdatert pakker. Gi beskjed om det er build-feil relatert til Swashbuckle – da aktiveres steg 2c, 4f og 6.
-3. **Pipeline-navn**: Hvilke YAML-filer har publish-pipelines? (Alle skal ha GitVersion-blokk og nye templates)
-4. **Miljøspesifikk auth**: Skal `UseAuth` være `false` i development-miljøet?
+2. **Timeout-innstillinger**: Har noen av HTTP-klientene custom timeout (f.eks. `Timeout.InfiniteTimeSpan`)? Disse MÅ bevares ved migrering – standard `HttpClient`-timeout på 100 sekunder kan forårsake `TaskCanceledException` i produksjon for langvarige operasjoner.
+3. **Swashbuckle**: Bruker prosjektet Swashbuckle? Bygg etter å ha oppdatert pakker; byggefeil om `Microsoft.OpenApi.Models` bekrefter det. Da gjelder steg 2c, 4f og 6.
+4. **Pipeline-navn**: Hvilke YAML-filer har publish-pipelines? (Alle skal ha GitVersion-blokk og nye templates)
+5. **Miljøspesifikk auth**: Skal `UseAuth` være `false` i development-miljøet?
+6. **IDP**: Skal tjenesten validere Entra ID (standard) eller HelseId, og hvilke eksterne API-er kaller den?

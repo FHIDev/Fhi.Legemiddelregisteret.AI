@@ -7,9 +7,20 @@ Brukerveiledning for `Fhi.Lmr.Authentication.TokenValidation` og `Fhi.Lmr.Authen
 
 De to pakkene er uavhengige. En tjeneste kan bruke én eller begge.
 
+## Innhold
+
+- Utløserkriterier
+- Pakke-referanser
+- IDP-kart for LMR
+- Del 1: TokenValidation (konfigurasjon, scopes og roller, `[Authorize]`-fella, `UseAuth`-sperre)
+- Del 2: ClientCredentials
+- Ting som er lett å bomme på
+- Feilsøking (klientsiden, serversiden, DPoP)
+- Siste steg: oppdater agentfilene
+
 ## Utløserkriteria
 
-Aktiver denne skillen når brukeren ber om å:
+Les denne referansen når brukeren ber om å:
 - Legge til autentisering/token-validering i en LMR-tjeneste
 - Konsumere et API beskyttet av HelseId, Entra ID eller Maskinporten fra en LMR-tjeneste
 - Bytte IDP eller endre scopes for eksisterende integrasjon
@@ -17,15 +28,61 @@ Aktiver denne skillen når brukeren ber om å:
 - Sette opp DPoP-beskyttelse
 - Avgjøre om en tjeneste skal ha `Redis`/distribuert cache pga. DPoP
 - Forstå hvorfor `UseAuth: false` feiler ved oppstart
+- Forstå hvorfor et endepunkt slipper inn kallere uten riktig scope
+
+Selve app-registreringene i Entra ID (Bicep, sertifikater, admin consent) står i skillen `lmr-entraid`.
 
 ## Pakke-referanser
 
 ```xml
-<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="10.3.0" />
-<PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="10.3.1" />
+<PackageReference Include="Fhi.Lmr.Authentication.TokenValidation" Version="<versjon>" />
+<PackageReference Include="Fhi.Lmr.Authentication.ClientCredentials" Version="<versjon>" />
 ```
 
-(Sjekk alltid siste versjon i Azure Artifacts-feeden før du setter inn versjoner.)
+Hent siste versjon fra Azure Artifacts-feeden (`Legemiddelregisteret`). Hvilke versjoner tjenestene bruker, står i
+deres `.csproj`-filer.
+
+## IDP-kart for LMR
+
+Entra ID er standard. HelseId og Maskinporten brukes bare der avtalen med en ekstern part krever det.
+
+| IDP | Brukes til |
+|---|---|
+| **Entra ID** | All kommunikasjon mellom LMR-tjenestene: tjenestene validerer Entra-tokens (`Audience` er app-registreringens GUID, `DefaultScope` er app-rollen `Fhi.Lmr.<Tjeneste>.All`), og LMR-til-LMR-kall bruker `EntraIdClient` med scope `api://<api-id>/.default`. Brukerinnlogging i Kontroll og InternStatistikk. |
+| **HelseId** | Innloggede fagpersoner mot RAK og KRL Admin. Innbyggertjenester validerer HelseId-tokens, så Kontrolls kall dit bruker `HelseIdClient`. Utgående kall til eksterne API-er: kodeverk-API-et (Grunndata), FHI Grunndatas personoppslag-API (Pasientregister, Apoteksimulator) og adresseregisteret (Grunndata). |
+| **Maskinporten** | FhirMottak: institusjonenes innsending (scope `fhi:lmr/fhirmottak.api`) og Meldingsformidlers og Kontrolls interne kall (et eget internt scope). |
+
+Kilden til kartet er `Apis:*:OidcClientName` i appsettings i hver tjeneste; sjekk den når en integrasjon legges til.
+Hver tjeneste dokumenterer i sin repo-skill hvilken IDP hver av klientene bruker.
+
+## Hvem slipper inn: scope, roller og `DefaultScope`
+
+`ScopeHandler` godtar et scope hvis det står i `scope`-claimet (HelseId, Maskinporten), i `scp` (Entra, brukerinnlogging)
+eller i `roles` (Entra client credentials). Med Entra client credentials ligger `DefaultScope` derfor i `roles`-claimet,
+siden Entra ikke utsteder `scope` for applikasjonstilganger. Pakken regner med at bare én IDP brukes om gangen.
+
+Hva som faktisk kreves på et endepunkt, avhenger av hvilken policy endepunktet får:
+
+| Endepunkt | Policy | Krav |
+|---|---|---|
+| Ingen attributter (og ikke `AllowAnonymous`) | Fallback-policyen pakken setter | Autentisert bruker og `DefaultScope` |
+| `[Authorize(Policy = "<scope>")]` / `RequireAuthorization("<scope>")` for et scope i `Scopes` | Policy med samme navn som scopet | Bare det scopet. Det **erstatter** `DefaultScope` |
+| `[Authorize(Policy = "<rolle>")]` for en rolle i `ApiTokenValidation:Roles` | Rolle-policy | Rollen **og** `DefaultScope` |
+| `[Authorize]`, `[Authorize(Roles = "...")]` eller `RequireAuthorization()` uten policy-navn | ASP.NET Cores standardpolicy (`DefaultPolicy`) | Bare autentisert bruker (og eventuelt rollen). **`DefaultScope` kreves ikke** |
+| `AllowAnonymous` | — | Ingenting |
+
+Det siste er en felle: pakken setter bare `FallbackPolicy`, og ASP.NET Core bruker den bare på endepunkter uten
+autorisasjonsmetadata. Et endepunkt med bart `[Authorize]` (eller `Roles =`) går derfor til `DefaultPolicy`, og en
+gyldig token med riktig `aud`, men uten tjenestens `DefaultScope`, slipper inn. Rak, Dataprodukter og Logging har
+kommentarer i koden om fella (`Fhi.Lmr.Rak.Api/Tjenester/Tilganger/Authorizations/AuthorizeSuperbrukerAttribute.cs`,
+`Routing.cs` i Dataprodukter og i Logging). Bruk i stedet
+policy-navn, og la roller gå via `ApiTokenValidation:Roles` (som legger på `DefaultScope`), eller la endepunktet
+stå uten attributter. Gjelder alle tjenester som bruker `TokenValidation`.
+
+`ApiTokenValidation:Roles` er en liste med brukerroller (typisk fra `roles`-claimet i et Entra-token). Hver verdi blir
+en policy med `RequireRole`, så både `[Authorize(Roles = "...")]` og `[Authorize(Policy = "...")]` virker, men bare
+policy-varianten får `DefaultScope` lagt på. `Scopes` og `Roles` deler navnerom; overlapp gir `InvalidOperationException`
+ved oppstart, fordi en rolle ellers kunne gi tilgang til en scope-policy via `roles`-claimet.
 
 ---
 
@@ -35,29 +92,31 @@ Aktiver denne skillen når brukeren ber om å:
 
 `appsettings.json`:
 
+Eksempel for et API som validerer Entra ID (standard i LMR):
+
 ```json
 {
   "ApiTokenValidation": {
-    "Authority": "https://helseid-sts.test.nhn.no/",
-    "Audience": "fhi:min.api",
-    "DefaultScope": "fhi:min.api/les",
-    "Scopes": [
-      "fhi:min.api/les",
-      "fhi:min.api/skriv",
-      "fhi:min.api/admin"
-    ],
-    "RequireDPoP": false,
+    "Authority": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+    "Audience": "<api-app-id>",
+    "DefaultScope": "Fhi.Lmr.<Tjeneste>.All",
+    "Scopes": [],
+    "Roles": [],
     "UseAuth": true
   }
 }
 ```
 
+For HelseId og Maskinporten er `Audience` og scope-navnene tekststrenger fra IDP-ens selvbetjeningsportal
+(for eksempel `fhi:<tjeneste>/<scope>`), og `RequireDPoP` kan settes for HelseId.
+
 | Felt | Beskrivelse | Påkrevd | Default |
 |---|---|---|---|
-| `Authority` | URL til identity provider. IDP detekteres automatisk fra strengen (`helseid`, `windows`, `maskinporten`). | Ja | — |
+| `Authority` | URL til identity provider. IDP detekteres automatisk fra strengen: `helseid`, Entra ID (`windows`, `microsoftonline.com` eller `login.microsoft.com`) og `maskinporten`. | Ja | — |
 | `Audience` | Forventet `aud`-claim i innkommende tokens. | Ja | — |
-| `DefaultScope` | Scope som kreves på alle endepunkter som fallback-policy (brukes hvis endepunktet ikke har eksplisitt `RequireAuthorization`). | Nei | `null` |
-| `Scopes` | Liste over scopes som registreres automatisk som authorization policies med samme navn. | Nei | `[]` |
+| `DefaultScope` | Scope som kreves på endepunkter uten autorisasjonsmetadata (fallback-policy). Gjelder ikke endepunkter med `[Authorize]` eller `RequireAuthorization()` uten policy-navn; se «Hvem slipper inn». | Nei | `null` |
+| `Scopes` | Liste over scopes som registreres automatisk som authorization policies med samme navn. En scope-policy erstatter `DefaultScope`. | Nei | `[]` |
+| `Roles` | Liste over brukerroller (fra `roles`-claimet) som registreres som policies med `RequireRole`. Rolle-policyen krever også `DefaultScope`. Må ikke overlappe med `Scopes`. | Nei | `[]` |
 | `RequireDPoP` | Krev DPoP-proof i tillegg til access token. **Kun HelseId støtter DPoP.** For **EntraID** (og Maskinporten) skal feltet **utelates helt** — det defaulter til `false`, og EntraID støtter ikke DPoP. Ikke sett `RequireDPoP: false` eksplisitt for EntraID; bare la det stå tomt. | Nei | `false` |
 | `UseAuth` | Hvis `false`: hopp over all autentisering og autorisering. Se sperre under. | Nei | `true` |
 | `AllowedNoAuthEnvironments` | Hvite-liste over miljøer der `UseAuth: false` er lovlig. | Nei | `["Development", "AzureDev", "Docker"]` |
@@ -83,7 +142,7 @@ app.Run();
 
 `AddApiAuthenticationAndAuthorization` gjør følgende automatisk:
 - Velger Bearer- eller DPoP-oppsett basert på `RequireDPoP`.
-- Detekterer IDP fra `Authority` og setter IDP-spesifikke `ValidTypes` (`at+jwt` for HelseId, `JWT` for Entra ID, ingen for Maskinporten).
+- Detekterer IDP fra `Authority` og setter IDP-spesifikke `ValidTypes` (`at+jwt` for HelseId, `JWT` for Entra ID, ingen for Maskinporten). Gjenkjenningen av Entra ID på `microsoftonline.com` og `login.microsoft.com` gjelder bare `TokenValidation`; `ClientCredentials` kjenner igjen Entra ID bare på `login.microsoftonline.com`.
 - For Maskinporten: bruker `/.well-known/oauth-authorization-server` som discovery-endepunkt (ikke `openid-configuration`).
 - Registrerer authorization-policies for hvert scope i `Scopes`-lista.
 
@@ -127,43 +186,43 @@ Pakken returnerer detaljerte feilmeldinger i `WWW-Authenticate`-headeren:
 ```json
 {
   "OidcClients": {
+    "EntraIdClient": {
+      "Authority": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+      "ClientId": "<klient-app-id>",
+      "PrivateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+      "kid": "<sertifikat-thumbprint>"
+    },
     "HelseIdClient": {
-      "Authority": "https://helseid-sts.test.nhn.no",
-      "ClientId": "44388132-8028-47a6-ab02-4ab1e0579910",
+      "Authority": "https://<helseid-sts>",
+      "ClientId": "<klient-id>",
       "PrivateKey": "{\"d\":\"...\",\"kty\":\"RSA\",\"n\":\"...\"}"
     },
-    "EntraIdClient": {
-      "Authority": "https://login.microsoftonline.com/{tenant-id}/v2.0",
-      "ClientId": "...",
-      "PrivateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
-      "kid": "EDAC21AAF1AAF5DEFFDF6EDE4D4F6029015C6086"
-    },
     "MaskinportenClient": {
-      "Authority": "https://test.maskinporten.no",
-      "ClientId": "...",
+      "Authority": "https://<maskinporten>",
+      "ClientId": "<klient-id>",
       "PrivateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
-      "kid": "bced5a54-7426-4f4d-a6f5-2ab5e942929e"
+      "kid": "<kid-fra-maskinporten>"
     }
   },
   "Apis": {
-    "ApiSomBeskyttesAvHelseId": {
-      "BaseAddress": "https://helseid-api.example.com/",
-      "HttpClientName": "HelseIdApiClient",
-      "OidcClientName": "HelseIdClient",
-      "Scope": "fhi:lmr.fhirmottak/barum"
-    },
     "ApiSomBeskyttesAvEntraId": {
-      "BaseAddress": "https://entra-api.example.com/",
+      "BaseAddress": "https://<api-host>/",
       "HttpClientName": "EntraIdApiClient",
       "OidcClientName": "EntraIdClient",
-      "Scope": "api://2b0726c5-ef39-4597-bbaf-dddb559c1143/.default"
+      "Scope": "api://<api-app-id>/.default"
+    },
+    "ApiSomBeskyttesAvHelseId": {
+      "BaseAddress": "https://<api-host>/",
+      "HttpClientName": "HelseIdApiClient",
+      "OidcClientName": "HelseIdClient",
+      "Scope": "<scope-fra-selvbetjeningsportalen>"
     },
     "ApiSomBeskyttesAvMaskinporten": {
-      "BaseAddress": "https://maskinporten-api.example.com/",
+      "BaseAddress": "https://<api-host>/",
       "HttpClientName": "MaskinportenApiClient",
       "OidcClientName": "MaskinportenClient",
-      "Scope": "fhi:lmr/fhirmottak.api",
-      "resource": "fhi:lmr.fhirmottak"
+      "Scope": "<scope-fra-selvbetjeningsportalen>",
+      "Resource": "<resource-fra-selvbetjeningsportalen>"
     }
   }
 }
@@ -186,8 +245,8 @@ Pakken returnerer detaljerte feilmeldinger i `WWW-Authenticate`-headeren:
 | `HttpClientName` | Navn på `HttpClient` som brukes med `IHttpClientFactory.CreateClient(navn)` | Ja |
 | `OidcClientName` | Må være `HelseIdClient`, `EntraIdClient` eller `MaskinportenClient`. Valideres ved oppstart. | Ja |
 | `Scope` | Scope som forespørres ved token-henting. For Entra ID: bruk `api://{api-client-id}/.default`. | Ja |
-| `resource` | Maskinporten `resource`-parameter. Ignoreres for andre IDP-er. | Maskinporten |
-| `UseDPoP` | **Dead config.** Leses ikke lenger — HelseId krever nå alltid DPoP, så det slås på automatisk for HelseId-klienter. Beholdt for bakoverkompatibilitet. | Nei |
+| `Resource` | Maskinporten `resource`-parameter. Ignoreres for andre IDP-er. Bindingen mot konfigurasjonen ignorerer store og små bokstaver. | Maskinporten |
+| `UseDPoP` | **Dead config.** Leses ikke — HelseId krever alltid DPoP, så det slås på automatisk for HelseId-klienter. Beholdt i klassen for bakoverkompatibilitet; ikke sett det. | Nei |
 
 ### Registrering i `Program.cs`
 
@@ -241,15 +300,15 @@ Feil format gir en oppstartsfeil ved første token-henting. **Exception-meldinge
 
 ### 2. Entra ID `Scope` må være `.default`
 
-Entra ID støtter **ikke** at man spesifiserer individuelle scopes i client assertion. Du må bruke `api://{api-client-id}/.default` — da får klienten alle scopes som er registrert på API-et i Entra-tenanten.
+Entra ID støtter **ikke** at man spesifiserer individuelle scopes i client assertion. Du må bruke `api://{api-client-id}/.default` — da får klienten alle app-roller den har fått consent for på API-et. Se `FELLER.md` i skillen `lmr-entraid`.
 
 ### 3. Entra ID `kid` = sertifikat-thumbprint i hex
 
-I Entra-portalen oppgis sertifikatets thumbprint som 40-tegns hex-streng. Legg den inn som den er i `kid`-feltet. Pakken konverterer den til base64url (som Microsoft faktisk forventer) automatisk.
+`kid` er sertifikatets thumbprint som 40-tegns hex-streng, lagt inn som den er. Pakken konverterer den til base64url. Se `SERTIFIKATER.md` i skillen `lmr-entraid`.
 
 ### 4. Maskinporten `resource`
 
-Maskinporten krever `resource`-parameteren i token-requesten for de fleste API-er. Sett den i `Apis:*:resource`. Feltet er lowercase i koden (bevisst — det bindes via konfigurasjon).
+Maskinporten krever `resource`-parameteren i token-requesten for de fleste API-er. Sett den i `Apis:*:Resource` (egenskapen heter `Resource`, og bindingen mot konfigurasjonen ignorerer store og små bokstaver). Pakken skriver den som claimet `resource` i client assertion, og klienten kaster `ArgumentException` hvis den mangler.
 
 ### 5. DPoP og multi-instans → trenger distribuert cache
 
@@ -273,7 +332,7 @@ Single-instans-tjenester trenger ikke gjøre noe.
 
 ### 6. HelseId `UseDPoP`-flagget gjør ingenting
 
-`Apis:*:UseDPoP` leses ikke av koden. DPoP slås alltid på for HelseId-klienter fordi HelseId krever det. Du trenger ikke sette det, men det skader ikke å la det stå `true` for dokumentasjons-formål.
+`Apis:*:UseDPoP` leses ikke av koden (`OidcHttpClientOption.cs`). DPoP slås alltid på for HelseId-klienter fordi HelseId krever det. Ikke sett feltet i ny konfigurasjon, og fjern det når du migrerer eksisterende konfigurasjon.
 
 ### 7. `UseAuth: false` ved oppstart i prod → crash
 
@@ -303,7 +362,7 @@ Hvilket API du skal nå bestemmes av **`scope`-parameteren i token-requesten**. 
 | IDP | Hvordan scope → audience |
 |---|---|
 | **HelseId** | Scopet (`fhi:lmr.fhirmottak/barum`) mapper til en audience registrert på scopet i HelseId-admin. Du kjenner navnet fordi det er det samme som API-eieren har registrert. |
-| **Entra ID** | Scopet `api://{api-client-id}/.default` → `aud: "{api-client-id}"` (selve GUID-en, uten `api://`-prefiks). Vi bruker v2-endepunktet (`login.microsoftonline.com/{tenant}/v2.0`), og v2-tokens har klient-ID-en til target-API-et som audience. Entra støtter **ikke** individuelle scopes i client-credentials-flyt; `.default` er obligatorisk. |
+| **Entra ID** | Scopet `api://{api-client-id}/.default` → `aud` er app-id-GUID-en til target-API-et, uten `api://`-prefiks (v2-endepunktet, `login.microsoftonline.com/{tenant}/v2.0`). Forklaringen står i `FELLER.md` i skillen `lmr-entraid`. |
 | **Maskinporten** | **Unntaket.** Her legges `scope` og `resource` inn direkte i client assertion-JWT-en (se `CreateClientAssertionJwtMaskinporten`), ikke som egne token-request-parametere. Maskinporten bruker `resource`-feltet til å sette `aud` i det utstedte tokenet. **`Apis:*:resource` må derfor alltid være satt for Maskinporten-klienter** — uten den vil det utstedte tokenet ikke ha en audience som matcher API-et du prøver å kalle, og server-validering vil feile med `invalid_audience`. |
 
 Konsekvensen: hvis du får `invalid audience` på server-siden, er det sjelden en feil i `Audience`-konfigurasjonen alene — det er ofte fordi **klienten ba om feil scope**, **Maskinporten-klienten mangler `resource`**, eller **serverens `Audience` bruker `api://`-prefiks mens v2-tokenet har ren GUID**.
@@ -389,7 +448,7 @@ Alle disse kommer som `401 Unauthorized` med `WWW-Authenticate: Bearer error="{k
 
 1. **Dekod tokenet** på jwt.ms eller jwt.io og se hva `aud` faktisk er. Det er den enkleste måten å finne ut hvor mismatchen ligger.
 2. **Sjekk klientens scope-request.** `aud` ble utledet fra scopet klienten ba om. Hvis scopet er feil, er audience feil.
-3. **Sjekk serverens `Audience`-konfig.** For Entra (v2): `aud` i tokenet er klient-ID-en (GUID) til target-API-et, uten `api://`-prefiks. Serverens `Audience` må matche denne GUID-en.
+3. **Sjekk serverens `Audience`-konfig.** For Entra (v2) må `Audience` være app-id-GUID-en, uten `api://`-prefiks (se over).
 4. **For HelseId:** sjekk at API-eier har registrert audience i selvbetjeningsportalen som nøyaktig den samme strengen som du har i `Audience` i appsettings i API-et og at `aud`-claim i utstedt token samsvarer med disse.
 5. **For Maskinporten:** `aud` i tokenet utledes fra `resource`-feltet i client assertion-en. Sjekk at `Apis:*:resource` er satt i klientens appsettings, og at verdien matcher `Audience` i API-ets appsettings.
 
@@ -414,7 +473,7 @@ Alle disse kommer som `401 Unauthorized` med `WWW-Authenticate: Bearer error="{k
 **Betyr:** `typ`-header-claimet i tokenet matcher ikke `ValidTypes`.
 
 - **HelseId** krever `at+jwt` (satt automatisk når `Authority` inneholder `helseid`).
-- **Entra ID** krever `JWT` (satt automatisk når `Authority` inneholder `windows`).
+- **Entra ID** krever `JWT` (satt automatisk når `Authority` inneholder `windows`, `microsoftonline.com` eller `login.microsoft.com`).
 - **Maskinporten** setter ingen `typ`, så `ValidTypes` er ikke satt for Maskinporten.
 
 Hvis denne feilen dukker opp med HelseId: sjekk at du ikke ved et uhell validerer et Entra-token (som har `typ: JWT`) mot HelseId-konfig.
@@ -428,6 +487,7 @@ Hvis denne feilen dukker opp med HelseId: sjekk at du ikke ved et uhell validere
 2. Hvis ikke: klienten ba om feil scope. Sjekk `Apis:*:Scope` i klientens appsettings.
 3. Hvis scopet er riktig spesifisert men ikke er i tokenet: klienten er ikke registrert med tilgang til scopet i IDP-ens selvbetjeningsportal.
 4. Husk også at scopet må være listet i `ApiTokenValidation:Scopes` på server-siden — ellers lages det ingen policy med det navnet.
+5. Med Entra client credentials står scopet i `roles`-claimet, ikke i `scope`. Er `roles` tomt, mangler app-rollen admin consent eller tildeling (se `lmr-entraid`).
 
 ---
 
@@ -490,4 +550,5 @@ branch, i hvert berørte repo:
 ## Referanser
 
 - Kildekode + CLAUDE.md med interne detaljer: `Fhi.Legemiddelregisteret/Fhi.Lmr.Authentication`
-- `oppdater-net-10`-skillen: dekker migrering fra `Fhi.ClientCredentialsKeypairs` / `Fhi.HelseId.Api` til disse pakkene
+- `OPPDATER-NET-10.md` (i `references/` i denne skillen): migrering fra `Fhi.ClientCredentialsKeypairs` / `Fhi.HelseId.Api` til disse pakkene
+- Skillen `lmr-entraid`: app-registreringer, sertifikater og admin consent i Entra ID
