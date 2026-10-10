@@ -102,5 +102,49 @@
       "Svarer at hentingen fra Farmapro (HentFarmaproReseptmeldingerHostedService og HentFarmaproLokalvaremeldingerHostedService) styres av isDisabled i Meldingsformidlers appsettings per miljø, og at de er avslått i appsettings.json (Fhi.Lmr.Meldingsformidler.Api/appsettings.json)",
       "Sier at Rekvisisjonsmelding også er en Eik-meldingstype som splittes i pasient-, rekvirent- og utleveringsmelding (skills/lmr/references/MELDINGSFLYT-APOTEK.md)"
     ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Jeg sammenligner Domenemodell - Meldingsmottak.docx med koden. K-kolonnen er 1 på flere felt som ikke er primærnøkler, og primærnøkkelen er ikke merket på noen annen måte. Er det avvik?",
+    "expected_behavior": [
+      "Svarer at K er kardinalitet (1 = obligatorisk, 0..1 = valgfri, 0..* = liste), ikke nøkkeltype, med henvisning til skills/lmr/references/DOMENEMODELL-LESE-SKRIVE.md",
+      "Svarer at dokumentene ikke beskriver fysiske nøkler eller indekser, så manglende markering av primærnøkkel er ikke et avvik",
+      "Sier at K skal sammenlignes med om feltet er påkrevd i koden (IsRequired eller ikke-nullbar type)"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Jeg har lagt til en rad i en tabell i domenemodellen med python-docx og kalt doc.save. Filen er gyldig XML. Kan jeg laste den opp til SharePoint nå?",
+    "expected_behavior": [
+      "Fraråder opplasting: doc.save reserialiserer hele document.xml, døper om prefikser og dropper xmlns-deklarasjoner mens mc:Ignorable beholder dem, så Word kan nekte å åpne filen, med henvisning til skills/lmr/references/DOMENEMODELL-LESE-SKRIVE.md",
+      "Sier at python-docx bare skal brukes til å lese, og at endringen skal gjøres med minimale endringer i word/document.xml, for eksempel med Add-DomenemodellRad i skills/lmr/scripts/Domenemodell.ps1, på en ny nedlasting",
+      "Sier at filen må verifiseres ved å åpne den i Word (Test-DomenemodellIWord) før opplasting, fordi velformet XML ikke er bevis på at den åpner"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Publish-Domenemodell feilet med HTTP 412 da jeg skulle laste opp den oppdaterte domenemodellen. Kan jeg bare hente ny eTag og prøve igjen?",
+    "expected_behavior": [
+      "Svarer nei: 412 betyr at dokumentet er endret av andre siden det ble hentet, og opplastingen skal stoppes og rapporteres, med henvisning til skills/lmr/references/DOMENEMODELL-LESE-SKRIVE.md",
+      "Sier at en ny eTag med den gamle filen ville overskrevet andres endringer, og at arbeidet eventuelt startes på nytt fra nedlasting i en ny arbeidsmappe med ny sammenligning",
+      "Viser til at opplastingen bruker If-Match med eTag fra nedlastingen i skills/lmr/scripts/Domenemodell.ps1"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Du løser en user story selvstendig og sammenligner domenemodellen med koden. Dokumentet sier at en kolonne har typen tekst, mens koden lagrer int. Beskrivelsen av en annen kolonne sier at verdien alltid skal være positiv, men koden validerer ikke dette. Hva gjør du med de to avvikene?",
+    "expected_behavior": [
+      "Retter typen i dokumentet, fordi koden er fasit for struktur ved selvstendig kjøring, med henvisning til avsnittet om kilden til sannhet i skills/lmr/references/DOMENEMODELL-LESE-SKRIVE.md",
+      "Endrer verken beskrivelsen eller koden for regelen om positive verdier, men lister den som et mulig feil i koden",
+      "Rapporterer begge avvikene og hva som ble gjort med hvert av dem i PR-beskrivelsen og som kommentar på storyen, og spør ikke brukeren"
+    ]
+  },
+  {
+    "skills": ["lmr"],
+    "query": "Jeg prøver å laste ned en domenemodell fra SharePoint med Graph og et token fra az account get-access-token, men GET /drives/{id}/items/{id}/content gir 401 unauthenticated. Hva er galt?",
+    "expected_behavior": [
+      "Forklarer at v1.0 /content svarer med en redirect til SharePoints download.aspx, som avviser Azure CLI-tokenet, med henvisning til skills/lmr/references/DOMENEMODELL-LESE-SKRIVE.md",
+      "Anbefaler beta-endepunktet /contentStream, eller Get-Domenemodell i skills/lmr/scripts/Domenemodell.ps1 som bruker det"
+    ]
   }
 ]
