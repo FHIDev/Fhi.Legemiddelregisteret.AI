@@ -17,23 +17,29 @@
 # Scriptet er idempotent: finnes gruppa allerede, settes bare uniqueName (om det mangler).
 #
 # Bruk:
-#   ./opprett-gruppe-i-au.sh "A-FHI-App-Lmr-Test-Godkjenn" <clientMachineSpObjectId>
+#   ./opprett-gruppe-i-au.sh "A-FHI-App-Lmr-Test-Godkjenn" <clientMachineSpObjectId> [au-objectId]
+#
+# AU-en er valgfri og defaulter til AU-Legemiddelregisteret. LMR og Grossiststatistikken er
+# separate fagområder med hver sin AU (US 120849), så Grossiststatistikkens grupper skal
+# opprettes med AU-Grossiststatistikken som tredje argument.
 #
 set -uo pipefail
 
 FHI_TENANT="54475f80-1baa-4ea9-9185-c0de5cc603fe"
 # AU-Legemiddelregisteret
-AU_ID="a563113b-80b4-4187-a938-a8d97992c3ce"
+AU_LMR="a563113b-80b4-4187-a938-a8d97992c3ce"
 
-if [ "$#" -ne 2 ]; then
-  echo "Bruk: $0 <gruppens displayName> <eier-SP-objectId>" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  echo "Bruk: $0 <gruppens displayName> <eier-SP-objectId> [au-objectId]" >&2
   echo "  Eier bør være Client.Machine sin service principal, slik at appen kan" >&2
   echo "  administrere medlemmer via Graph." >&2
+  echo "  AU defaulter til AU-Legemiddelregisteret ($AU_LMR)." >&2
   exit 64
 fi
 
 visningsnavn="$1"
 eier_sp="$2"
+AU_ID="${3:-$AU_LMR}"
 # uniqueName er nøkkelen Bicep bruker for å referere gruppa med 'existing'.
 unikt_navn="$(printf '%s' "$visningsnavn" | tr '[:upper:]' '[:lower:]')"
 mail_nickname="$(printf '%s' "$unikt_navn" | tr -d '-')"
@@ -66,7 +72,7 @@ else
     '{
       "@odata.type": "#microsoft.graph.group",
       displayName: $navn,
-      description: "Rolletilgang for LMR. Medlemskap gir rollen i roles-claimet.",
+      description: "Rolletilgang. Medlemskap gir rollen i roles-claimet.",
       securityEnabled: true,
       mailEnabled: false,
       mailNickname: $nick,
@@ -85,7 +91,7 @@ else
     printf '%s\n' "$svar" >&2
     exit 1
   fi
-  echo "Opprettet gruppe i AU-Legemiddelregisteret: $visningsnavn ($gruppe_id)"
+  echo "Opprettet gruppe i AU $AU_ID: $visningsnavn ($gruppe_id)"
 fi
 
 # Etterfyll uniqueName hvis gruppa er eldre og mangler den. Immutable — settes kun én gang.

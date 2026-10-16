@@ -163,7 +163,7 @@ er at de **samme gruppene** tildeles **samme `appRoleId`** i hver app. Derfor er
 | Display name | `Fhi.Lmr.<Tjeneste>.<Rolle> - <Miljø>` |
 | `uniqueName` | `fhi-lmr-<tjeneste>-<rolle>-<miljo>`, små bokstaver. **Immutable.** |
 | App-rolleverdi (m2m) | `Fhi.Lmr.<Tjeneste>.All` |
-| Sikkerhetsgruppe | `A-FHI-App-Lmr-<Miljø>-<Rolle>`, i AU `AU-Legemiddelregisteret` |
+| Sikkerhetsgruppe | `A-FHI-App-Lmr-<Miljø>-<Rolle>`, i fagområdets AU — LMR: `AU-Legemiddelregisteret`, Grossiststatistikken: `AU-Grossiststatistikken` (se NHN-OG-ADMIN.md) |
 | Token-versjon | v2 på alt nytt |
 | Sertifikat | Test 100 år, **Prod 2 år** |
 
@@ -196,7 +196,8 @@ redigerer sine egne grupper.
 ## Det Bicep ikke gjør
 
 **Sikkerhetsgrupper opprettes ikke av Bicep.** Extensionen har ingen
-`Microsoft.Graph/administrativeUnits`, og gruppene må ligge i `AU-Legemiddelregisteret`.
-Bruk `bicep/scripts/opprett-gruppe-i-au.sh`; malene refererer gruppene med `existing`.
+`Microsoft.Graph/administrativeUnits`, og gruppene må ligge i fagområdets AU.
+Bruk `bicep/scripts/opprett-gruppe-i-au.sh` (AU som valgfritt tredje argument, default
+`AU-Legemiddelregisteret`); malene refererer gruppene med `existing`.
 
 Full forklaring i [BICEP-OPPSETT.md](./references/BICEP-OPPSETT.md).

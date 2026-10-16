@@ -259,16 +259,17 @@ asymmetriske:
 | **Opprette ny** gruppe inne i AU-en | `POST /directory/administrativeUnits/{au}/members` | `Groups Administrator` **scoped til AU-en** |
 | **Flytte eksisterende** gruppe inn i AU-en | `POST /directory/administrativeUnits/{au}/members/$ref` | **`Privileged Role Administrator`** |
 
-LMR sine rollegrupper **må** ligge i `AU-Legemiddelregisteret`
-(`a563113b-80b4-4187-a938-a8d97992c3ce`) av to grunner: utvikleren har bare `Groups
-Administrator` innenfor AU-en, og applikasjonens AU-scopede rolle dekker bare grupper som
-ligger der.
+Rollegruppene **må** ligge i fagområdets AU — `AU-Legemiddelregisteret`
+(`a563113b-80b4-4187-a938-a8d97992c3ce`) for LMR, `AU-Grossiststatistikken` for
+Grossiststatistikken — av to grunner: utvikleren har bare `Groups Administrator` innenfor
+AU-en, og applikasjonens AU-scopede rolle dekker bare grupper som ligger der.
 
 Lar du Bicep opprette gruppa, havner den i katalogroten — og å flytte den inn krever en
-NHN-bestilling **per gruppe**.
+NHN-bestilling.
 
-**Derfor:** kjør `scripts/opprett-gruppe-i-au.sh` først, og la Bicep referere gruppa med
-`existing`. Scriptet treffer AU-endepunktet direkte og krever **ingen ny rettighet**.
+**Derfor:** kjør `scripts/opprett-gruppe-i-au.sh` først (AU som valgfritt tredje argument,
+default LMR), og la Bicep referere gruppa med `existing`. Scriptet treffer AU-endepunktet
+direkte og krever **ingen ny rettighet**.
 
 Dette er en begrensning i extensionen, ikke i Bicep som sådan — AU-medlemskap finnes rett og
 slett ikke som ressurstype ennå.
