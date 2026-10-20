@@ -9,12 +9,12 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
 | Pasient | `lmdi-Patient.fsh` | `Pasient-Uten-Personidentifikator`, `Pasient-Med-FNR`, `Pasient-Med-DNR` |
 | Helsepersonell | `lmdi-Practitioner.fsh` | `Helsepersonell-Med-HPR`, `Helsepersonell-Uten-HPR` |
 | Organisasjon | `lmdi-Organization.fsh` | `Organisasjon-Kommune`, `Organisasjon-Sykehjem`, `Organisasjon-HF`, `Organisasjon-Sykehus`, `Organisasjon-Sykehusavdeling`, `Organisasjon-HF-2`, `Organisasjon-Sykehus-2`, `Organisasjon-Seksjon`, `Organisasjon-Post` |
-| Episode | `lmdi-Encounter.fsh` | `Episode-Sykehus`, `Episode-Sykehjem`, `Episode-Sykehus-2` |
+| Episode | `lmdi-Encounter.fsh` | `Episode-Sykehus`, `Episode-Sykehjem`, `Episode-Sykehus-2`, `Episode-Sykehus-Innleggelse` |
 | Diagnose | `lmdi-Condition.fsh` | `Diagnose-ICD10`, `Diagnose-SNOMED-SCT`, `Diagnose-ICD10-Allergi`, `Diagnose-ICD10-Multippel` |
 | Legemiddel | `lmdi-Medication.fsh` | `Legemiddel-FestLegemiddelVirkestoff`, `Legemiddel-FestLegemiddelMerkevare`, `Legemiddel-FestLegemiddelpakning`, `Legemiddel-Varenummer`, `Legemiddel-FestLegemiddeldose`, `Legemiddel-FestLmrLopenr`, `Legemiddel-SCT`, `Legemiddel-LokaltLegemiddel-FlereIngredienser`, `Legemiddel-FestLegemiddelVirkestoff-2`, `Legemiddel-Legemiddeldose-SmofKabiven`, `Legemiddel-UtenCoding`, `Lokalt-legemiddel-cellegift`, `Legemiddel-MorfinKonsentrat`, `Legemiddel-NatriumkloridBBraun`, `Legemiddel-Smerteblanding` |
 | Virkestoff | `lmdi-Substance.fsh` | `Virkestoff-Oksykodon` |
-| Legemiddelrekvirering | `lmdi-MedicationRequest.fsh` | `Rekvirering-Paracetamol`, `Rekvirering-Kjemoterapi`, `Rekvirering-Infusjon`, `Rekvirering-MedDiagnoseICD10`, `Rekvirering-EnteredInError`, `Rekvirering-Cellegift` |
-| Legemiddeladministrering | `lmdi-MedicationAdministration.fsh` | `Administrering-Oral`, `Administrering-Infusjon`, `Administrering-MedDiagnoseSCT`, `Administrering-MedDiagnoseICD10`, `Administrering-EnteredInError`, `Administrering-Selvadministrert`, `Administrering-Cellegift` |
+| Legemiddelrekvirering | `lmdi-MedicationRequest.fsh` | `Rekvirering-Paracetamol`, `Rekvirering-Kjemoterapi`, `Rekvirering-Infusjon`, `Rekvirering-MedDiagnoseICD10`, `Rekvirering-EnteredInError`, `Rekvirering-Cellegift`, `Rekvirering-RekvirertVed` |
+| Legemiddeladministrering | `lmdi-MedicationAdministration.fsh` | `Administrering-Oral`, `Administrering-Infusjon`, `Administrering-MedDiagnoseSCT`, `Administrering-MedDiagnoseICD10`, `Administrering-EnteredInError`, `Administrering-Selvadministrert`, `Administrering-Cellegift`, `Administrering-AdministrertVed` |
 | Bundle | `LegemiddelregisterBundle.fsh` | `Bundle-Scenario-Sykehjem-Oksykodon` + 8 inline-ressurser (`Scenario-Sykehjem-Oksykodon-{Pasient, Helsepersonell, Kommune, Sykehjem, Episode, Legemiddel, Rekvirering, Administrering}`, alle `Usage: #inline`) |
 
 ## Scenarier dekket av eksemplene
@@ -33,6 +33,7 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
 | Diagnose SNOMED CT | `Diagnose-SNOMED-SCT` | |
 | Organisasjonshierarki | `Organisasjon-Post` → Seksjon → Sykehus → HF | `partOf`-kjede |
 | Flere NPR-identifikatorer per episode | `Episode-Sykehus` | To `nprEpisodeIdentifier`-forekomster: én med string + uuid, én med kun string (0..* fra 1.1.2) |
+| Episode for hele innleggelsen, administrert/rekvirert ved post | `Episode-Sykehus-Innleggelse`, `Rekvirering-RekvirertVed`, `Administrering-AdministrertVed` | Episoden har `serviceProvider` = `Organisasjon-Sykehus-2`. Rekvirering og administrering peker på `Organisasjon-Post` via `rekvirertVed`/`administrertVed` (fra 1.1.8). Administreringen har `request` til rekvireringen |
 
 ## Mønster 1 — Minimal Pasient
 

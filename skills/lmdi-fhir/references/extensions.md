@@ -12,6 +12,8 @@ Kilde: `LMDI/input/fsh/extensions/*.fsh`. Canonical-mønster: `http://hl7.no/fhi
 | Klinisk studie | `lmdi-klinisk-studie` | `MedicationRequest` | `boolean` | `lmdi-ext-klinisk-studie.fsh` |
 | NPR Episode Identifier | `npr-episode-identifier` | `Encounter` | (kompleks) | `lmdi-ext-npr-episode-identifier.fsh` |
 | Mengde ingrediens | `lmdi-ingredient-strength` | `Medication.ingredient.strength` | `CodeableConcept` \| `Quantity` | `lmdi-ext-ingredient-strength.fsh` |
+| Administrert ved | `lmdi-administrert-ved` | `MedicationAdministration` | `Reference(Organisasjon)` | `lmdi-ext-administrert-ved.fsh` |
+| Rekvirert ved | `lmdi-rekvirert-ved` | `MedicationRequest` | `Reference(Organisasjon)` | `lmdi-ext-rekvirert-ved.fsh` |
 
 ---
 
@@ -172,3 +174,30 @@ Dette er ikke etterprøvd mot et IG-bygg etter at bindingen ble fjernet — sjek
 hvis det har betydning. Uansett er det byggetids-støy: uten binding stiller extensionen ingen krav
 til kodeverket, så validering av instanser påvirkes ikke. `Quantity`-varianten gir ingen meldinger
 i det hele tatt.
+
+---
+
+## AdministrertVed (`lmdi-administrert-ved`) og RekvirertVed (`lmdi-rekvirert-ved`)
+
+Fra 1.1.8 (issue #124). Context: `MedicationAdministration` og `MedicationRequest`. De to er
+like bortsett fra context og tekst, og beskrives derfor samlet.
+
+- `value[x] only Reference(Organisasjon)`
+- Slice i profilen: `extension[administrertVed]` på Legemiddeladministrering og
+  `extension[rekvirertVed]` på Legemiddelrekvirering, begge `0..1 MS`
+
+### Bruk (fra eksemplene `Administrering-AdministrertVed` og `Rekvirering-RekvirertVed`)
+```
+extension[administrertVed].valueReference = Reference(Organisasjon-Post)
+extension[rekvirertVed].valueReference = Reference(Organisasjon-Post)
+```
+
+### Praksisregel (fra `^description`)
+Stedet (organisasjonen) der administreringen eller rekvireringen ble utført. Brukes når
+**episoden reflekterer hele innleggelsen**, altså når episoden ikke gjenspeiler pasientens
+forflytninger mellom avdelinger. Da peker `Episode.serviceProvider` på sykehuset, og
+extensionen angir posten. Når episodene følger forflytningene, er `serviceProvider` alene nok
+og extensionen utelates. `Episode.serviceProvider` fikk presisert `^definition` i samme versjon
+med henvisning til de to extensionene (se `profiler.md`).
+
+Engelske titler: «Administered at» og «Requested at».

@@ -16,10 +16,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 | Felt | Verdi |
 |---|---|
 | Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `86c0bb2f966e5f0c51a0c7ed06846c6e9ae470bb` |
-| Analysedato | 2026-10-09 |
-| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff d87343df0..origin/main -- LMDI/input/fsh` gjennomgått. `StructureDefinition-lmdi-medicationadministration.json` fra publisert `package.tgz` (1.1.7) lest for å bekrefte at `identifier` og `status` bare har endret tekst, ikke kardinalitet. `sushi .` er ikke kjørt i denne oppdateringen |
-| IG-versjon | 1.1.7 (fra `sushi-config.yaml`, dato 2026-10-07) |
+| HEAD commit (LMDI) | `8858f992875d42cc77e16a1eb8948b14763431f1` |
+| Analysedato | 2026-10-20 |
+| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff 86c0bb2f9..8858f9928 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` gjennomgått. Publisert `package.tgz` (1.1.8, 2026-10-20) lastet ned: extension-beskrivelsene stemmer med FSH på `8858f9928`, og eksemplene `Administrering-AdministrertVed`, `Rekvirering-RekvirertVed` er lest. Referansemålet `Reference(Organisasjon)` er verifisert med Firely-validatoren i FhirMottak (peker extensionen på en Patient, avvises den). `sushi .` er ikke kjørt i denne oppdateringen |
+| IG-versjon | 1.1.8 (fra `sushi-config.yaml`, dato 2026-10-18) |
 
 ## Prosedyre
 
@@ -129,7 +129,20 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-10-09 (sist — IG 1.1.7, `main @ 86c0bb2f9`)
+### 2026-10-20 (sist — IG 1.1.8, `main @ 8858f9928`)
+- Nye extensions `lmdi-administrert-ved` (MedicationAdministration) og `lmdi-rekvirert-ved`
+  (MedicationRequest), begge `Reference(Organisasjon)`, sliced som `administrertVed`/`rekvirertVed`
+  0..1 MS (issue #124, PR #127, tekstretting i PR #128). Brukes når episoden gjelder hele
+  innleggelsen. Oppdatert `extensions.md`, `profiler.md` (MA, MR, ny definisjon på
+  `Episode.serviceProvider`), `bundle-og-transport.md` og `validering.md` (nye referansekanter,
+  feilsøkingsrad) og `eksempler.md` (`Episode-Sykehus-Innleggelse`, `Rekvirering-RekvirertVed`,
+  `Administrering-AdministrertVed`).
+- `validering.md`: Firely uten 1.1.8-extensionene gir bare en advarsel for ukjent extension, så en
+  bundle med extensionene passerer også mot 1.1.7. Målet håndheves først når 1.1.8 er lastet.
+- Versjon 1.1.8 i `SKILL.md`, `terminologi.md` og proveniensen. Pinnen flyttet til merge-commiten
+  `8858f9928` på `main`, som også inneholder tekstrettingen.
+
+### 2026-10-09 (IG 1.1.7, `main @ 86c0bb2f9`)
 - Pinnen flyttet fra branch-commiten `d87343df0` til `main` (`86c0bb2f9`), slik 2026-10-07-oppføringen ba om. Ingen endret versjonsnummer.
 - IG 1.1.6 gjennomgått (ble hoppet over 2026-10-07): ny seksjon «Korrigering og annullering» på Legemiddeladministrering i `profiler.md`. `identifier` skal beholdes ved ny rapportering, `entered-in-error` ved annullering, og utelatelse annullerer ikke. Kun tekst i profilen, ingen endret kardinalitet.
 - `Diagnose-ICD10-Multippel` rettet i LMDI (#123): SNOMED CT og to ICD-10-koder (M06.99, M24.19). `eksempler.md` oppdatert.

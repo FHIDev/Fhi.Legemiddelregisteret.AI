@@ -27,6 +27,8 @@ Legemiddel  ──── medicationReference ──► MedicationRequest
 
 Helsepersonell, Diagnose og Virkestoff er valgfrie. Helsepersonell tas med når rekvirenten er kjent; Diagnose og Virkestoff tas med når indikasjon eller rent virkestoff er relevant.
 
+Når episoden gjelder hele innleggelsen (serviceProvider = sykehuset), kan administrering og rekvirering i tillegg peke direkte på posten der de ble utført, via `administrertVed`/`rekvirertVed` (fra 1.1.8). Posten må da også ligge i bundelen som Organisasjon.
+
 ### Referanseform
 Fra `Bundle-Scenario-Sykehjem-Oksykodon` i `LegemiddelregisterBundle.fsh`:
 
@@ -69,12 +71,14 @@ ISO 8601 med tidssone, f.eks. `"2024-02-07T13:28:17.239+02:00"`.
 | MedicationAdministration | `context` | Episode | 0..1 MS | Hvilken episode |
 | MedicationAdministration | `request` | Legemiddelrekvirering | 0..1 MS | Rekvireringen administrering er basert på |
 | MedicationAdministration | `reasonReference` | Diagnose | 0..* | Indikasjon |
+| MedicationAdministration | `extension[administrertVed].valueReference` | Organisasjon | 0..1 MS | Fra 1.1.8. Stedet administreringen ble utført, når episoden gjelder hele innleggelsen |
 | MedicationRequest | `subject` | Pasient | 1..1 MS | |
 | MedicationRequest | `requester` | Helsepersonell | 0..1 MS | Oppgis når rekvirenten er kjent |
 | MedicationRequest | `medication[x]` | Legemiddel | 1..1 MS | |
 | MedicationRequest | `encounter` | Episode | 0..1 | |
 | MedicationRequest | `reasonReference` | Diagnose | 0..* | |
 | MedicationRequest | `priorPrescription` | Legemiddelrekvirering | 0..1 | |
+| MedicationRequest | `extension[rekvirertVed].valueReference` | Organisasjon | 0..1 MS | Fra 1.1.8. Stedet rekvireringen ble utført, når episoden gjelder hele innleggelsen |
 | Encounter (Episode) | `serviceProvider` | Organisasjon | 0..1 | Sted |
 | Condition (Diagnose) | `subject` | Pasient | 1..1 | |
 | Organization | `partOf` | Organisasjon | 0..1 MS | Hierarki |

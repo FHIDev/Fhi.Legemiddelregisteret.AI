@@ -71,16 +71,20 @@ Disse er ikke invariants, men tvinges gjennom kardinalitet, `only`-klausuler og 
 | Legemiddeladministrering | `context` | Episode |
 | Legemiddeladministrering | `request` | Legemiddelrekvirering |
 | Legemiddeladministrering | `reasonReference` | Diagnose |
+| Legemiddeladministrering | `extension[administrertVed].valueReference` | Organisasjon |
 | Legemiddelrekvirering | `subject` | Pasient |
 | Legemiddelrekvirering | `requester` | Helsepersonell |
 | Legemiddelrekvirering | `medication[x]` | Legemiddel |
 | Legemiddelrekvirering | `encounter` | Episode |
 | Legemiddelrekvirering | `reasonReference` | Diagnose |
 | Legemiddelrekvirering | `priorPrescription` | Legemiddelrekvirering |
+| Legemiddelrekvirering | `extension[rekvirertVed].valueReference` | Organisasjon |
 | Episode | `serviceProvider` | Organisasjon |
 | Diagnose | `subject` | Pasient |
 | Organisasjon | `partOf` | Organisasjon |
 | Legemiddel | `ingredient.itemReference` | Virkestoff \| Legemiddel |
+
+Målet for `administrertVed`/`rekvirertVed` (fra 1.1.8) håndheves gjennom extension-definisjonen (`value[x] only Reference(Organisasjon)`), ikke profilen. Firely-validatoren uten 1.1.8-extensionene lastet (observert i FhirMottak med 1.1.7-profiler) gir bare advarselen «Unable to resolve reference to extension» og sjekker ikke målet. En bundle som bruker extensionene, passerer altså også mot 1.1.7.
 
 `Legemiddelrekvirering.requester` er 0..1 MS fra IG 1.1.3. Referansemålet Helsepersonell valideres når feltet finnes; feltet kan utelates når rekvirenten ikke er kjent.
 
@@ -190,3 +194,4 @@ Når du foreslår at brukeren kjører validering, inkluder URL og forventet resp
 | `organisatoriskNiva` avvises | Deaktivert i 1.1.0 (`0..0`, kodeverket OID 8628 utgått) | Bruk `organisatoriskBetegnelse` i stedet |
 | `stage` uten `summary` | `stage.summary 1..1` i Diagnose | Enten sett `stage.summary`, eller la være å bruke `stage` |
 | `code[ATC]` virker ikke på Medication | ATC settes ikke på `code`, men på extension | Bruk `extension[classification].valueCodeableConcept = $ATC#...` |
+| «The declared type of the element (Organization) is incompatible with that of the instance (...)» | `administrertVed`/`rekvirertVed` peker på noe annet enn en Organisasjon | La `valueReference` peke på en `Organization`-entry (posten), ikke episoden eller pasienten |

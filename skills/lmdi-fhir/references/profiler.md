@@ -116,6 +116,13 @@ Som Pasient: `type = #physical` (required binding `LmdiAddressType`), `district`
 - `serviceProvider only Reference(Organisasjon)` — sted for episoden
 - `extension[nprEpisodeIdentifier]` 0..* MS — NPR-id (string og/eller uuid)
 
+### `serviceProvider` når episoden gjelder hele innleggelsen (presisert i 1.1.8)
+`^definition`: organisasjonen episoden fant sted ved. Gjelder episoden hele innleggelsen og
+gjenspeiler ikke pasientens forflytninger mellom avdelinger, kan organisasjonen for den enkelte
+administreringen eller rekvireringen angis med `administrertVed` på Legemiddeladministrering og
+`rekvirertVed` på Legemiddelrekvirering (se `extensions.md`). Bare tekst, kardinaliteten er uendret.
+Eksempel: `Episode-Sykehus-Innleggelse` (serviceProvider = `Organisasjon-Sykehus-2`).
+
 ### Deaktiverte (mange)
 `statusHistory`, `classHistory`, `type`, `serviceType`, `priority`, `subject`, `episodeOfCare`, `basedOn`, `participant`, `appointment`, `period`, `length`, `reasonCode`, `reasonReference`, `diagnosis`, `account`, `hospitalization`, `location`, `partOf`, `text`
 
@@ -243,6 +250,7 @@ Typisk brukt for rene virkestoff der man vil referere dem fra `Legemiddel.ingred
 - `prosentvisDoseendring` — `ProsentvisDoseendring` (Quantity i %)
 - `delAvBehandlingsregime` — `DelAvBehandlingsregime` (string)
 - `kliniskStudie` — `KliniskStudie` (boolean)
+- `rekvirertVed` — `RekvirertVed` (`Reference(Organisasjon)`), MS, fra 1.1.8. Stedet rekvireringen ble utført, når episoden gjelder hele innleggelsen
 
 ### Deaktiverte
 `text`, `recorder`, `insurance`, `supportingInformation`, `performer`, `performerType`, `basedOn`, `note`, `dispenseRequest`, `detectedIssue`, `eventHistory`, `dosageInstruction.text`, `dosageInstruction.patientInstruction`
@@ -280,6 +288,7 @@ Kun tekst (`^short`/`^definition`/`^comment` og profilbeskrivelsen), ingen endre
 - `request only Reference(Legemiddelrekvirering)` — rekvireringen dette er basert på
 - `dosage.route` — med slicing (se under)
 - `dosage.rateRatio` — infusjonshastighet
+- `extension[administrertVed]` 0..1 — `AdministrertVed` (`Reference(Organisasjon)`), fra 1.1.8. Stedet administreringen ble utført, når episoden gjelder hele innleggelsen. Profilbeskrivelsen nevner den nå sammen med episoden
 
 ### `category`
 - `from http://hl7.org/fhir/ValueSet/medication-admin-category (preferred)`
