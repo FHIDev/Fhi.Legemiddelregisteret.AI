@@ -6,8 +6,27 @@
   "plugins": [
     {
       "name": "lmr",
-      "source": "./",
-      "description": "Skills for Legemiddelregisteret (LMR): systemkunnskap om repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, provisjonering av EntraId-ressurser med Bicep, samt LMDI-implementasjonsguiden for FHIR-innsending av legemiddeldata fra institusjon."
+      "source": "./plugins/lmr",
+      "description": "Systemkunnskap om Legemiddelregisteret (LMR): repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, autentisering, .NET 10-oppgradering, domenemodeller og gjennomgang av agentoppsettet.",
+      "author": {
+        "name": "Folkehelseinstituttet"
+      }
+    },
+    {
+      "name": "lmr-entraid",
+      "source": "./plugins/lmr-entraid",
+      "description": "EntraId-ressurser for LMR-tjenester: app-registreringer for .Api, .Client.Web og .Client.Machine provisjonert med Bicep, sertifikater og det som må bestilles fra NHN.",
+      "author": {
+        "name": "Folkehelseinstituttet"
+      }
+    },
+    {
+      "name": "lmdi-fhir",
+      "source": "./plugins/lmdi-fhir",
+      "description": "LMDI-implementasjonsguiden for FHIR-innsending av legemiddeldata fra institusjon til Legemiddelregisteret: profiler, validering, eksempler, extensions, valuesets og signert/kryptert innsending.",
+      "author": {
+        "name": "Folkehelseinstituttet"
+      }
     }
   ]
 }

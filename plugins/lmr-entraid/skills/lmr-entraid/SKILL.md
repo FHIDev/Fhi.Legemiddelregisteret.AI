@@ -48,7 +48,7 @@ stabile UUID-er. Den hører hjemme i et repo som versjoneres og reviewes.
 **Rediger den aldri i plugin-katalogen.** Den er en cache som byttes ut ved
 `/plugin update`, og alt du har fylt inn forsvinner.
 
-Bruk **`/lmr:entraid-ny-tjeneste`**, som kopierer riktig variant ut til et repo du velger og
+Bruk **`/lmr-entraid:entraid-ny-tjeneste`**, som kopierer riktig variant ut til et repo du velger og
 fyller inn det den kan. Eller kopier manuelt.
 
 ### Hvor den utfylte fila bor
@@ -179,7 +179,7 @@ redigerer sine egne grupper.
 
 ## Rekkefølgen når du setter opp en ny tjeneste
 
-0. **`/lmr:entraid-ny-tjeneste <tjeneste> <variant>`** — kopierer malene ut og stilaserer parameterfila.
+0. **`/lmr-entraid:entraid-ny-tjeneste <tjeneste> <variant>`** — kopierer malene ut og stilaserer parameterfila.
 1. Generér sertifikat (`cert-tooling/`) — kun for klient-app-regene. Rene ressurser trenger det ikke.
 2. Generér stabile UUID-er for app-roller og scopes. **Én gang. Endres aldri.**
 3. Fyll `.bicepparam`.

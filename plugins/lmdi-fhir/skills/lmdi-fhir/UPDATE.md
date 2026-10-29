@@ -69,7 +69,7 @@ Rekkefølge og arbeidsdeling — **ikke dupliser innhold på tvers, lenk heller*
 Søk i skill-katalogen etter fraser som avhenger av gamle URL-er / kardinaliteter / navn:
 
 ```bash
-SKILL_DIR="/c/dev/Fhi.Lmr.AI/skills/lmdi-fhir"
+SKILL_DIR="/c/dev/Fhi.Lmr.AI/plugins/lmdi-fhir/skills/lmdi-fhir"
 grep -rn "<utgått-frase>" "$SKILL_DIR"
 ```
 
@@ -92,7 +92,7 @@ validate` fanger det **ikke** (den rapporterer «Validation passed»).
 ```bash
 python -c "
 import yaml,io,re,glob
-for p in glob.glob(r'C:\dev\Fhi.Lmr.AI\skills\*\SKILL.md'):
+for p in glob.glob(r'C:\dev\Fhi.Lmr.AI\plugins\*\skills\*\SKILL.md'):
     fm=re.search(r'^---\r?\n(.*?)\r?\n---',io.open(p,encoding='utf-8').read(),re.S).group(1)
     try: print('OK  ',p,list(yaml.safe_load(fm)))
     except Exception as e: print('FAIL',p,type(e).__name__,e)
@@ -102,7 +102,7 @@ for p in glob.glob(r'C:\dev\Fhi.Lmr.AI\skills\*\SKILL.md'):
 Vanligste fallgruve: kolon-mellomrom (`: `) inne i en usitert `description`. Bruk tankestrek i
 stedet for kolon i løpende tekst.
 
-Kryssjekk med `claude plugin details lmr`: er `always-on`-tallet for en skill lavt i forhold til
+Kryssjekk med `claude plugin details lmdi-fhir`: er `always-on`-tallet for en skill lavt i forhold til
 hvor lang descriptionen er (til sammenligning: `lmr` ≈ 100 tok for 202 tegn), er det et tegn på at
 descriptionen ikke kommer med.
 
@@ -113,12 +113,12 @@ speilingen med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret
 noen minutter, og pipelineresultatet er ikke synlig fra Claude Code.
 
 Hent så inn på nytt lokalt. Begge lagene må oppdateres, i denne rekkefølgen, og pluginen må
-kvalifiseres med marketplace-navnet (`claude plugin update lmr` alene feiler med
-«Plugin "lmr" not found»):
+kvalifiseres med marketplace-navnet (`claude plugin update lmdi-fhir` alene feiler med
+«Plugin "lmdi-fhir" not found»):
 
 ```bash
 claude plugin marketplace update fhi-lmr
-claude plugin update lmr@fhi-lmr
+claude plugin update lmdi-fhir@fhi-lmr
 ```
 
 Restart Claude Code for å ta det i bruk.
