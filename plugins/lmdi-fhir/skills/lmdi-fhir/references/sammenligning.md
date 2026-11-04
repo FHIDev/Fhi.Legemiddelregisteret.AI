@@ -37,7 +37,7 @@ Dette dokumentet svarer på konkrete "når bruker jeg X og ikke Y?"-spørsmål. 
 |---|---|---|
 | Hva representerer den | Et opphold / en episode i institusjonen (f.eks. innleggelse, dagopphold, sykehjemsopphold) | Organisatorisk enhet (HF, sykehus, avdeling, seksjon, post, sykehjem) |
 | Levetid | Tidsbegrenset (episode) — selv om `period` er deaktivert i LMDI | Permanent (strukturell) |
-| Identifikator | `NprEpisodeIdentifier`-extension (string eller uuid) | ENH (org.nr) eller RSH (håndhevet av `lmdi-org-identifier`) |
+| Identifikator | `NprEpisodeIdentifier`-extension (string eller uuid) | ENH (org.nr) og/eller RSH — støttet, men ikke påkrevd fra 1.1.9 |
 | Hierarki | Nei — episoder relateres ikke til hverandre | Ja — `partOf only Reference(Organisasjon)` danner HF → Sykehus → Avdeling → Seksjon → Post |
 | Kobling | `serviceProvider only Reference(Organisasjon)` — hvilken org der episoden foregår | Refereres fra `Encounter.serviceProvider`, `partOf` (seg selv) |
 

@@ -21,11 +21,6 @@ http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-patient
 http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-substance
 ```
 
-### `lmdi-org-identifier`
-**Sted**: `Organisasjon`.
-**FHIRPath**: `identifier.where(system='urn:oid:2.16.578.1.12.4.1.4.101' or system='urn:oid:2.16.578.1.12.4.1.4.102').exists()`.
-**Regel**: Organisasjonen må ha minst ett organisasjonsnummer (ENH) eller RESH-ID (RSH).
-
 ### `lmdi-medication-code-or-ingredient`
 **Sted**: `Legemiddel`.
 **FHIRPath**: `code.coding.exists() or ingredient.exists()`.
@@ -180,7 +175,6 @@ Når du foreslår at brukeren kjører validering, inkluder URL og forventet resp
 | Symptom | Sannsynlig årsak | Rettelse |
 |---|---|---|
 | `lr-allowed-resources` feiler | Mangler `meta.profile` på `entry.resource` | Legg til riktig LMDI-canonical |
-| `lmdi-org-identifier` feiler | Organisasjon har bare f.eks. `HER-ID` | Legg til ENH (org.nr) eller RSH |
 | `lmdi-medication-code-or-ingredient` feiler | Tomt `code` + tomt `ingredient` | Legg til enten `code.coding` eller `ingredient` (eller begge) |
 | `time-required` feiler | `effectiveDateTime = "2024-05-28"` | Bruk minst `"2024-05-28T09:30:00+02:00"` |
 | `npr-episode-at-least-one` feiler | Tom `nprEpisodeIdentifier`-forekomst | Sett `stringIdentifier` og/eller `uuidIdentifier` i hver forekomst |

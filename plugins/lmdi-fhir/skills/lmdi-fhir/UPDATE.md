@@ -7,7 +7,7 @@ Følg denne prosedyren når brukeren ber om at skillen oppdateres mot FSH-endrin
 | Hva | Hvor |
 |---|---|
 | Kilde-sannhet (FSH, sushi-config, pagecontent) | `C:\dev\LMDI` (repo `HL7Norway/LMDI` el.l.) |
-| Skill-filene (denne katalogen) | `C:\dev\Fhi.Lmr.AI\skills\lmdi-fhir` — versjonsstyres i **plugin-repoet** (`Fhi.Lmr.AI`, Azure DevOps: `fhi/Fhi.Legemiddelregisteret/_git/Fhi.Lmr.AI`), som er kilden for skillen |
+| Skill-filene (denne katalogen) | `C:\dev\Fhi.Lmr.AI\plugins\lmdi-fhir\skills\lmdi-fhir` — versjonsstyres i **plugin-repoet** (`Fhi.Lmr.AI`, Azure DevOps: `fhi/Fhi.Legemiddelregisteret/_git/Fhi.Lmr.AI`), som er kilden for skillen |
 
 Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-repoet, wiki-repoet eller det gamle `Fhi.Legemiddelregisteret.AI`.
 
@@ -16,10 +16,10 @@ Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-
 | Felt | Verdi |
 |---|---|
 | Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `8858f992875d42cc77e16a1eb8948b14763431f1` |
-| Analysedato | 2026-10-20 |
-| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff 86c0bb2f9..8858f9928 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` gjennomgått. Publisert `package.tgz` (1.1.8, 2026-10-20) lastet ned: extension-beskrivelsene stemmer med FSH på `8858f9928`, og eksemplene `Administrering-AdministrertVed`, `Rekvirering-RekvirertVed` er lest. Referansemålet `Reference(Organisasjon)` er verifisert med Firely-validatoren i FhirMottak (peker extensionen på en Patient, avvises den). `sushi .` er ikke kjørt i denne oppdateringen |
-| IG-versjon | 1.1.8 (fra `sushi-config.yaml`, dato 2026-10-18) |
+| HEAD commit (LMDI) | `28460d0205975300fe13ec75f4c8c40f8258acec` |
+| Analysedato | 2026-11-04 |
+| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff 8858f9928..28460d020 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` gjennomgått. `sushi .` kjørt (0 feil, 2 advarsler som ikke er undersøkt): `StructureDefinition-lmdi-organization.json` har ingen constraints i `differential` og har den nye beskrivelsen. Publisert pakke og Firely-validator er ikke brukt denne gangen |
+| IG-versjon | 1.1.9 (fra `sushi-config.yaml`, dato 2026-11-04) |
 
 ## Prosedyre
 
@@ -129,7 +129,18 @@ Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json
 
 ## Changelog for skillen
 
-### 2026-10-20 (sist — IG 1.1.8, `main @ 8858f9928`)
+### 2026-11-04 (sist — IG 1.1.9, `main @ 28460d020`)
+- Invarianten `lmdi-org-identifier` («minst ENH eller RSH») er fjernet fra Organisasjon (PR #131).
+  Identifikatorene er fortsatt støttet, men ikke påkrevd. Fjernet invariantseksjonen i `profiler.md`
+  og `validering.md`, feilsøkingsraden i `validering.md`, og rettet `sammenligning.md`.
+- Ny seksjon «Hierarki» i `profiler.md` etter den utvidede profilbeskrivelsen på Organisasjon
+  (PR #130/#131): laveste mulige nivå, `partOf` opp til øverste nivå og ønsket minimum. Bare tekst,
+  ikke håndhevet.
+- Versjon 1.1.9 i `SKILL.md`, `terminologi.md` og proveniensen. Pinnen flyttet til `28460d020`.
+  Øvrige commits siden 1.1.8 (#132–#134) gjelder bare CSS på forsiden.
+- Stien i to-repo-tabellen rettet til `plugins/lmdi-fhir/skills/lmdi-fhir` etter plugin-splittingen.
+
+### 2026-10-20 (IG 1.1.8, `main @ 8858f9928`)
 - Nye extensions `lmdi-administrert-ved` (MedicationAdministration) og `lmdi-rekvirert-ved`
   (MedicationRequest), begge `Reference(Organisasjon)`, sliced som `administrertVed`/`rekvirertVed`
   0..1 MS (issue #124, PR #127, tekstretting i PR #128). Brukes når episoden gjelder hele

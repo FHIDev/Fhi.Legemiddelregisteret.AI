@@ -80,6 +80,16 @@ Helsepersonell uten HPR-nummer er gyldig (`identifier` er 0..*, men closed). Eks
 **Fil**: `profiles/lmdi-Organization.fsh`
 **Beskrivelse**: Helseinstitusjon på lavest mulig nivå (post, avdeling, klinikk, sykehus, sykehjem). Hierarki via `partOf`.
 
+### Hierarki (profilbeskrivelsen, presisert i 1.1.9)
+Organisasjonen skal representere **laveste mulige nivå**. Er den en del av en større organisasjon, angis den
+overordnede med `partOf`, helt opp til øverste nivå (helseforetak, regionalt helseforetak eller kommune).
+Ønsket minimum i hierarkiet:
+- organisasjonen på laveste mulige nivå (post, enhet, avdeling eller lignende)
+- organisasjonen på høyere nivå: sykehus, helseforetak og regionalt helseforetak, eller for sykehjem kommune
+- minst ett organisasjonsnummer, enten ENH (Enhetsregisteret) eller RSH (RESH)
+
+Dette er bare beskrivelsen. Ingen av punktene håndheves som invariant eller kardinalitet.
+
 ### MustSupport
 - `identifier` MS
 - `name` 1..1 MS
@@ -90,13 +100,13 @@ Helsepersonell uten HPR-nummer er gyldig (`identifier` er 0..*, men closed). Eks
 - `identifier[ENH]` — Organisasjonsnummer (`urn:oid:2.16.578.1.12.4.1.4.101`)
 - `identifier[RSH]` — RESH-ID (`urn:oid:2.16.578.1.12.4.1.4.102`)
 
+Støttet, men **ikke påkrevd fra 1.1.9**: invarianten `lmdi-org-identifier` («minst ENH eller RSH», error) er fjernet.
+En Organisasjon uten ENH/RSH validerer altså, f.eks. med bare `HER-ID`.
+
 ### Type
 - `type 0..*`
 - `type[organisatoriskNiva] 0..0` (kodeverket OID 8628 utgått)
 - `type[organisatoriskBetegnelse]` — OID 8624 (sykehus, avdeling, post, m.fl.)
-
-### Invariant
-- `lmdi-org-identifier` (error): **Minst én av ENH eller RSH** må finnes.
 
 ### Adresse
 Som Pasient: `type = #physical` (required binding `LmdiAddressType`), `district` + `municipalitycode`, `urbanDistrict`. Deaktivert: `address.text/line/city/postalCode/country`.
