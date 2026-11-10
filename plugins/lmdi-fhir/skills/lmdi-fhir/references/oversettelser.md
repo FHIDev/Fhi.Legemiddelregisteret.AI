@@ -1,6 +1,8 @@
 # Tospråklighet — norsk IG med engelsk oversettelseslag
 
-Kilder: `LMDI/input/fsh/**/*.fsh` (translation-extensions), `LMDI/input/pagecontent/en-*.md`, `scripts/lag-en-doklag.py`, `scripts/sjekk-oversettelser.py`, `C:\dev\LMDI\CLAUDE.md` (§ Tospråklighet).
+> For den som **vedlikeholder IG-en** i LMDI-repoet. Ikke relevant for avsendere som skal bruke profilene.
+
+Kilder: `LMDI/input/fsh/**/*.fsh` (translation-extensions), `LMDI/input/pagecontent/en-*.md`, `scripts/lag-en-doklag.py`, `scripts/sjekk-oversettelser.py`, `CLAUDE.md` i LMDI-repoet (§ Tospråklighet).
 
 ## Prinsipp
 

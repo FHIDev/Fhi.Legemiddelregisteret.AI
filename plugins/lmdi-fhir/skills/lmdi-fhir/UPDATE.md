@@ -1,265 +1,179 @@
 # Oppdateringsprosedyre for skillen `lmdi-fhir`
 
-Følg denne prosedyren når brukeren ber om at skillen oppdateres mot FSH-endringer i LMDI-repoet.
+Følg denne prosedyren når skillen skal oppdateres mot endringer i LMDI.
 
 ## To-repo-modellen
 
 | Hva | Hvor |
 |---|---|
-| Kilde-sannhet (FSH, sushi-config, pagecontent) | `C:\dev\LMDI` (repo `HL7Norway/LMDI` el.l.) |
-| Skill-filene (denne katalogen) | `C:\dev\Fhi.Lmr.AI\plugins\lmdi-fhir\skills\lmdi-fhir` — versjonsstyres i **plugin-repoet** (`Fhi.Lmr.AI`, Azure DevOps: `fhi/Fhi.Legemiddelregisteret/_git/Fhi.Lmr.AI`), som er kilden for skillen |
+| Kilden (FSH, `sushi-config.yaml`, `pagecontent`) | LMDI-repoet, [`folkehelseinstituttet/LMDI`](https://github.com/folkehelseinstituttet/LMDI). Kalt `<LMDI>` under |
+| Skill-filene (denne katalogen) | Plugin-repoet `Fhi.Lmr.AI` (Azure DevOps: `fhi/Fhi.Legemiddelregisteret/_git/Fhi.Lmr.AI`), `plugins/lmdi-fhir/skills/lmdi-fhir`. Kalt `<SKILL>` under |
 
-Endringer i skill-filene committes og pushes altså i `Fhi.Lmr.AI`, ikke i LMDI-repoet, wiki-repoet eller det gamle `Fhi.Legemiddelregisteret.AI`.
+Stiene til de lokale klonene varierer fra maskin til maskin. Spør brukeren hvis du ikke finner dem.
+Endringer i skill-filene committes i `Fhi.Lmr.AI`, ikke i LMDI-repoet. GitHub-repoet
+`FHIDev/Fhi.Legemiddelregisteret.AI` er en speiling og skal ikke endres direkte.
 
-## Proveniens (oppdatér ved hver kjøring)
+## Proveniens
+
+IG-versjon og commit-pinne står **ett** sted: linja **Versjon** i `SKILL.md`. Tabellen under beskriver
+bare siste gjennomgang.
 
 | Felt | Verdi |
 |---|---|
-| Branch (LMDI) | `main` |
-| HEAD commit (LMDI) | `28460d0205975300fe13ec75f4c8c40f8258acec` |
-| Analysedato | 2026-11-04 |
-| Verifiseringsmetode | Mot lokalt LMDI-arbeidstre på `main` (ren for `LMDI/input/fsh`, `sushi-config.yaml` og `pagecontent`). `git diff 8858f9928..28460d020 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` gjennomgått. `sushi .` kjørt (0 feil, 2 advarsler som ikke er undersøkt): `StructureDefinition-lmdi-organization.json` har ingen constraints i `differential` og har den nye beskrivelsen. Publisert pakke og Firely-validator er ikke brukt denne gangen |
-| IG-versjon | 1.1.9 (fra `sushi-config.yaml`, dato 2026-11-04) |
+| Analysedato | 2026-11-09 |
+| Grunnlag for `references/struktur.md` og `assets/` | Publisert IG (`gh-pages` i LMDI-repoet), bygd fra pinnen |
+| Verifiseringsmetode | `git diff 28460d020..9355f8e96 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` viser bare `releaseLabel` i `sushi-config.yaml`. `struktur.md` generert fra de publiserte StructureDefinitionene (med snapshot) og sammenholdt med `profiler.md`. Testendepunktet og Firely-validator er ikke brukt |
 
 ## Prosedyre
 
-### Trinn 1: Verifiser arbeidstre i LMDI-repoet
+### Trinn 1: Verifiser arbeidstreet i LMDI-repoet
 
 ```bash
-cd /c/dev/LMDI
-git rev-parse --abbrev-ref HEAD           # branch
-git rev-parse HEAD                        # HEAD commit
+cd <LMDI>
+git rev-parse --abbrev-ref HEAD
+git rev-parse HEAD
 git status --short LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent
-git log -5 --oneline
 ```
 
-Hvis `git status --short LMDI/input/fsh` returnerer noe: **STOPP**. Informer brukeren og spør om oppdateringen skal bygge på de ucommittede endringene eller siste commit. Endringer i andre stier utløser ikke stop-regelen.
+Returnerer `git status --short` noe for `LMDI/input/fsh`: **STOPP**. Spør brukeren om oppdateringen skal
+bygge på de ucommittede endringene eller siste commit. Bygger du på en branch før merge, skal pinnen
+flyttes til merge-commiten på `main` etterpå.
 
-Noter branch, HEAD-commit og dato — disse skrives inn i proveniens-tabellen over i trinn 4.
+### Trinn 2: Generer strukturen på nytt og les diffen
 
-### Trinn 2: Les inn kilder på nytt
-
-- `LMDI/input/fsh/profiles/*.fsh`, `extensions/*.fsh`, `valuesets/*.fsh`, `namingsystems/*.fsh`, `aliases.fsh`
-- `LMDI/sushi-config.yaml`
-- `LMDI/input/pagecontent/*.md` (minst: `index.md`, `integrasjon.md`, `protokoll.md`, `SignertKryptertBundle.md`, `informasjonsmodell.md`)
-
-Bruk gjerne `git diff <forrige proveniens-commit>..HEAD -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` for å avgrense hva som faktisk er endret.
-
-### Trinn 3: Sammenlign med `references/`
-
-`references/` er det **eneste** avledede faktalaget. For hver endring:
-
-1. **Nye / fjernede profiler, extensions, valuesets, codesystems, namingsystems** — oppdater tabellene i `profiler.md`, `extensions.md`, `terminologi.md`.
-2. **Endret kardinalitet, binding, slicing, `only Reference(...)`** — oppdater den aktuelle seksjonen i `profiler.md`/`extensions.md`, og referansetabellene i `bundle-og-transport.md` og `validering.md`.
-3. **Nye / endrede invariants** — `validering.md` er eneste sted invariant-tabellen vedlikeholdes.
-4. **Nye / endrede eksempelinstanser** — `eksempler.md` (instansnavn-tabellen og scenarier).
-5. **Endrede norske tekster med engelske translation-extensions** — `oversettelser.md` ved mekanisme-endringer.
-6. **Versjonsbump** — oppdater versjon i proveniens-tabellen her og i SKILL.md-frontmatter/-preamble.
-
-### Trinn 4: Oppdater filer
-
-Rekkefølge og arbeidsdeling — **ikke dupliser innhold på tvers, lenk heller**:
-
-1. `references/*.md` — alt avledet faktainnhold.
-2. `SKILL.md` — bare ved strukturelle endringer (ny profil, versjon, ny invariant, endret transport). SKILL.md er arbeidsinstruks + navigasjon, ikke faktaoppslag.
-3. `UPDATE.md` (denne fila) — proveniens-tabellen + changelog-entry nederst.
-
-### Trinn 5: Fjern utdaterte antakelser
-
-Søk i skill-katalogen etter fraser som avhenger av gamle URL-er / kardinaliteter / navn:
+Bygg StructureDefinitionene og kjør generatoren:
 
 ```bash
-SKILL_DIR="/c/dev/Fhi.Lmr.AI/plugins/lmdi-fhir/skills/lmdi-fhir"
-grep -rn "<utgått-frase>" "$SKILL_DIR"
+cd <LMDI>/LMDI && sushi -s .          # -s gir snapshot, som trengs for «Påkrevd inkl. FHIR-basis»
+python <SKILL>/scripts/generer-struktur.py <LMDI>/LMDI/fsh-generated/resources
+cd <SKILL> && git diff -- references/struktur.md
 ```
 
-Historiske eksempler på slike fraser: `fh.no/lokaltVirkemiddel` (URL endret i 1.1.0), `organisatoriskNiva` som aktivt felt (deaktivert i 1.1.0), `nprEpisodeIdentifier 0..1` (ble 0..* i 1.1.2), `requester 1..1` på Legemiddelrekvirering (ble 0..1 i 1.1.3).
+Alternativt kan katalogen være den publiserte IG-en (`LMDI/output` etter IG Publisher, eller utpakket
+`package.tgz`), som alltid har snapshot.
 
-### Trinn 6: Rapportér til brukeren
+SUSHI setter ikke `version` på StructureDefinitionene (det gjør IG Publisher). Generatoren henter da
+IG-versjonen fra `ImplementationGuide-*.json` i samme katalog, og stopper hvis den ikke finner noen.
+
+Diffen på `struktur.md` er fasiten for hva som er endret i kardinalitet, MS, bindinger, slicing,
+referansemål og invarianter. `struktur.md` redigeres aldri for hånd.
+
+### Trinn 3: Les tekstendringene
+
+```bash
+cd <LMDI>
+git diff <pinnen i SKILL.md>..HEAD -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent
+```
+
+Her finner du det generatoren ikke fanger: beskrivelser, `^short`/`^definition`/`^comment`,
+eksempelinstanser, valuesets, namingsystems og IG-sidene.
+
+### Trinn 4: Oppdater de håndskrevne filene
+
+Ikke dupliser innhold på tvers. Lenk heller.
+
+| Endring | Fil |
+|---|---|
+| Strukturendring fra trinn 2 som trenger forklaring eller versjonsmerknad | `references/profiler.md`, `references/extensions.md` |
+| Nye/endrede valuesets, codesystems, namingsystems, OID-er | `references/terminologi.md` |
+| Ny/endret invariant: forklaring og feilsøkingsrad | `references/validering.md` |
+| Nye referansekanter | topologien i `SKILL.md` og tabellen i `references/bundle-og-transport.md` |
+| Endret transport, krypto, API, protokoll | `references/bundle-og-transport.md` |
+| Endret `eksempelkode_cs.md` | kopier inn på nytt under streken i `references/eksempelkode-cs.md` |
+| Nye/endrede eksempelinstanser | `references/eksempler.md` |
+| Endret `Bundle-Scenario-Sykehjem-Oksykodon` | kopier `Bundle-Bundle-Scenario-Sykehjem-Oksykodon.json` på nytt til `assets/` |
+| Endret valg mellom profiler/felter | `references/sammenligning.md` |
+| Endret oversettelsesmekanisme | `references/oversettelser.md` |
+| Ny profil, ny referansefil, endret arbeidsmåte | `SKILL.md` (arbeidsinstruks og navigasjon, ikke faktaoppslag) |
+
+Søk til slutt etter fraser som avhenger av det som er endret (gamle URL-er, kardinaliteter, navn):
+
+```bash
+grep -rn "<utgått frase>" <SKILL>
+```
+
+Historiske eksempler: `fh.no/lokaltVirkemiddel` (URL endret i 1.1.0), `organisatoriskNiva` som aktivt
+felt (deaktivert i 1.1.0), `nprEpisodeIdentifier 0..1` (0..* fra 1.1.2), `requester 1..1` på
+Legemiddelrekvirering (0..1 fra 1.1.3), `lmdi-org-identifier` (fjernet i 1.1.9).
+
+### Trinn 5: Versjon
+
+1. `SKILL.md`: IG-versjon og commit i linja **Versjon**, og versjonen i `description`.
+2. `.claude-plugin/marketplace.json` i roten av plugin-repoet: `version` for `lmdi-fhir`. Formatet er
+   `<LMDI-versjon>-<løpenummer>`. Ny LMDI-versjon starter på `-1`, endring uten ny LMDI-versjon øker
+   løpenummeret. **Uten bump får ikke brukerne oppdateringen.** Regelen står i `CLAUDE.md` i roten.
+3. Proveniens-tabellen over og en oppføring i changeloggen under.
+
+### Trinn 6: Kontroller
+
+```bash
+python -m pip install pyyaml          # én gang. Skriptet krever PyYAML og stopper uten
+python <Fhi.Lmr.AI>/scripts/sjekk-skills.py
+```
+
+Skriptet sjekker at frontmatteren i alle `SKILL.md` lar seg parse, at versjon og pinne stemmer overens
+i `SKILL.md`, `marketplace.json` og `struktur.md`, at referansefilene som nevnes finnes, og at
+`evals.json` er gyldig. Det kjøres også i `azure-pipelines.yml` før speilingen til GitHub.
+
+Ugyldig frontmatter gjør at skillen ikke tilbys i sesjonen, uten feilmelding, og
+`claude plugin validate` fanger det ikke. Vanligste årsak er kolon-mellomrom (`: `) inne i en usitert
+`description`. Bruk komma eller tankestrek i stedet.
+
+Gå gjennom `evals/evals.json`: stemmer forventet oppførsel fortsatt etter endringene? Legg til en eval
+for hver endring som er lett å svare feil på.
+
+### Trinn 7: Rapportér til brukeren
 
 - Hvilke filer som ble oppdatert.
-- Endrede kardinaliteter / bindinger / slicing per profil og extension.
-- Nye eller fjernede artefakter.
-- Versjonsendring (hvis noen).
-- Usikkerheter (f.eks. ny parent uten alias — må verifiseres mot generert artefakt).
+- Endrede kardinaliteter, bindinger og slicing per profil og extension (fra diffen i trinn 2).
+- Nye eller fjernede artefakter, og versjonsendring.
+- Det som ikke er verifisert.
 
-### Trinn 7: Verifiser frontmatter, så commit i plugin-repoet
+### Trinn 8: Commit, speiling og lokal oppdatering
 
-Før commit: kontrollér at YAML-frontmatteren i alle `SKILL.md` faktisk lar seg parse. Ugyldig
-frontmatter gjør at skillen ikke tilbys i sesjonen, uten noen feilmelding — og `claude plugin
-validate` fanger det **ikke** (den rapporterer «Validation passed»).
+Commit i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale med brukeren. Pushen til `main`
+trigger `azure-pipelines.yml`, som kjører kontrollen og speiler til GitHub
+(`FHIDev/Fhi.Legemiddelregisteret.AI`), kilden marketplacen `fhi-lmr` leser fra. Verifiser speilingen
+med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret.AI main`. Den tar noen minutter.
 
-```bash
-python -c "
-import yaml,io,re,glob
-for p in glob.glob(r'C:\dev\Fhi.Lmr.AI\plugins\*\skills\*\SKILL.md'):
-    fm=re.search(r'^---\r?\n(.*?)\r?\n---',io.open(p,encoding='utf-8').read(),re.S).group(1)
-    try: print('OK  ',p,list(yaml.safe_load(fm)))
-    except Exception as e: print('FAIL',p,type(e).__name__,e)
-"
-```
-
-Vanligste fallgruve: kolon-mellomrom (`: `) inne i en usitert `description`. Bruk tankestrek i
-stedet for kolon i løpende tekst.
-
-Kryssjekk med `claude plugin details lmdi-fhir`: er `always-on`-tallet for en skill lavt i forhold til
-hvor lang descriptionen er (til sammenligning: `lmr` ≈ 100 tok for 202 tegn), er det et tegn på at
-descriptionen ikke kommer med.
-
-Commit deretter skill-endringene i `Fhi.Lmr.AI` med beskrivende norsk melding. Push etter avtale
-med brukeren. Pushen trigger `azure-pipelines.yml`, som speiler til GitHub
-(`FHIDev/Fhi.Legemiddelregisteret.AI`) — kilden marketplacen `fhi-lmr` leser fra. Verifiser
-speilingen med `git ls-remote https://github.com/FHIDev/Fhi.Legemiddelregisteret.AI main` — den tar
-noen minutter, og pipelineresultatet er ikke synlig fra Claude Code.
-
-Hent så inn på nytt lokalt. Begge lagene må oppdateres, i denne rekkefølgen, og pluginen må
-kvalifiseres med marketplace-navnet (`claude plugin update lmdi-fhir` alene feiler med
-«Plugin "lmdi-fhir" not found»):
+Hent så inn lokalt. Begge lagene må oppdateres, i denne rekkefølgen, og pluginen må kvalifiseres med
+marketplace-navnet:
 
 ```bash
 claude plugin marketplace update fhi-lmr
 claude plugin update lmdi-fhir@fhi-lmr
 ```
 
-Restart Claude Code for å ta det i bruk.
+Restart Claude Code. Kryssjekk med `claude plugin details lmdi-fhir`: er `always-on`-tallet lavt i
+forhold til lengden på descriptionen, kommer den ikke med.
 
-## Verifiseringsstrategi
+## Changelog
 
-Når en antakelse kan bekreftes ved å lese `LMDI/fsh-generated/resources/*.json` eller no-basis-pakken (`~/.fhir/packages/hl7.fhir.no.basis#2.2.0/` eller `node_modules/hl7.fhir.no.basis/`), gjør det i stedet for å markere som usikkert. Verifiser minst: baseDefinition-relasjoner, canonical-URL-er på lokalt definerte CS/VS, extension-URL-er fra no-basis.
+Bare de siste oppføringene står her. Resten ligger i git-historikken:
+`git log -- plugins/lmdi-fhir`.
 
-## Changelog for skillen
+### 2026-11-10 (IG 1.1.9, rettelser etter gjennomgang)
+- `SKILL.md` og `validering.md`: 200 fra `validateLegemiddelregisterBundle` betyr ikke «gyldig».
+  Endepunktet sjekker ikke koder mot valuesett. Tabell over hva det fanger, observert mot test.
+- `generer-struktur.py` henter IG-versjonen fra `ImplementationGuide-*.json` når SUSHI-utdata mangler
+  `version` på StructureDefinitionene, i stedet for å skrive «?».
+- `sjekk-skills.py` krever PyYAML. Reservekontrollen godtok ugyldig YAML.
 
-### 2026-11-04 (sist — IG 1.1.9, `main @ 28460d020`)
+### 2026-11-09 (IG 1.1.9, skillen gjennomgått)
+- Ny generert `references/struktur.md` (`scripts/generer-struktur.py`) som fasit for strukturfakta.
+  Genereringen avdekket at `profiler.md` plasserte `manufacturer 0..0` og `text 0..0` under
+  `Legemiddel.batch`. De gjelder ressursrot. Rettet.
+- Påkrevde felter fra FHIR-basis er synlige per profil (`Episode.status`/`class`, `Virkestoff.code`).
+- Nye filer: `assets/Bundle-Scenario-Sykehjem-Oksykodon.json`, `references/eksempelkode-cs.md`,
+  `evals/evals.json`.
+- `SKILL.md`: ny description, én versjonslinje, MÅ/BØR/FHIR-basis i stedet for tre kildelag, ingen
+  FSH-linjenummer, validering mot testendepunktet, avgrensning mot `lmr`.
+- `validering.md`: avsnitt om hvilken IG-versjon mottaket validerer mot. `bundle-og-transport.md`:
+  rettet diagram, presisert at signaturen beregnes over rå bytes.
+- Pinnen flyttet til `9355f8e96` (bare `releaseLabel` endret siden `28460d020`).
+
+### 2026-11-04 (IG 1.1.9, `main @ 28460d020`)
 - Invarianten `lmdi-org-identifier` («minst ENH eller RSH») er fjernet fra Organisasjon (PR #131).
-  Identifikatorene er fortsatt støttet, men ikke påkrevd. Fjernet invariantseksjonen i `profiler.md`
-  og `validering.md`, feilsøkingsraden i `validering.md`, og rettet `sammenligning.md`.
+  Identifikatorene er fortsatt støttet, men ikke påkrevd.
 - Ny seksjon «Hierarki» i `profiler.md` etter den utvidede profilbeskrivelsen på Organisasjon
-  (PR #130/#131): laveste mulige nivå, `partOf` opp til øverste nivå og ønsket minimum. Bare tekst,
-  ikke håndhevet.
-- Versjon 1.1.9 i `SKILL.md`, `terminologi.md` og proveniensen. Pinnen flyttet til `28460d020`.
-  Øvrige commits siden 1.1.8 (#132–#134) gjelder bare CSS på forsiden.
-- Stien i to-repo-tabellen rettet til `plugins/lmdi-fhir/skills/lmdi-fhir` etter plugin-splittingen.
-
-### 2026-10-20 (IG 1.1.8, `main @ 8858f9928`)
-- Nye extensions `lmdi-administrert-ved` (MedicationAdministration) og `lmdi-rekvirert-ved`
-  (MedicationRequest), begge `Reference(Organisasjon)`, sliced som `administrertVed`/`rekvirertVed`
-  0..1 MS (issue #124, PR #127, tekstretting i PR #128). Brukes når episoden gjelder hele
-  innleggelsen. Oppdatert `extensions.md`, `profiler.md` (MA, MR, ny definisjon på
-  `Episode.serviceProvider`), `bundle-og-transport.md` og `validering.md` (nye referansekanter,
-  feilsøkingsrad) og `eksempler.md` (`Episode-Sykehus-Innleggelse`, `Rekvirering-RekvirertVed`,
-  `Administrering-AdministrertVed`).
-- `validering.md`: Firely uten 1.1.8-extensionene gir bare en advarsel for ukjent extension, så en
-  bundle med extensionene passerer også mot 1.1.7. Målet håndheves først når 1.1.8 er lastet.
-- Versjon 1.1.8 i `SKILL.md`, `terminologi.md` og proveniensen. Pinnen flyttet til merge-commiten
-  `8858f9928` på `main`, som også inneholder tekstrettingen.
-
-### 2026-10-09 (IG 1.1.7, `main @ 86c0bb2f9`)
-- Pinnen flyttet fra branch-commiten `d87343df0` til `main` (`86c0bb2f9`), slik 2026-10-07-oppføringen ba om. Ingen endret versjonsnummer.
-- IG 1.1.6 gjennomgått (ble hoppet over 2026-10-07): ny seksjon «Korrigering og annullering» på Legemiddeladministrering i `profiler.md`. `identifier` skal beholdes ved ny rapportering, `entered-in-error` ved annullering, og utelatelse annullerer ikke. Kun tekst i profilen, ingen endret kardinalitet.
-- `Diagnose-ICD10-Multippel` rettet i LMDI (#123): SNOMED CT og to ICD-10-koder (M06.99, M24.19). `eksempler.md` oppdatert.
-- **Rettet feil**: raw-URL-en i `SKILL.md` §1.4 hadde en ugyldig commit-hash (`d87343df0cebc65…`, ikke samme som `d87343df024445b…` i proveniensen), så verifisering mot kilden ville gitt 404. Nå fullt hash for `86c0bb2f9`.
-
-### 2026-10-07 (IG 1.1.7, branch `roar/icd10-slice-flere-koder`)
-- `Diagnose.code.coding`: slicen `ICD10` er endret fra 0..1 til 0..* (issue #117), for multippel koding jf. Helsedirektoratets kodeveiledning. Nytt eksempel `Diagnose-ICD10-Multippel`. Oppdatert `profiler.md` og `eksempler.md`.
-- Versjon 1.1.7 i `SKILL.md`, `terminologi.md` og proveniensen; pinnen flyttet til `d87343df0`. IG 1.1.6 (presisering av tekst på Legemiddeladministrering) er ikke gjennomgått i denne oppdateringen.
-- **Merk**: bygd på branchen før merge; flytt pinnen til merge-commiten på `main` etter merge.
-
-### 2026-09-21 (IG 1.1.5, branch `roar/apne-form-coding`)
-- `Medication.form.coding`: slicingen er endret fra `closed` til `open`. Slicene `OID7448` og `SCT`
-  beholdes, men andre kodesystemer for legemiddelform er nå tillatt. `system 1..1` / `code 1..1`
-  gjelder fortsatt alle codings. `^comment` (norsk og engelsk) omskrevet i FSH. Oppdatert
-  `profiler.md` §Legemiddel/`form`.
-- Versjon 1.1.5 i `SKILL.md`, `terminologi.md` og proveniensen. Versjonspin flyttet fra
-  `1f597673e` til `02346e2a1`.
-- **Merk**: bygd på branchen før merge. Når PR-en er merget, bør pinnen flyttes til merge-commiten
-  på `main`, slik det ble gjort for 1.1.4 (se oppføringen 2026-08-19).
-
-### 2026-08-24 (full gjennomgang mot IG 1.1.4)
-Hele `references/` verifisert mot `fsh-generated/resources/*.json` på `1f597673e`: 10 profiler,
-6 extensions, 7 ValueSets, 2 CodeSystems, 5 NamingSystems, 50 eksempelinstanser, 5 invariants og
-11 slicing-definisjoner stemte uten avvik. Fire rettinger:
-- **Rettet feil**: `extensions.md` §«Kjent QA-støy» påsto «Bindingen er `preferred`» og at
-  meldingene var undertrykt i `ignoreWarnings.txt`. Begge deler var utdatert etter PR #109 —
-  extensionen har ingen binding, og `ignoreWarnings.txt` har ingen oppføringer for
-  `medication-ingredientstrength`. Avsnittet motsa fila 40 linjer lenger opp. Omskrevet, og
-  antall QA-meldinger fjernet siden det ikke er etterprøvd mot et bygg etter endringen
-  (`output/qa.txt` er fra før PR #109 ble merget).
-- `bundle-og-transport.md`: nytt punkt om hvor sertifikatene hentes (`certificates.zip` fra
-  nedlastingssiden) — krypto-kjeden forutsatte LMRs offentlige nøkkel uten å si hvor den kom fra.
-- `profiler.md`: Organisasjonens adresse ble beskrevet som «samme regler som Pasient», men
-  Organisasjon har ingen `LmdiAddressUse`-binding på `address.use`. Presisert.
-- `SKILL.md` §1.4: raw-URL-en pekte på en katalog, som ikke kan listes over raw.githubusercontent.
-
-### 2026-08-24 (rettet ugyldig frontmatter)
-- **Rettet feil**: `description` i `SKILL.md` inneholdt «Selvstendig: bygger på …» — kolon-mellomrom
-  inne i en usitert YAML-skalar. Frontmatteren lot seg dermed ikke parse (`mapping values are not
-  allowed here`), og skillen ble ikke tilbudt i sesjonen. Kolonet er byttet mot tankestrek.
-  `lmr`-skillen i samme plugin var upåvirket.
-- Trinn 7 utvidet med en frontmatter-parsesjekk før commit, siden `claude plugin validate` ikke
-  fanger denne feilklassen, og med stegene for speiling og lokal plugin-oppdatering.
-
-### 2026-08-24 (IG 1.1.4, etter merge av PR #111)
-- **Rettet feil**: `extensions.md` og `terminologi.md` dokumenterte fortsatt en `preferred`-binding
-  på `value[x]` i `lmdi-ingredient-strength`. Bindingen ble fjernet i PR #109 (commit `97157fda9`)
-  fordi R5-valuesettet ikke lot seg resolve i en R4-IG, og fordi den lå på `value[x]` og dermed
-  også ville ha gjeldt enhetskoden i `Quantity`-grenen. Kodeverk anbefales nå i `^comment`:
-  OID `2.16.578.1.12.4.1.1.7502` eller `medication-ingredientstrength`. Verifisert mot generert
-  artefakt (`binding` mangler helt).
-- Ny OID-rad i `terminologi.md` for `2.16.578.1.12.4.1.1.7502`.
-- Eksempler: `Virkestoff-Natriumklorid` er **fjernet** fra `lmdi-Substance.fsh` og erstattet av
-  `Legemiddel-NatriumkloridBBraun` (sterilt saltvann med FEST legemiddelmerkevare-id). Smerteblandingen
-  viser derfor nå to måter å angi ingrediens på, ikke tre, men alle tre `strength`-variantene.
-  Midazolam-ingrediensen rettet til varenummer 525858 (5 mg/ml). Oppdatert `eksempler.md`,
-  `extensions.md`.
-- `profiler.md`: seksjonsoverskriften «styrke vs. mengde» merket 1.1.4 i stedet for 1.1.3.
-- Versjonspin i `SKILL.md` flyttet fra `ad8dde0c7` (1.1.3) til `1f597673e` (1.1.4). Dermed er
-  problemet fra forrige oppføring lukket: extensionen har nå en egen IG-versjon.
-- `ignoreWarnings.txt` mistet de to undertrykkingene for `medication-ingredientstrength` — konsekvens
-  av at bindingen forsvant, ingen endring i `validering.md` nødvendig.
-
-
-### 2026-08-19 (sist — etter merge av PR #106)
-- Re-verifisert mot `main @ ad8dde0c7`: extension-FSH, `mengde`-slicen på `ingredient.strength`,
-  aliaset `$IngrediensStyrkeKoder` og de tre eksempelinstansene er uendret fra branchen.
-- Versjonspin i `SKILL.md` flyttet fra `e02c00ad9` til `ad8dde0c7` — `e02c00ad9` inneholder ikke
-  extensionen, så den gamle pinnen pekte på en kilde som motsa `references/`.
-- **Merk**: extensionen kom inn på `main` uten versjonsbump — `sushi-config.yaml` står fortsatt på
-  1.1.3 med dato 2026-08-14. IG-versjonen alene skiller derfor ikke denne skillen fra en som
-  mangler extensionen; bruk HEAD-commiten i proveniensen.
-
-### 2026-08-19 (senere — issue #101)
-- Ny extension `lmdi-ingredient-strength` («Mengde ingrediens») på `Medication.ingredient.strength`,
-  `value[x]` = `CodeableConcept | Quantity`. Speiler de to typene R4 mangler i forhold til R5/R6
-  `strength[x]`. Oppdatert `extensions.md`, `profiler.md`, `terminologi.md`, `sammenligning.md`
-  (ny §5b styrke vs mengde), `validering.md` (base-invarianten `rat-1`), `eksempler.md`
-  (`Legemiddel-Smerteblanding`, `Legemiddel-MorfinKonsentrat`, `Virkestoff-Natriumklorid`).
-- Skillen flyttet til `Fhi.Lmr.AI`; stier i to-repo-modellen, Trinn 5 og Trinn 7 rettet.
-- Bygde opprinnelig på branchen `roar/101-ingrediens-styrke`. PR #106 ble merget samme dag, og
-  innholdet er re-verifisert mot `main @ ad8dde0c7` uten avvik.
-
-### 2026-08-19
-- Oppdatert til IG 1.1.3: `MedicationRequest.requester` er endret fra 1..1 MS til 0..1 MS. Feltet er fortsatt Must Support og begrenset til `Reference(Helsepersonell)` når det finnes.
-- Oppdatert profiloppslag, referansetopologi, profilsammenligning, valideringsnotat og versjonsmetadata mot LMDI `main @ e02c00ad9`.
-
-### 2026-06-19
-- Gjort skillen selvstendig: `references/` er nå det autoritative grunnlaget i SKILL.md, ikke et avledet lag som måtte verifiseres mot FSH før svar. Fjernet instruksjonene som ba agenten mistro referansefilene og åpne FSH i `LMDI/input/fsh/` først (§1.2-rekkefølge, §1.3-stoppbetingelse, §3 trinn 1). Dette stoppet at agenten lette etter LMDI-repoet i feil arbeidsmappe.
-- §1.4 erstattet «git status på arbeidstre» (pekte på feil relativ sti) med en versjonssjekk mot raw-URL: `sushi-config.yaml` på `main` for å oppdage nyere IG-versjon, og FSH pinnet til commit `cb419e640` for valgfri kildeverifisering når LMDI-repoet ikke finnes lokalt.
-
-### 2026-06-17
-- Flyttet til plugin-repoet `Fhi.Legemiddelregisteret.AI` (`skills/lmdi-fhir/`), som nå er kilden for skillen. To-repo-modellen og prosedyrestier oppdatert tilsvarende.
-
-### 2026-06-12
-- Restrukturert: `_analysis.md` fjernet (innhold migrert til `references/` og denne fila); `references/` er nå eneste avledede faktalag.
-- Ny `references/oversettelser.md` — tospråklighetsmekanismen (translation-extensions, `en-*.md`, `lag-en-doklag.py`).
-- Ny `UPDATE.md` (denne fila) — erstatter § 7 i SKILL.md; rettet stier som pekte på ikke-eksisterende kataloger.
-- SKILL.md slanket til arbeidsinstruks + navigasjon; feilsøkingstabell flyttet til `validering.md`, OID-tabell til `terminologi.md`.
-- Re-verifisert mot LMDI `main @ cb419e640` (IG 1.1.2): flere NPR-identifikatorer per episode (eksempel med to forekomster), engelske translation-extensions i alle FSH-filer.
-
-### 2026-06-12 (tidligere, commit `4e9b6125`)
-- Oppdatert til IG 1.1.2: `nprEpisodeIdentifier` 0..* på Episode.
-
-### 2026-04 (commit `415e6c02`)
-- Restrukturert fra FSH-kildekopier til tematiske markdown-referanser (`references/`).
-
-### 2026-03 (commits `88b8d4d4`, `53135b70`)
-- Skill opprettet i wiki-repoet og synkronisert med LMDI v1.1.0.
+  (PR #130/#131). Bare tekst, ikke håndhevet.

@@ -13,24 +13,25 @@ Kilder: `LMDI/input/fsh/profiles/LegemiddelregisterBundle.fsh`, `LMDI/input/page
 ### Minste komplette bundle for én administrering
 Følgende ressurser trengs for en tolkbar `MedicationAdministration`:
 
+Pilene går fra ressursen som har referansen, til målet:
+
 ```
-Pasient  ──────────────────────┐
-                               │ subject
-Helsepersonell ── requester ──►│
-                               ▼
-Organisasjon(er) ── serviceProvider ──► Episode ── context ──► MedicationAdministration
-  (med partOf-hierarki)                             ▲
-                                                    │ request
-Legemiddel  ──── medicationReference ──► MedicationRequest
-(klassifisert med ATC-extension)
+MedicationAdministration ── subject ─────────────► Pasient
+MedicationAdministration ── medicationReference ─► Legemiddel (med ATC-extension)
+MedicationAdministration ── context ─────────────► Episode ── serviceProvider ─► Organisasjon ── partOf ─► Organisasjon
+MedicationAdministration ── request ─────────────► MedicationRequest
+
+MedicationRequest ── subject ─────────────► Pasient
+MedicationRequest ── medicationReference ─► Legemiddel
+MedicationRequest ── requester ───────────► Helsepersonell
 ```
 
-Helsepersonell, Diagnose og Virkestoff er valgfrie. Helsepersonell tas med når rekvirenten er kjent; Diagnose og Virkestoff tas med når indikasjon eller rent virkestoff er relevant.
+Påkrevd av profilene er bare Legemiddeladministrering, Pasient og Legemiddel (`subject` og `medication[x]` er 1..1). Episode med organisasjonshierarki og Legemiddelrekvirering er Must Support og tas med når avsender har opplysningene. Helsepersonell tas med når rekvirenten er kjent, Diagnose og Virkestoff når indikasjon eller rent virkestoff er relevant.
 
 Når episoden gjelder hele innleggelsen (serviceProvider = sykehuset), kan administrering og rekvirering i tillegg peke direkte på posten der de ble utført, via `administrertVed`/`rekvirertVed` (fra 1.1.8). Posten må da også ligge i bundelen som Organisasjon.
 
 ### Referanseform
-Fra `Bundle-Scenario-Sykehjem-Oksykodon` i `LegemiddelregisterBundle.fsh`:
+Fra `Bundle-Scenario-Sykehjem-Oksykodon` i `LegemiddelregisterBundle.fsh`. Hele bundelen ligger som JSON i `assets/Bundle-Scenario-Sykehjem-Oksykodon.json`:
 
 ```json
 {
@@ -116,12 +117,14 @@ ISO 8601 med tidssone, f.eks. `"2024-02-07T13:28:17.239+02:00"`.
 
 ### Kryptografi-kjedet
 1. **FHIR-bundle** → JSON.
-2. **GZip-komprimer** (DEFLATE) bundlens JSON-string.
+2. **GZip-komprimer** bundlens JSON-streng (UTF-8).
 3. **AES-256-GCM**: generer 32-byte nøkkel og 12-byte nonce. Krypter den komprimerte byte-arrayen. Ut: `encryptedContent` + `authenticationTag` (16 bytes).
 4. **RSA-OAEP-SHA256**: krypter AES-nøkkelen med LMRs offentlige nøkkel. Ut: `encryptedKey`.
-5. **SHA-256** av `encryptedContent`.
+5. **SHA-256** av `encryptedContent` — de rå krypterte bytene, **før** Base64-koding (jf. `SHA256.HashData(encryptedContent)` i eksempelkoden).
 6. **RSA-PKCS1-v1.5**: signer hashen med avsenders private nøkkel. Ut: `signature`.
 7. Binære felter kodes til Base64.
+
+Fullstendig C#-implementasjon av stegene: `eksempelkode-cs.md`.
 
 ### Sertifikater
 LMRs offentlige sertifikat (steg 4) lastes ned fra IG-ens nedlastingsside — `certificates.zip`,
@@ -136,6 +139,9 @@ BASE64-enkodet `.cer`, med sertifikater for både test- og produksjonsmiljøet. 
 Kilde: `integrasjon.md`, `protokoll.md`.
 
 ### Endepunkter
+Valideringsendepunktene lagrer ingen data. Bundle-valideringen krever verken autentisering eller at
+avsender er registrert. Bruk bare syntetiske data mot den. Kommando og tolkning: `validering.md`.
+
 | Formål | URL |
 |---|---|
 | Produksjon | `https://fhirmottak.lmr.fhi.no/fhirmottak/v1` |

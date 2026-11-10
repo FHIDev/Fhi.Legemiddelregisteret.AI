@@ -1,6 +1,7 @@
 # Validering og invariants
 
 Kilde: alle `Invariant:`-blokker i `LMDI/input/fsh/profiles/*.fsh` og `LMDI/input/fsh/extensions/*.fsh`.
+FHIRPath-uttrykkene står ordrett i den genererte `struktur.md`.
 
 ## Invariants (alle `Severity: #error`)
 
@@ -131,42 +132,78 @@ Målet for `administrertVed`/`rekvirertVed` (fra 1.1.8) håndheves gjennom exten
 4. `entry.fullUrl` unik og brukt konsistent i referanser.
 5. Alle interne referanser (urn:uuid) matcher en `entry.fullUrl`.
 6. Alle `entry.resource.meta.profile` matcher en av de ni LMDI-canonicals.
-7. Ingen dangling / ubrukte ressurser (ressurser som ikke refereres til av noen andre — vanligvis en feil).
+7. Ingen ubrukte støtteressurser. En Pasient, Episode, Organisasjon, Diagnose, Helsepersonell, Virkestoff eller et Legemiddel som ingen andre ressurser peker på, er vanligvis en feil. Legemiddeladministrering er roten og refereres aldri av andre. En Legemiddelrekvirering kan stå alene når legemidlet er rekvirert, men ikke administrert.
 
 ---
 
 ## Maskinell validering
 
-Ikke primærmetode, men:
+### For avsendere: FHI sine testendepunkter
 
-1. **SUSHI** — bruk repo-relativ sti:
+1. **Ukryptert bundle**. Krever ikke autentisering, avsender trenger ikke være registrert, og ingenting lagres:
    ```bash
-   ROOT="$(git rev-parse --show-toplevel)"
-   cd "$ROOT/LMDI" && sushi .
+   curl -sS -X POST "https://test-fhirmottak.lmr.fhi.no/fhirmottak/v1/validateLegemiddelregisterBundle" \
+     -H "Content-Type: application/json" --data-binary @bundle.json
    ```
-   Gir build-feil hvis FSH-eksempler er ugyldige, men ikke runtime-validering av fremmed JSON.
+   400 = feil funnet. Valideringsfeil kommer som `OperationOutcome`. Lar ikke bundelen seg
+   deserialisere (ugyldig JSON, eller en verdi utenfor FHIR sitt eget kodesett i et `code`-felt, f.eks.
+   `status = "tull"`), er svaret en tekststreng.
+   200 = ingen feil funnet i det endepunktet kontrollerer, med en tom `OperationOutcome`. Det er
+   **ikke** det samme som at bundelen er gyldig, se under.
+   Prøv først med `assets/Bundle-Scenario-Sykehjem-Oksykodon.json` for å se at kallet virker (se forbeholdet om `dosage.route` i `eksempler.md`).
 
-2. **IG Publisher** — full QA-rapport:
-   ```bash
-   ROOT="$(git rev-parse --show-toplevel)"
-   java -jar "$ROOT/publisher/publisher.jar" -ig "$ROOT/LMDI/ig.ini" -generate
-   ```
-   Genererer `LMDI/output/qa.html` med alle feil og advarsler.
+   **Hva endepunktet kontrollerer** (observert 2026-11-10 med eksempelbundelen og innlagte feil):
 
-3. **FHI test-endepunkt (ukryptert)**:
-   ```
-   POST https://test-fhirmottak.lmr.fhi.no/fhirmottak/v1/validateLegemiddelregisterBundle
-   Content-Type: application/json
-   ```
-   Returnerer 200 + `OperationOutcome` eller 400. Ikke autentisert, lagrer ingen data.
+   | Feil lagt inn | Svar |
+   |---|---|
+   | `note` satt på Legemiddeladministrering (`0..0`) | 400, kardinalitet |
+   | `effectiveDateTime = "2024-05-28"` | 400, invariant `time-required` |
+   | `Pasient.address.type = "postal"` | 400, fast verdi |
+   | Ukjent `system` i `dosage.route.coding` | 400, lukket slicing |
+   | Oppdiktet SNOMED CT-kode i `dosage.route.coding[SCT]` (required, `route-codes`) | **200** |
+   | `status = "in-progress"` (required, `LegemiddeladministreringStatus`) | **200** |
+   | `Pasient.address.use = "work"` (required, `LmdiAddressUse`) | **200** |
 
-4. **FHI test-endepunkt (signert/kryptert)**:
+   Endepunktet validerer altså struktur, kardinalitet, faste verdier, slicing og invarianter, men
+   ikke terminologi: koder sjekkes ikke mot valuesettene, verken eksterne kodeverk eller LMDI sine
+   egne. Bindingene må kontrolleres separat, manuelt mot «Required-bindinger» over og
+   `terminologi.md`, eller med en validator som har terminologitjener (IG Publisher eller
+   HL7-validatoren for den som har LMDI-repoet). Radene om `status` og `address.use` i
+   feilsøkingstabellen under gjelder slik validering. Testendepunktet rapporterer dem ikke. Om
+   mottaket i produksjon håndhever bindingene, er ikke undersøkt.
+
+   **Bare syntetiske data.** Endepunktet lagrer ikke, men en bundle med ekte pasientopplysninger skal
+   likevel ikke sendes ukryptert til et testmiljø.
+
+2. **Signert og kryptert konvolutt**:
    ```
    POST https://test-fhirmottak.lmr.fhi.no/fhirmottak/v1/validate
    ```
-   Krever Maskinporten (scope `fhi:lmr/fhirmottak.api`). Validerer også krypto + signatur.
+   Krever Maskinporten (scope `fhi:lmr/fhirmottak.api`) og at avsender er registrert og aktiv. Validerer
+   krypto, signatur og innholdet. 200 = ingen feil funnet, 400 = feil. Lagrer ikke. Ikke undersøkt om
+   terminologi kontrolleres her. Gå ut fra samme begrensning som for den ukrypterte varianten.
 
-Når du foreslår at brukeren kjører validering, inkluder URL og forventet respons.
+Når du foreslår at brukeren kjører validering, inkluder kommandoen og forventet respons.
+
+### Hvilken IG-versjon validerer mottaket mot?
+
+IG-en sier ikke hvilken versjon av profilene FhirMottak har lastet i test og produksjon, og skillen vet
+det ikke. Mottaket kan ligge bak siste IG-versjon: da skillen ble oppdatert til 1.1.8 (oktober 2026), ble
+FhirMottak observert med 1.1.7-profilene.
+
+Konsekvenser for avsender:
+- Bruk av noe som er **nytt** i en IG-versjon, kan gi advarsel i stedet for validering (se
+  `administrertVed`/`rekvirertVed` over).
+- Noe som er **lempet på** i en nyere IG-versjon (f.eks. Organisasjon uten ENH/RSH fra 1.1.9, flere
+  ICD-10-koder fra 1.1.7), kan fortsatt bli avvist av et mottak på eldre versjon.
+
+Er svaret versjonsavhengig, si det, og anbefal å validere mot testendepunktet eller å spørre FHI
+hvilken versjon som gjelder i miljøet.
+
+### For den som vedlikeholder IG-en (krever LMDI-repoet)
+
+- **SUSHI**: `cd LMDI && sushi .` gir byggefeil hvis FSH-eksempler er ugyldige. Validerer ikke fremmed JSON.
+- **IG Publisher**: `java -jar publisher.jar -ig LMDI/ig.ini -generate` gir full QA-rapport i `LMDI/output/qa.html`.
 
 ---
 

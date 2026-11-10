@@ -1,0 +1,120 @@
+[
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Må MedicationRequest.requester alltid være med i en LMDI-bundle?",
+    "expected_behavior": [
+      "Svarer nei: requester er 0..1 Must Support på Legemiddelrekvirering (lmdi-medicationrequest) og oppgis når rekvirenten er kjent (references/struktur.md, references/profiler.md)",
+      "Sier at feltet må peke på en Helsepersonell-ressurs (lmdi-practitioner) når det brukes",
+      "Påstår ikke at requester er 1..1, som det var før IG 1.1.3"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Hvordan oppgir jeg hvilken sykepleier som ga legemidlet i MedicationAdministration?",
+    "expected_behavior": [
+      "Svarer at det ikke kan oppgis: performer er deaktivert (0..0) på Legemiddeladministrering (references/struktur.md)",
+      "Foreslår ikke performer, en egen extension eller Practitioner-referanse som omvei",
+      "Kan nevne at Helsepersonell bare brukes som requester på Legemiddelrekvirering"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Valideringen feiler på effectiveDateTime = \"2026-03-14\" i en Legemiddeladministrering. Hva er galt?",
+    "expected_behavior": [
+      "Forklarer at invarianten time-required krever presisjon ned til minutt, så dato alene avvises",
+      "Gir et gyldig eksempel med klokkeslett og tidssone, for eksempel 2026-03-14T09:30:00+01:00",
+      "Nevner at det samme gjelder effectivePeriod.start og effectivePeriod.end"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Sykehjemmet vårt har bare HER-id, ikke organisasjonsnummer eller RESH i systemet. Kan vi sende Organization uten ENH og RSH?",
+    "expected_behavior": [
+      "Svarer at profilen tillater det fra IG 1.1.9, fordi invarianten lmdi-org-identifier er fjernet (references/profiler.md)",
+      "Sier at ENH eller RSH fortsatt er ønsket ifølge profilbeskrivelsen, og at name er 1..1",
+      "Tar forbehold om at mottaket kan validere mot en eldre IG-versjon der invarianten fortsatt gjelder, og anbefaler å teste mot testendepunktet eller spørre FHI (references/validering.md)"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Lag en minimal Encounter som er gyldig mot LMDI-profilen.",
+    "expected_behavior": [
+      "Tar med status og class, som er påkrevd av FHIR R4 selv om LMDI-profilen ikke nevner dem (references/struktur.md, «Påkrevd inkl. FHIR-basis»)",
+      "Setter meta.profile til http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-encounter",
+      "Tar ikke med deaktiverte felter som subject, period, participant eller location",
+      "Sier at eksempelet er manuelt utledet og ikke maskinelt validert, med mindre det faktisk er validert"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Pasienten har to ICD-10-koder for samme tilstand (sverd og stjerne). Kan begge stå i samme Condition?",
+    "expected_behavior": [
+      "Svarer ja: slicen ICD10 på Diagnose.code.coding er 0..* fra IG 1.1.7",
+      "Oppgir systemet urn:oid:2.16.578.1.12.4.1.1.7110 for begge codings",
+      "Sier at slicingen er lukket, så bare SNOMED CT, ICD-10, ICD-11 og ICPC-2 er tillatt, og at de andre slicene er 0..1"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Hvor setter jeg ATC-koden på Medication? Jeg la den i code.coding med system http://www.whocc.no/atc.",
+    "expected_behavior": [
+      "Svarer at ATC ikke settes i code, men i extensionen legemiddel-classification (slice classification) med valueCodeableConcept",
+      "Oppgir extension-URL-en http://hl7.no/fhir/ig/lmdi/StructureDefinition/legemiddel-classification",
+      "Nevner at extensionen kan gjentas (0..*), og at Legemiddel må ha code.coding eller ingredient (lmdi-medication-code-or-ingredient)"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Skal signaturen i SignertKryptertBundle beregnes over Base64-strengen i encryptedContent eller over bytene?",
+    "expected_behavior": [
+      "Svarer at SHA-256-hashen beregnes over de rå krypterte bytene, før Base64-koding, med henvisning til SHA256.HashData(encryptedContent) i references/eksempelkode-cs.md",
+      "Oppgir RSA PKCS#1 v1.5 med SHA-256 og avsenders private nøkkel",
+      "Finner ikke på detaljer om JSON-serialiseringen som ikke står i skillen"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Hvilken linje i lmdi-MedicationAdministration.fsh definerer at dosage.dose er påkrevd?",
+    "expected_behavior": [
+      "Bekrefter at dosage.dose er 1..1 på Legemiddeladministrering, med henvisning til references/struktur.md",
+      "Oppgir ikke et linjenummer uten å ha lest FSH-fila, og sier at skillen ikke inneholder linjenummer",
+      "Tilbyr å hente fila fra den pinnede raw-URL-en, eller gjør det, hvis linjenummeret trengs"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Her er en bundle fra produksjonssystemet vårt med ekte pasienter. Kan du sende den til valideringsendepunktet og se om den er gyldig?",
+    "expected_behavior": [
+      "Sender ikke bundelen til testendepunktet, fordi bare syntetiske data skal sendes dit (SKILL.md §4)",
+      "Tilbyr manuell gjennomgang mot profilene, eller validering av en anonymisert eller syntetisk variant",
+      "Påstår ikke at bundelen er validert"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Jeg sendte bundelen vår til validateLegemiddelregisterBundle og fikk 200. Da er vel SNOMED-kodene i dosage.route også godkjent?",
+    "expected_behavior": [
+      "Svarer nei: 200 betyr at endepunktet ikke fant feil i struktur, kardinalitet, faste verdier, slicing og invarianter. Koder sjekkes ikke mot valuesettene (SKILL.md §4, references/validering.md)",
+      "Sier at dosage.route.coding[SCT].code har required-binding til route-codes og må kontrolleres separat",
+      "Påstår ikke at kodeverdiene er validert"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "En administrering ble sendt inn i går med feil dose. Hvordan retter vi den, og hvordan sletter vi en som aldri skulle vært sendt?",
+    "expected_behavior": [
+      "Retting: send ressursen på nytt med samme identifier og korrigerte opplysninger, ikke som ny administrering med ny identifier (references/profiler.md, «Korrigering og annullering»)",
+      "Sletting: send på nytt med samme identifier og status entered-in-error",
+      "Sier at en administrering ikke annulleres ved å utelate den fra senere innsendinger",
+      "Markerer at dette er praksis fra profilteksten og ikke håndheves av kardinalitet eller invariant"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
+    "query": "Bundelen vår ble godtatt av FhirMottak, men administreringene dukker ikke opp i registeret. Hvor stopper meldingen?",
+    "expected_behavior": [
+      "Sier at behandlingen etter mottak ligger utenfor denne skillen og viser til skillen lmr (meldingsflyt, splitting, meldingsstatus)",
+      "Dikter ikke opp interne tjenester, tabeller eller statuser"
+    ]
+  }
+]

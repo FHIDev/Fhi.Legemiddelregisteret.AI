@@ -2,6 +2,10 @@
 
 Kilde: `LMDI/input/fsh/profiles/*.fsh`. Canonical-mønster: `http://hl7.no/fhir/ig/lmdi/StructureDefinition/<id>`.
 
+Denne fila forklarer profilene: hva feltene betyr, praksisregler og hva som er endret mellom versjoner.
+Den eksakte strukturen (kardinalitet, MS, bindinger, slicing, `0..0`, påkrevde felter inkl. FHIR-basis)
+står i den genererte `struktur.md`, som gjelder ved motstrid.
+
 Profilene som har `^status` i FSH er markert `#draft`; IG-en som helhet er `active`.
 
 ## Oversikt
@@ -123,6 +127,7 @@ Som Pasient: `type = #physical` (required binding `LmdiAddressType`), `district`
 **Beskrivelse**: Behandlingsepisode — organisatorisk tilhørighet (innleggelse, sykehjemsopphold, konsultasjon).
 
 ### Kjerne
+- `status` 1..1 og `class` 1..1 — påkrevd av FHIR R4, ikke endret av LMDI. Lett å glemme fordi profilen ikke nevner dem
 - `serviceProvider only Reference(Organisasjon)` — sted for episoden
 - `extension[nprEpisodeIdentifier]` 0..* MS — NPR-id (string og/eller uuid)
 
@@ -220,7 +225,14 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
   ingrediensens styrke i blandingen utledes.
 
 ### `batch` MS
-- `manufacturer 0..0`, `text 0..0`
+
+### Deaktiverte
+`text`, `manufacturer`, `code.text`, `form.text`. `manufacturer` og `text` er elementene på ressursrot
+(`Medication.manufacturer`, `Medication.text`), ikke under `batch`.
+
+### Øvrig
+- `form.coding.display` MS
+- `ingredient.item[x]` 1..1 når `ingredient` brukes (FHIR R4)
 
 ### Merknad 1.1.0
 `extension[classification]` endret fra 0..1 til 0..* — et legemiddel kan nå ha flere ATC-koder.
@@ -232,6 +244,7 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
 **Fil**: `profiles/lmdi-Substance.fsh`
 
 - `category 1..1` (gjør kategori påkrevd)
+- `code 1..1` — påkrevd av FHIR R4, ikke endret av LMDI
 - Deaktivert: `text`, `description`, `ingredient`
 
 Typisk brukt for rene virkestoff der man vil referere dem fra `Legemiddel.ingredient.itemReference`.
@@ -288,7 +301,7 @@ Typisk brukt for rene virkestoff der man vil referere dem fra `Legemiddel.ingred
 
 ### Korrigering og annullering (presisert i 1.1.6)
 Kun tekst (`^short`/`^definition`/`^comment` og profilbeskrivelsen), ingen endret kardinalitet, MS eller binding.
-- `identifier` — identifiserer administreringen **over tid**. `[LMDI-praksis]` Avsender skal bruke **samme** identifikator ved ny rapportering av en tidligere innsendt administrering. En korrigering skal ikke sendes som ny administrering med ny identifikator. `identifier.system` bør identifisere avsenders identifikatorområde, slik at identifikatoren er entydig på tvers av avsendere.
+- `identifier` — identifiserer administreringen **over tid**. Praksis fra profilteksten (BØR, ikke håndhevet): avsender skal bruke **samme** identifikator ved ny rapportering av en tidligere innsendt administrering. En korrigering skal ikke sendes som ny administrering med ny identifikator. `identifier.system` bør identifisere avsenders identifikatorområde, slik at identifikatoren er entydig på tvers av avsendere.
 - Korrigering/endring: rapporter ressursen på nytt med samme `identifier` og korrigerte opplysninger.
 - Annullering/sletting: rapporter på nytt med samme `identifier` og `status = entered-in-error`.
 - En tidligere rapportert administrering annulleres **ikke** ved å utelate den fra senere innsendinger.

@@ -11,6 +11,15 @@ steps:
 - checkout: self
   fetchDepth: 0
 
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+
+- script: |
+    python -m pip install "pyyaml>=6,<7"
+    python scripts/sjekk-skills.py
+  displayName: Kontroller skills
+
 - script: |
     mkdir -p ~/.ssh
     echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_ed25519

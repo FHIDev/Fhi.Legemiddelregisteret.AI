@@ -1,5 +1,9 @@
 # Eksempelmønstre
 
+**Komplett bundle**: `assets/Bundle-Scenario-Sykehjem-Oksykodon.json` er `Bundle-Scenario-Sykehjem-Oksykodon` slik den er publisert i IG-en, med åtte ressurser og `urn:uuid:`-referanser. Start der når det trengs en hel bundle. Alle personopplysninger i eksemplene er syntetiske.
+
+> **Uavklart:** IG Publisher (QA for 1.1.9) rapporterer feil på `dosage.route.coding[SCT].code` i denne bundelen: SNOMED CT-koden `421521009` («Swallow») ble ikke funnet i `http://hl7.org/fhir/ValueSet/route-codes`, som har required-binding. Det er ikke avklart om koden faktisk er utenfor valuesettet eller om terminologitjeneren ikke kunne ekspandere det. Samme kode brukes i mønster 4 under. Si fra om forbeholdet når eksempelet brukes. Testendepunktet avklarer det ikke, fordi det ikke sjekker koder mot valuesett (se `validering.md`).
+
 Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. Når du genererer nye eksempler, bruk disse som utgangspunkt — det sikrer at slicing-navn, system-URI-er og invariant-krav er korrekte.
 
 ## Oversikt over `Instance`-navn per profil
@@ -175,17 +179,19 @@ Alle eksempler nedenfor er hentet fra `LMDI/input/fsh/` og kan brukes som mal. N
   ],
   "status": "active",
   "intent": "order",
-  "medicationReference": { "reference": "urn:uuid:..." },
-  "subject":             { "reference": "urn:uuid:..." },
-  "requester":           { "reference": "urn:uuid:..." },
+  "medicationReference": { "reference": "urn:uuid:66666666-6666-4666-8666-666666666666" },
+  "subject":             { "reference": "urn:uuid:11111111-1111-4111-8111-111111111111" },
+  "requester":           { "reference": "urn:uuid:22222222-2222-4222-8222-222222222222" },
   "authoredOn": "2025-03-10"
 }
 ```
 
+Referansene følger samme `fullUrl`-er som i `assets/Bundle-Scenario-Sykehjem-Oksykodon.json` (Legemiddel, Pasient, Helsepersonell).
+
 ## Generer nytt eksempel — oppskrift
 
-1. Velg eksisterende FSH-eksempel som er nærmest scenarioet.
-2. Kopier strukturen; bytt ut verdier.
+1. Velg eksempelet som er nærmest scenarioet: asset-bundelen for en hel bundle, ellers mønstrene over.
+2. Kopier strukturen; bytt ut verdier. Sjekk påkrevde felter mot «Påkrevd inkl. FHIR-basis» i `struktur.md`.
 3. Sett `meta.profile` eksplisitt hvis eksempelet skal være standalone JSON.
 4. For bundle-eksempler: bruk `urn:uuid:<v4>`-mønster konsekvent.
-5. Merk utdata med: `"Manuelt utledet basert på profil — ikke maskinelt validert."` hvis SUSHI / endepunkt ikke er kjørt.
+5. Valider bundler mot testendepunktet (se `validering.md`) når du har nettilgang. Ellers merk utdata med: `"Manuelt utledet fra profilene, ikke maskinelt validert."`

@@ -66,7 +66,9 @@ Deretter kan du bekrefte installasjonen med `/plugin`. Hver plugin aktiverer ski
 
 ## Versjonering og oppdatering
 
-Pluginene versjoneres på commit-SHA: hver commit i kilderepoet teller som en ny versjon. Det er ikke noe `version`-felt å bumpe manuelt, og enhver endring i en skill blir dermed tilgjengelig som en oppdatering automatisk.
+Hver plugin har en eksplisitt `version` i `.claude-plugin/marketplace.json`, og brukerne får bare en oppdatering når den endres. Hver commit som endrer filer under `plugins/<navn>/`, skal derfor øke `version` for akkurat den pluginen. `lmr` og `lmr-entraid` følger semver. `lmdi-fhir` bruker `<LMDI-versjon>-<løpenummer>`, f.eks. `1.1.9-2`. Reglene står i `CLAUDE.md`.
+
+`scripts/sjekk-skills.py` kontrollerer at frontmatteren i alle `SKILL.md` lar seg parse, og at versjonene stemmer overens. Skriptet kjøres i `azure-pipelines.yml` før speilingen til GitHub, og kan kjøres lokalt med `python scripts/sjekk-skills.py`.
 
 Slik holder du din Claude Code oppdatert:
 
