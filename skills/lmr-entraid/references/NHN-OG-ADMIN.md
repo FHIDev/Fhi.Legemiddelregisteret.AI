@@ -17,25 +17,32 @@ verifisering i denne migreringen mer enn én gang.
 | Opprette en ny AU | ❌ | Privileged Role Administrator |
 | Gi appen rett til å **fjerne** gruppemedlemmer | ❌ | Privileged Role Administrator (tildeler rollen) |
 
-## To administrative enheter — LMR og Grossiststatistikken
+## Administrative enheter — én for prod og én for øvrige miljøer, per fagområde
 
 LMR og Grossiststatistikken er separate fagområder i FHI med hver sin fagansvarlige. Fram til
 september 2026 lå Grossiststatistikkens rollegrupper i LMRs AU, fordi det var den eneste som
 fantes. US **120849** skilte dem: ny AU, og de fire gruppene flyttet dit av NHN.
 
+Deretter ble hvert fagområde delt i én AU for prod og én for øvrige miljøer (Grossiststatistikken
+US 123533, LMR november 2026). Grunnen: `Groups Administrator` gjelder alle grupper i AU-en, så så
+lenge alle miljøene delte AU kunne en Dev- eller Test-applikasjon endre hvem som har tilgang i
+prod. Prod-AU-en er den opprinnelige, med nytt navn; gruppene ble flyttet, ikke gjenskapt.
+
 | AU | Object ID | Grupper | `Groups Administrator` scoped til AU-en |
 |---|---|---|---|
-| `AU-Legemiddelregisteret` | `a563113b-80b4-4187-a938-a8d97992c3ce` | 20 × `A-FHI-App-Lmr-<Miljø>-<Rolle>` | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine` ×4 |
-| `AU-Grossiststatistikken` | `94d49e82-a17c-458f-93b1-5bab0c2fcfb2` | 6 × `A-FHI-App-Grossiststatistikken-<Miljø>-<Rolle>` (Sandbox/Test/Prod) | Ludvig, `Fhi.Grossiststatistikken.Client.Machine` Test + Sandbox (Prod bestilt 8. sep 2026) |
+| `AU-Legemiddelregisteret-Prod` | `a563113b-80b4-4187-a938-a8d97992c3ce` | Prod: 5 × `A-FHI-App-Lmr-Prod-<Rolle>` + sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine - Prod` |
+| `AU-Legemiddelregisteret-Test` | `7aa36d85-8358-42f1-96fb-d511f49b40f2` | Dev/Test/QA: 15 rollegrupper + Test-sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine` Dev + Test + QA |
+| `AU-Grossiststatistikken-Prod` | `94d49e82-a17c-458f-93b1-5bab0c2fcfb2` | `…-Prod-Admin`, `…-Prod-Bruker` | Ludvig, `Fhi.Grossiststatistikken.Client.Machine - Prod` |
+| `AU-Grossiststatistikken-Test` | `60f3749d-721f-4b0c-8793-90949662ffb9` | Sandbox/Test × Admin/Bruker | Ludvig, `Fhi.Grossiststatistikken.Client.Machine` Sandbox + Test |
 
 En AU har ikke «eier». Det som gir noen rett til å legge til og fjerne medlemmer i gruppene er
 `Groups Administrator` scoped til AU-en — samme mekanisme for en bruker som for en applikasjon.
 `User Administrator` er ikke i bruk: AU-ene inneholder kun grupper, ingen brukere, så rollen
 ville ikke gitt noe.
 
-Nye grupper opprettes i riktig AU med `bicep/scripts/opprett-gruppe-i-au.sh`, som tar AU som
-valgfritt tredje argument (default LMR). Grossiststatistikkens Prod-grupper skal dit når
-Prod-miljøet kommer — det krever ingen ny NHN-bestilling.
+Nye grupper opprettes i riktig AU med `bicep/scripts/opprett-gruppe-i-au.sh`. Scriptet utleder
+AU-en av miljøet i gruppenavnet, og nekter å gjette for andre navn (oppgi da AU som tredje
+argument). En gruppe i feil AU kan bare flyttes med en NHN-bestilling.
 
 ### TODO: overføring til fagansvarlig — målbildet
 
@@ -44,10 +51,10 @@ EntraID-eierskap til fagansvarlige», Team A) beskriver overføringen; 120849 er
 
 | AU | Til | Når |
 |---|---|---|
-| `AU-Legemiddelregisteret` | Kari | når EntraID-arbeidet for LMR er i prod og verifisert |
-| `AU-Grossiststatistikken` | Kristine Olsen | når Grossiststatistikken er ferdig utviklet og i prod |
+| `AU-Legemiddelregisteret-Prod` + `-Test` | Kari | når EntraID-arbeidet for LMR er i prod og verifisert |
+| `AU-Grossiststatistikken-Prod` + `-Test` | Kristine Olsen | når Grossiststatistikken er ferdig utviklet og i prod |
 
-Inntil da har Ludvig `Groups Administrator` på begge.
+Inntil da har Ludvig `Groups Administrator` på alle fire.
 
 **⚠️ Nåsituasjonen er en bus-faktor på én person, målt 4. sep 2026:** alle 75 app-registreringene
 (`Fhi.Lmr.*` + `Fhi.Grossist*`) har **nøyaktig én eier**, og bare én bruker har `Groups
@@ -181,7 +188,7 @@ grupper.
 | | |
 |---|---|
 | Rolle | `Groups Administrator` — `fdd7a751-b60b-444a-984c-02652fe8fa1c` |
-| Scope | `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` (`AU-Legemiddelregisteret`) — Grossiststatistikken bruker sin egen AU, se over |
+| Scope | LMR: `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` (`AU-Legemiddelregisteret-Prod`) for Prod, `/administrativeUnits/7aa36d85-8358-42f1-96fb-d511f49b40f2` (`AU-Legemiddelregisteret-Test`) for Dev/Test/QA. Grossiststatistikken har sine egne, se over |
 | Tenant | `54475f80-1baa-4ea9-9185-c0de5cc603fe` |
 
 AU-scopet begrenser rettigheten til gruppene som ligger i den aktuelle AU-en — våre egne
@@ -199,14 +206,14 @@ Bruk portalen eller `Connect-MgGraph`:
 ```powershell
 Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory"
 
-$au    = "/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce"
+$au    = "/administrativeUnits/<AU for miljøet>"   # se tabellen over — prod og øvrige miljøer har hver sin
 $rolle = "fdd7a751-b60b-444a-984c-02652fe8fa1c"   # Groups Administrator
 
 New-MgRoleManagementDirectoryRoleAssignment `
     -PrincipalId "<SP-object-id>" -RoleDefinitionId $rolle -DirectoryScopeId $au
 ```
 
-Portalen: Entra ID → Roles & admins → Admin units → `AU-Legemiddelregisteret` →
+Portalen: Entra ID → Roles & admins → Admin units → riktig AU (f.eks. `AU-Legemiddelregisteret-Test`) →
 Roles and administrators → `Groups Administrator` → Add assignments.
 
 **Den som utfører tildelingen trenger `Privileged Role Administrator`.** Det gjelder kun
@@ -215,7 +222,7 @@ utføreren — applikasjonene får ingen slik rolle.
 ### Bestillingsmal
 
 > Tildel den innebygde Entra-rollen **`Groups Administrator`**, **scoped til den administrative
-> enheten `AU-Legemiddelregisteret`**, til følgende service principals:
+> enheten `<AU-navn>`**, til følgende service principals:
 >
 > | # | Service principal | Object ID | Application ID |
 > |---|---|---|---|
@@ -224,10 +231,10 @@ utføreren — applikasjonene får ingen slik rolle.
 > | | |
 > |---|---|
 > | Rolle | `Groups Administrator` — `fdd7a751-b60b-444a-984c-02652fe8fa1c` |
-> | Scope | `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` |
+> | Scope | `/administrativeUnits/<AU object ID>` |
 >
 > **Dette er ikke en tenant-wide tildeling.** AU-scopet begrenser rettigheten til gruppene i
-> `AU-Legemiddelregisteret` — våre egne applikasjonsroller.
+> `<AU-navn>` — våre egne applikasjonsroller.
 
 Verifiser etterpå:
 

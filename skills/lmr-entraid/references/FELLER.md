@@ -70,11 +70,11 @@ slår det til, er symptomet `Request_ResourceNotFound` rett etter opprettelse. K
 | Flytte eksisterende gruppe inn | **`Privileged Role Administrator`** |
 
 Lager du gruppa utenfor først, trenger du en NHN-bestilling for å rette det opp. Bruk
-`bicep/scripts/opprett-gruppe-i-au.sh`, med riktig AU som tredje argument.
+`bicep/scripts/opprett-gruppe-i-au.sh`, som utleder riktig AU av miljøet i gruppenavnet.
 
 Flytting er ikke en blindvei, bare admin-gated: Grossiststatistikkens fire grupper ble flyttet
 fra `AU-Legemiddelregisteret` til `AU-Grossiststatistikken` med én NHN-bestilling (US 120849,
-september 2026). Gruppene beholdt object-ID, medlemmer, eiere og app-rolletildelinger — det
+september 2026). Senere ble begge fagområdene delt i en prod- og en test-AU på samme måte. Gruppene beholdt object-ID, medlemmer, eiere og app-rolletildelinger — det
 eneste som måtte følge med var `Groups Administrator`-tildelingene, som er scoped per AU.
 
 ### ⚠️ `az rest` kan ikke tildele katalogroller
