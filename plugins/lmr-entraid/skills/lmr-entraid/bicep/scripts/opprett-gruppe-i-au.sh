@@ -17,23 +17,49 @@
 # Scriptet er idempotent: finnes gruppa allerede, settes bare uniqueName (om det mangler).
 #
 # Bruk:
-#   ./opprett-gruppe-i-au.sh "A-FHI-App-Lmr-Test-Godkjenn" <clientMachineSpObjectId>
+#   ./opprett-gruppe-i-au.sh "A-FHI-App-Lmr-Test-Godkjenn" <clientMachineSpObjectId> [au-objectId]
+#
+# AU-en er valgfri og utledes av gruppenavnet. Hvert fagområde har én AU for prod og én for
+# øvrige miljøer, slik at bare prod-applikasjonen kan endre hvem som har tilgang i prod:
+#   A-FHI-App-Lmr-Prod-*                          -> AU-Legemiddelregisteret-Prod
+#   A-FHI-App-Lmr-{Dev,Test,QA}-*                 -> AU-Legemiddelregisteret-Test
+#   A-FHI-App-Grossiststatistikken-Prod-*         -> AU-Grossiststatistikken-Prod
+#   A-FHI-App-Grossiststatistikken-{Sandbox,Test}-* -> AU-Grossiststatistikken-Test
+# Andre navn krever AU som tredje argument — scriptet gjetter ikke, fordi en gruppe i feil AU
+# bare kan flyttes med en NHN-bestilling.
 #
 set -uo pipefail
 
 FHI_TENANT="54475f80-1baa-4ea9-9185-c0de5cc603fe"
-# AU-Legemiddelregisteret
-AU_ID="a563113b-80b4-4187-a938-a8d97992c3ce"
+AU_LMR_PROD="a563113b-80b4-4187-a938-a8d97992c3ce"      # AU-Legemiddelregisteret-Prod
+AU_LMR_TEST="7aa36d85-8358-42f1-96fb-d511f49b40f2"      # AU-Legemiddelregisteret-Test
+AU_GROSSIST_PROD="94d49e82-a17c-458f-93b1-5bab0c2fcfb2" # AU-Grossiststatistikken-Prod
+AU_GROSSIST_TEST="60f3749d-721f-4b0c-8793-90949662ffb9" # AU-Grossiststatistikken-Test
 
-if [ "$#" -ne 2 ]; then
-  echo "Bruk: $0 <gruppens displayName> <eier-SP-objectId>" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  echo "Bruk: $0 <gruppens displayName> <eier-SP-objectId> [au-objectId]" >&2
   echo "  Eier bør være Client.Machine sin service principal, slik at appen kan" >&2
   echo "  administrere medlemmer via Graph." >&2
+  echo "  AU utledes av miljøet i gruppenavnet; oppgi den eksplisitt for andre navn." >&2
   exit 64
 fi
 
 visningsnavn="$1"
 eier_sp="$2"
+if [ "$#" -eq 3 ]; then
+  AU_ID="$3"
+else
+  case "$visningsnavn" in
+    A-FHI-App-Lmr-Prod-*)                                   AU_ID="$AU_LMR_PROD" ;;
+    A-FHI-App-Lmr-Dev-*|A-FHI-App-Lmr-Test-*|A-FHI-App-Lmr-QA-*) AU_ID="$AU_LMR_TEST" ;;
+    A-FHI-App-Grossiststatistikken-Prod-*)                  AU_ID="$AU_GROSSIST_PROD" ;;
+    A-FHI-App-Grossiststatistikken-Sandbox-*|A-FHI-App-Grossiststatistikken-Test-*) AU_ID="$AU_GROSSIST_TEST" ;;
+    *)
+      echo "FEIL: kan ikke utlede AU av '$visningsnavn'. Oppgi AU-ens object ID som tredje argument." >&2
+      exit 64 ;;
+  esac
+fi
+echo "AU: $AU_ID"
 # uniqueName er nøkkelen Bicep bruker for å referere gruppa med 'existing'.
 unikt_navn="$(printf '%s' "$visningsnavn" | tr '[:upper:]' '[:lower:]')"
 mail_nickname="$(printf '%s' "$unikt_navn" | tr -d '-')"
@@ -66,7 +92,7 @@ else
     '{
       "@odata.type": "#microsoft.graph.group",
       displayName: $navn,
-      description: "Rolletilgang for LMR. Medlemskap gir rollen i roles-claimet.",
+      description: "Rolletilgang. Medlemskap gir rollen i roles-claimet.",
       securityEnabled: true,
       mailEnabled: false,
       mailNickname: $nick,
@@ -85,7 +111,7 @@ else
     printf '%s\n' "$svar" >&2
     exit 1
   fi
-  echo "Opprettet gruppe i AU-Legemiddelregisteret: $visningsnavn ($gruppe_id)"
+  echo "Opprettet gruppe i AU $AU_ID: $visningsnavn ($gruppe_id)"
 fi
 
 # Etterfyll uniqueName hvis gruppa er eldre og mangler den. Immutable — settes kun én gang.

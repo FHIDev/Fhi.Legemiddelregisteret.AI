@@ -12,9 +12,112 @@ verifisering i denne migreringen mer enn én gang.
 | Sette `owners` på egne app-regs | ✅ | app-eier |
 | **Application permission** (`appRoleAssignedTo`) — m2m-consent | ✅ | eier av ressurs-app-regen |
 | **Delegert scope** (`oauth2PermissionGrants`) — brukerinnlogging | ❌ | Cloud Application Administrator / Application Administrator |
-| Opprette gruppe **inne i** AU-Legemiddelregisteret | ✅ | `Groups Administrator` scoped til AU-en |
-| **Flytte** eksisterende gruppe inn i AU-en | ❌ | **Privileged Role Administrator** |
+| Opprette gruppe **inne i** fagområdets AU | ✅ | `Groups Administrator` scoped til AU-en |
+| **Flytte** eksisterende gruppe inn i en AU | ❌ | **Privileged Role Administrator** |
+| Opprette en ny AU | ❌ | Privileged Role Administrator |
 | Gi appen rett til å **fjerne** gruppemedlemmer | ❌ | Privileged Role Administrator (tildeler rollen) |
+
+## Administrative enheter — én for prod og én for øvrige miljøer, per fagområde
+
+LMR og Grossiststatistikken er separate fagområder i FHI med hver sin fagansvarlige. Fram til
+september 2026 lå Grossiststatistikkens rollegrupper i LMRs AU, fordi det var den eneste som
+fantes. US **120849** skilte dem: ny AU, og de fire gruppene flyttet dit av NHN.
+
+Deretter ble hvert fagområde delt i én AU for prod og én for øvrige miljøer (Grossiststatistikken
+US 123533, LMR november 2026). Grunnen: `Groups Administrator` gjelder alle grupper i AU-en, så så
+lenge alle miljøene delte AU kunne en Dev- eller Test-applikasjon endre hvem som har tilgang i
+prod. Prod-AU-en er den opprinnelige, med nytt navn; gruppene ble flyttet, ikke gjenskapt.
+
+| AU | Object ID | Grupper | `Groups Administrator` scoped til AU-en |
+|---|---|---|---|
+| `AU-Legemiddelregisteret-Prod` | `a563113b-80b4-4187-a938-a8d97992c3ce` | Prod: 5 × `A-FHI-App-Lmr-Prod-<Rolle>` + sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine - Prod` |
+| `AU-Legemiddelregisteret-Test` | `7aa36d85-8358-42f1-96fb-d511f49b40f2` | Dev/Test/QA: 15 rollegrupper + Test-sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine` Dev + Test + QA |
+| `AU-Grossiststatistikken-Prod` | `94d49e82-a17c-458f-93b1-5bab0c2fcfb2` | `…-Prod-Admin`, `…-Prod-Bruker` | Ludvig, `Fhi.Grossiststatistikken.Client.Machine - Prod` |
+| `AU-Grossiststatistikken-Test` | `60f3749d-721f-4b0c-8793-90949662ffb9` | Sandbox/Test × Admin/Bruker | Ludvig, `Fhi.Grossiststatistikken.Client.Machine` Sandbox + Test |
+
+En AU har ikke «eier». Det som gir noen rett til å legge til og fjerne medlemmer i gruppene er
+`Groups Administrator` scoped til AU-en — samme mekanisme for en bruker som for en applikasjon.
+`User Administrator` er ikke i bruk: AU-ene inneholder kun grupper, ingen brukere, så rollen
+ville ikke gitt noe.
+
+Nye grupper opprettes i riktig AU med `bicep/scripts/opprett-gruppe-i-au.sh`. Scriptet utleder
+AU-en av miljøet i gruppenavnet, og nekter å gjette for andre navn (oppgi da AU som tredje
+argument). En gruppe i feil AU kan bare flyttes med en NHN-bestilling.
+
+### TODO: overføring til fagansvarlig — målbildet
+
+Ikke gjort, og bevisst ikke del av 120849. ADO-feature **120885** («Teknisk: Overføring av
+EntraID-eierskap til fagansvarlige», Team A) beskriver overføringen; 120849 er første steg under den.
+
+| AU | Til | Når |
+|---|---|---|
+| `AU-Legemiddelregisteret-Prod` + `-Test` | Kari | når EntraID-arbeidet for LMR er i prod og verifisert |
+| `AU-Grossiststatistikken-Prod` + `-Test` | Kristine Olsen | når Grossiststatistikken er ferdig utviklet og i prod |
+
+Inntil da har Ludvig `Groups Administrator` på alle fire.
+
+**⚠️ Nåsituasjonen er en bus-faktor på én person, målt 4. sep 2026:** alle 75 app-registreringene
+(`Fhi.Lmr.*` + `Fhi.Grossist*`) har **nøyaktig én eier**, og bare én bruker har `Groups
+Administrator` på AU-ene. Når den kontoen deaktiveres, blir app-regene eierløse, og hver
+endring — inkludert sertifikatfornyelsen for Prod i **2028** — blir en NHN-bestilling med
+Cloud Application Administrator.
+
+#### Prinsippet: fagperson eier, utvikler låner
+
+En utvikler skal **ikke** kunne gi seg selv tilgang til Prod. Merk at det ikke holder å nekte
+utvikleren `Groups Administrator`: **eieren av en app-registrering kan tildele en bruker direkte
+til en app-rolle** («Users and groups» på enterprise-appen), og `roles`-claimet beregnes fra alle
+tildelinger, ikke bare gruppene. Eieren kan også laste opp nytt sertifikat på `Client.Machine` og
+hente tokens som appen. Permanent eierskap i Prod gir altså samme makt som `Groups Administrator`.
+
+Målbildet er derfor:
+
+| Hvem | Hva | Varighet |
+|---|---|---|
+| Fagperson (Kari / Kristine Olsen) | `Groups Administrator` scoped til sin AU **+ eier av fagområdets app-registreringer**, alle miljøer | permanent |
+| Utviklere | **PIM-eligible** for `Groups Administrator` scoped til AU-en og `Cloud Application Administrator` scoped til hver app-registrering. **Godkjenner: fagperson.** | aktiveres per endring, utløper selv |
+
+Ingen utvikler har noe permanent. Fagpersonen eier medlemskapet i det daglige, og godkjenner
+når strukturen skal endres. Alt logges av PIM.
+
+**Hvorfor ikke én AU for ikke-prod og én for prod:** en rolle finnes alltid i alle miljøer, og
+endringen gjøres i alle miljøer i samme økt — én aktivering dekker jobben. Det utviklerne gjør i
+Test til daglig (medlemskap) går gjennom Kontrolls søknadsflyt, som virker fordi Kontrolls egen
+SP har rollen. Blir godkjenning på Test-arbeid plagsomt, er justeringen å gjøre Test-app-regene
+eligible **uten** godkjenning — det er en policy per app-reg, ikke en ny AU.
+
+**Hvorfor ikke NHN-bestilling per endring:** to bestillinger per endring (gi + fjern), den siste
+glemmes (`User Administrator` på LMR-AU-en var et slikt tilfelle), ukers latens, og kontrollen
+ligger hos NHN i stedet for hos fagpersonen. PIM er den innebygde varianten av «midlertidig
+tildeling», med fagpersonen som godkjenner og automatisk fjerning.
+
+#### Hva en ny rolle faktisk krever (så man ser hvorfor utviklerne trenger å låne)
+
+1. Ny app-rolle på `.Api` og `.Client.Web` i hvert miljø — app-eier / Cloud Application Administrator på app-regen.
+2. Ny sikkerhetsgruppe **inne i** AU-en — `Groups Administrator` scoped til AU-en (fagperson kan gjøre dette selv i portalen: Admin units → Groups → Add).
+3. Tildeling gruppe → app-rolle på begge service principalene — app-eier / Cloud Application Administrator.
+4. Kode og config: autorisasjonsattributt, rollekonstant, `Tilgangsstyring:GruppeIder` i alle appsettings, SPA — utvikler + deploy.
+5. Gjenta 1–3 per miljø.
+
+Fire av fem steg er utviklerarbeid. Uten PIM blir hvert av dem en NHN-bestilling.
+
+#### Bestillingen ved overføring (mal)
+
+Én bestilling per fagområde, som gjør **alt** samtidig:
+
+1. `Groups Administrator` scoped til AU-en → fagperson (permanent).
+2. Fjern Ludvigs `Groups Administrator` på samme AU.
+3. Legg fagperson til som eier på fagområdets app-registreringer (gjøres av nåværende eier selv, før kontoen deaktiveres — krever ingen NHN-rolle).
+4. PIM-eligible for utviklerne: `Groups Administrator` scoped til AU-en + `Cloud Application Administrator` scoped til hver app-registrering, med fagperson som godkjenner. Lista over app-regs genereres fra Graph (`az rest GET /applications?$filter=startswith(displayName,'Fhi.Lmr.')`).
+
+Presedens: Application Developer er alt PIM-basert hos NHN. Det som må bekreftes er at de
+tildeler eligible-rettigheter **scoped** til AU og til enkelt-app-regs, ikke tenant-vidt.
+Fallback hvis NHN sier nei: bestilling per endring, men da med tildeling **og** fjerningsdato i
+samme bestilling.
+
+⚠️ Det som ikke lukkes av dette: den som kan deploye Kontroll til Prod eller lese
+Prod-sertifikatet i Octopus, kan handle *som* Kontroll, som selv har `Groups Administrator`.
+Den døren lukkes med tilgangsstyring og godkjenning i Octopus, ikke i Entra.
 
 ## Admin consent
 
@@ -85,10 +188,10 @@ grupper.
 | | |
 |---|---|
 | Rolle | `Groups Administrator` — `fdd7a751-b60b-444a-984c-02652fe8fa1c` |
-| Scope | `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` (`AU-Legemiddelregisteret`) |
+| Scope | LMR: `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` (`AU-Legemiddelregisteret-Prod`) for Prod, `/administrativeUnits/7aa36d85-8358-42f1-96fb-d511f49b40f2` (`AU-Legemiddelregisteret-Test`) for Dev/Test/QA. Grossiststatistikken har sine egne, se over |
 | Tenant | `54475f80-1baa-4ea9-9185-c0de5cc603fe` |
 
-AU-scopet begrenser rettigheten til gruppene som ligger i `AU-Legemiddelregisteret` — våre egne
+AU-scopet begrenser rettigheten til gruppene som ligger i den aktuelle AU-en — våre egne
 applikasjonsroller. Rollen gir ingen tilgang til brukere, andre grupper eller noe annet i
 katalogen.
 
@@ -103,14 +206,14 @@ Bruk portalen eller `Connect-MgGraph`:
 ```powershell
 Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory"
 
-$au    = "/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce"
+$au    = "/administrativeUnits/<AU for miljøet>"   # se tabellen over — prod og øvrige miljøer har hver sin
 $rolle = "fdd7a751-b60b-444a-984c-02652fe8fa1c"   # Groups Administrator
 
 New-MgRoleManagementDirectoryRoleAssignment `
     -PrincipalId "<SP-object-id>" -RoleDefinitionId $rolle -DirectoryScopeId $au
 ```
 
-Portalen: Entra ID → Roles & admins → Admin units → `AU-Legemiddelregisteret` →
+Portalen: Entra ID → Roles & admins → Admin units → riktig AU (f.eks. `AU-Legemiddelregisteret-Test`) →
 Roles and administrators → `Groups Administrator` → Add assignments.
 
 **Den som utfører tildelingen trenger `Privileged Role Administrator`.** Det gjelder kun
@@ -119,7 +222,7 @@ utføreren — applikasjonene får ingen slik rolle.
 ### Bestillingsmal
 
 > Tildel den innebygde Entra-rollen **`Groups Administrator`**, **scoped til den administrative
-> enheten `AU-Legemiddelregisteret`**, til følgende service principals:
+> enheten `<AU-navn>`**, til følgende service principals:
 >
 > | # | Service principal | Object ID | Application ID |
 > |---|---|---|---|
@@ -128,10 +231,10 @@ utføreren — applikasjonene får ingen slik rolle.
 > | | |
 > |---|---|
 > | Rolle | `Groups Administrator` — `fdd7a751-b60b-444a-984c-02652fe8fa1c` |
-> | Scope | `/administrativeUnits/a563113b-80b4-4187-a938-a8d97992c3ce` |
+> | Scope | `/administrativeUnits/<AU object ID>` |
 >
 > **Dette er ikke en tenant-wide tildeling.** AU-scopet begrenser rettigheten til gruppene i
-> `AU-Legemiddelregisteret` — våre egne applikasjonsroller.
+> `<AU-navn>` — våre egne applikasjonsroller.
 
 Verifiser etterpå:
 
@@ -141,7 +244,11 @@ Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq '<SP-object-
 
 ## ⚠️ Flytte en eksisterende gruppe inn i en AU
 
-Krever **`Privileged Role Administrator`** — altså en NHN-bestilling per gruppe.
+Krever **`Privileged Role Administrator`** — altså en NHN-bestilling. Det er gjort én gang:
+Grossiststatistikkens fire grupper ble flyttet til egen AU i september 2026 (US 120849).
+Gruppene beholdt object-ID, medlemmer, eiere og app-rolletildelinger; det eneste som måtte
+følge med var `Groups Administrator`-tildelingene, siden de er scoped per AU. Mal for en slik
+bestilling: `Fhi.Lmr.EntraIdMigrering/docs/2026-09-04-bestilling-au-grossiststatistikken.md`.
 
 Å **opprette** en gruppe inne i AU-en krever derimot bare AU-scoped `Groups Administrator`,
 som du har.

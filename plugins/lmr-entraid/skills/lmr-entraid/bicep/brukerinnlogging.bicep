@@ -6,7 +6,7 @@
   app-rollene på både .Api og .Client.Web.
 
   OBS: SIKKERHETSGRUPPENE OPPRETTES IKKE HER. Extensionen har ingen
-  Microsoft.Graph/administrativeUnits, og gruppene MÅ ligge i AU-Legemiddelregisteret.
+  Microsoft.Graph/administrativeUnits, og gruppene MÅ ligge i riktig AU (AU-Legemiddelregisteret-Prod/-Test).
   Kjør scripts/opprett-gruppe-i-au.sh først; denne malen refererer dem med 'existing'.
   Se references/BICEP-OPPSETT.md.
 
@@ -243,7 +243,7 @@ resource clientMachineSp 'Microsoft.Graph/servicePrincipals@v1.0' = {
 }
 
 /*
-  Sikkerhetsgruppene refereres, ikke opprettes — de ligger i AU-Legemiddelregisteret og
+  Sikkerhetsgruppene refereres, ikke opprettes — de ligger i AU-Legemiddelregisteret-Prod/-Test og
   lages av scripts/opprett-gruppe-i-au.sh. 'existing' slår opp på uniqueName, som må være
   etterfylt på gruppa (scriptet gjør det).
 */
