@@ -37,6 +37,13 @@ http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-substance
 **FHIRPath**: `extension('stringIdentifier').exists() or extension('uuidIdentifier').exists()`.
 **Regel**: Må ha minst én av sub-extensions.
 
+### `lmdi-assosiert-legemiddel-system`
+**Sted**: `AssosiertLegemiddel`-extension (brukt på Legemiddel), fra 1.1.10.
+**FHIRPath**: `value.ofType(Coding).all(system in (...))` med seks tillatte systemer.
+**Regel**: `valueCoding.system` skal være FEST legemiddeldose, LMR-løpenummer, FEST merkevare,
+FEST pakning, varenummer eller SNOMED CT. URI-ene står i `extensions.md`.
+`festLegemiddelVirkestoff` og `lokaltLegemiddel` er ikke tillatt.
+
 ---
 
 ## Base-invariant som er lett å trå feil på: `rat-1`
@@ -194,6 +201,9 @@ FhirMottak observert med 1.1.7-profilene.
 Konsekvenser for avsender:
 - Bruk av noe som er **nytt** i en IG-versjon, kan gi advarsel i stedet for validering (se
   `administrertVed`/`rekvirertVed` over).
+- `extension[assosiertLegemiddel]` (ny i 1.1.10) ligger i en **lukket** extension-slicing på
+  Legemiddel. Et mottak på 1.1.9 eller eldre kjenner ikke slicen og må ventes å avvise ressursen,
+  ikke bare gi advarsel. Ikke testet mot FhirMottak.
 - Noe som er **lempet på** i en nyere IG-versjon (f.eks. Organisasjon uten ENH/RSH fra 1.1.9, flere
   ICD-10-koder fra 1.1.7), kan fortsatt bli avvist av et mottak på eldre versjon.
 
@@ -215,6 +225,7 @@ hvilken versjon som gjelder i miljøet.
 | `lmdi-medication-code-or-ingredient` feiler | Tomt `code` + tomt `ingredient` | Legg til enten `code.coding` eller `ingredient` (eller begge) |
 | `time-required` feiler | `effectiveDateTime = "2024-05-28"` | Bruk minst `"2024-05-28T09:30:00+02:00"` |
 | `npr-episode-at-least-one` feiler | Tom `nprEpisodeIdentifier`-forekomst | Sett `stringIdentifier` og/eller `uuidIdentifier` i hver forekomst |
+| `lmdi-assosiert-legemiddel-system` feiler | `extension[assosiertLegemiddel].valueCoding.system` er ikke blant de seks tillatte, f.eks. `festLegemiddelVirkestoff` eller `lokaltLegemiddel` | Bruk FEST legemiddeldose, LMR-løpenummer, FEST merkevare, FEST pakning, varenummer eller SNOMED CT (se `extensions.md`) |
 | Referanse finnes ikke | `urn:uuid:...` i Reference matcher ikke noen `fullUrl` | Sjekk konsistens mellom `entry[n].fullUrl` og `Reference.reference` |
 | Dangling `request` fra administrering | Glemt rekvirering i bundle | Enten legg til `Legemiddelrekvirering`-entry, eller fjern `request`-feltet |
 | `status` avvises på Legemiddeladministrering | Brukt f.eks. `in-progress` | Kun `completed` og `entered-in-error` er tillatt (`LegemiddeladministreringStatus`) |

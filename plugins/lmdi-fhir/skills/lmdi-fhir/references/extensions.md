@@ -14,6 +14,7 @@ Kilde: `LMDI/input/fsh/extensions/*.fsh`. Canonical-mønster: `http://hl7.no/fhi
 | Mengde ingrediens | `lmdi-ingredient-strength` | `Medication.ingredient.strength` | `CodeableConcept` \| `Quantity` | `lmdi-ext-ingredient-strength.fsh` |
 | Administrert ved | `lmdi-administrert-ved` | `MedicationAdministration` | `Reference(Organisasjon)` | `lmdi-ext-administrert-ved.fsh` |
 | Rekvirert ved | `lmdi-rekvirert-ved` | `MedicationRequest` | `Reference(Organisasjon)` | `lmdi-ext-rekvirert-ved.fsh` |
+| Assosiert legemiddel | `lmdi-assosiert-legemiddel` | `Medication` | `Coding` | `lmdi-ext-assosiert-legemiddel.fsh` |
 
 ---
 
@@ -201,3 +202,59 @@ og extensionen utelates. `Episode.serviceProvider` fikk presisert `^definition` 
 med henvisning til de to extensionene (se `profiler.md`).
 
 Engelske titler: «Administered at» og «Requested at».
+
+---
+
+## AssosiertLegemiddel (`lmdi-assosiert-legemiddel`)
+
+Fra 1.1.10 (issue #136). Context: `Medication`.
+
+- `value[x] only Coding`
+- `valueCoding.system 1..1` og `valueCoding.code 1..1`. `display` er valgfri
+- Slice i profilen: `extension[assosiertLegemiddel]` på Legemiddel, `0..*`, ikke MS
+- **Én kode per extension.** Flere assosierte legemidler angis ved å gjenta extensionen
+
+### Invariant `lmdi-assosiert-legemiddel-system` (error)
+`valueCoding.system` skal være ett av disse seks:
+
+```
+http://dmp.no/fhir/NamingSystem/festLegemiddelDose
+http://dmp.no/fhir/NamingSystem/lmrLopenummer
+http://dmp.no/fhir/NamingSystem/festLegemiddelMerkevare
+http://dmp.no/fhir/NamingSystem/festLegemiddelPakning
+http://dmp.no/fhir/NamingSystem/fest-varenummer
+http://snomed.info/sct
+```
+
+`festLegemiddelVirkestoff` og `lokaltLegemiddel` er **ikke** tillatt, selv om begge er slices på
+`Legemiddel.code.coding`. Kodesystemet håndheves med invariant og ikke med ValueSet-binding, fordi
+FhirMottak validerer uten terminologi (se `validering.md`).
+
+### Bruk (fra eksempelet `Legemiddel-LokaltLegemiddel-AssosiertLegemiddel`)
+```
+code.coding[LokaltLegemiddel].system = "http://fhi.no/fhir/NamingSystem/lokaltLegemiddel"
+code.coding[LokaltLegemiddel].code = #ropivakain-2mg-ml-inf
+code.coding[LokaltLegemiddel].display = "Ropivakain 2mg/ml Infusjonsvæske"
+extension[assosiertLegemiddel][0].valueCoding.system = "http://dmp.no/fhir/NamingSystem/festLegemiddelDose"
+extension[assosiertLegemiddel][0].valueCoding.code = #ID_FC282E2E-26ED-45C7-AF00-86936EFD26B4
+extension[assosiertLegemiddel][0].valueCoding.display = "Ropivacain Fresenius Kabi inf, oppl 2 mg/ml"
+extension[assosiertLegemiddel][1].valueCoding.system = "http://dmp.no/fhir/NamingSystem/festLegemiddelDose"
+extension[assosiertLegemiddel][1].valueCoding.code = #ID_869E02D4-F1C5-4892-B5A6-109D5FC3E485
+extension[assosiertLegemiddel][1].valueCoding.display = "Ropivacain Fresenius Kabi inf, oppl 2 mg/ml"
+```
+
+De to legemiddeldosene har samme visningsnavn i FEST og skiller seg på volum (100 ml og 200 ml).
+Den lokale koden i eksempelet er oppdiktet.
+
+### Praksisregel (fra `^description` og `^definition` på slicen)
+Brukes når et lokalt legemiddel er definert på et overordnet eller generisk nivå, for å angi
+hvilke mer spesifikt identifiserte legemidler som kan velges ved administrering. De assosierte
+legemidlene bygger på koblinger i avsendersystemets lokale legemiddelkatalog.
+
+Extensionen beskriver **valgalternativene**, ikke hvilket legemiddel som faktisk ble administrert.
+
+At den er ment for lokale legemidler, er veiledning i teksten og ikke en regel: profilen tillater
+extensionen på alle Legemiddel, også uten `code.coding[LokaltLegemiddel]`. Dubletter kontrolleres
+ikke.
+
+Engelsk tittel: «Associated medication».

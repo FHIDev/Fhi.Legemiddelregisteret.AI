@@ -198,8 +198,21 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
 | `LokaltLegemiddel` | `http://fhi.no/fhir/NamingSystem/lokaltLegemiddel` — `display 1..1` |
 | `SCT` | `http://snomed.info/sct` — kode skal være underbegrep av 763158003 eller 105590001 |
 
+#### `code.coding[LokaltLegemiddel]` (definisjon endret i 1.1.10)
+Skal bare brukes for legemidler fra lokal legemiddelkatalog eller lokalt legemiddelregister. Brukes
+slicen, skal det avtales med FHI hvordan FHI får tilgang til nødvendig informasjon om det lokale
+legemiddelet, som virkestoff og styrke. Det kan blant annet skje gjennom `ingredient` og/eller
+`extension[assosiertLegemiddel]`. Bare tekst, ikke håndhevet av kardinalitet eller invariant.
+
+Til og med 1.1.9 gjaldt avtalen hvordan LMR skulle få tilgang til selve legemiddelkatalogen.
+
 ### `extension`
-- Closed slicing. Inneholder `classification` (0..*) — `LegemiddelClassification`-extension for ATC-kode.
+- Closed slicing. Inneholder:
+  - `classification` (0..*) — `LegemiddelClassification`-extension for ATC-kode.
+  - `assosiertLegemiddel` (0..*, fra 1.1.10) — `AssosiertLegemiddel`-extension med én `valueCoding`
+    per forekomst. Angir mer spesifikt identifiserte legemidler som kan velges ved administrering
+    av et overordnet eller generisk definert lokalt legemiddel. Kodesystemet er begrenset av
+    invarianten `lmdi-assosiert-legemiddel-system`. Se `extensions.md`.
 
 ### `form`
 - `form.text 0..0`
@@ -236,6 +249,10 @@ Minst én `code.coding[...]`-slice bør være utfylt. Dette er ikke en formell i
 
 ### Merknad 1.1.0
 `extension[classification]` endret fra 0..1 til 0..* — et legemiddel kan nå ha flere ATC-koder.
+
+### Merknad 1.1.10
+Ny slice `extension[assosiertLegemiddel]` (0..*) og ny definisjon på `code.coding[LokaltLegemiddel]`
+(issue #136). Ingen eksisterende kardinaliteter eller bindinger er endret.
 
 ---
 

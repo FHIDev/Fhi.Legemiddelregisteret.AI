@@ -1,6 +1,6 @@
 # Struktur — generert fra StructureDefinition
 
-**Generert av `scripts/generer-struktur.py`. Ikke rediger for hånd.** IG-versjon: 1.1.9.
+**Generert av `scripts/generer-struktur.py`. Ikke rediger for hånd.** IG-versjon: 1.1.10.
 
 Fila viser det LMDI endrer i forhold til parent (differential): kardinalitet, MustSupport,
 typer og referansemål, bindinger, faste verdier, slicing og invarianter. Elementer som ikke
@@ -85,6 +85,7 @@ Invarianter:
 | `Medication` |  |  |  |  |  | `lmdi-medication-code-or-ingredient` |
 | `extension` | 0..* |  |  |  |  | slicing closed (value:url) |
 | `extension:classification` | 0..* |  | Extension: legemiddel-classification |  |  |  |
+| `extension:assosiertLegemiddel` | 0..* |  | Extension: lmdi-assosiert-legemiddel |  |  |  |
 | `code` | 0..1 |  |  | extensible: `http://hl7.no/fhir/ig/lmdi/ValueSet/legemiddel-koder` |  |  |
 | `code.coding` | 0..* |  |  |  |  | slicing open (value:system) |
 | `code.coding:FestLegemiddeldose` | 0..1 |  |  |  |  |  |
@@ -275,6 +276,25 @@ Invarianter:
 |---|---|---|---|---|---|---|
 | `url` | 1..1 |  |  |  | `http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-administrert-ved` |  |
 | `value[x]` | 0..1 |  | Reference(lmdi-organization) |  |  |  |
+
+## Assosiert legemiddel (`lmdi-assosiert-legemiddel`)
+
+- Canonical: `http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-assosiert-legemiddel`
+- Type: `Extension`, parent: `http://hl7.org/fhir/StructureDefinition/Extension`
+- Context: `Medication`
+- Deaktivert (0..0): `extension`
+
+| Element | Kard. | MS | Type / mål | Binding | Fast verdi | Slicing / invariant |
+|---|---|---|---|---|---|---|
+| `Extension` |  |  |  |  |  | `lmdi-assosiert-legemiddel-system` |
+| `url` | 1..1 |  |  |  | `http://hl7.no/fhir/ig/lmdi/StructureDefinition/lmdi-assosiert-legemiddel` |  |
+| `value[x]` | 0..1 |  | Coding |  |  |  |
+| `value[x].system` | 1..1 |  |  |  |  |  |
+| `value[x].code` | 1..1 |  |  |  |  |  |
+
+Invarianter:
+
+- `lmdi-assosiert-legemiddel-system` (error): Assosiert legemiddel skal være angitt med FEST-id (legemiddeldose, merkevare eller pakning), LMR-løpenummer, varenummer eller SNOMED CT-kode. FHIRPath: `value.ofType(Coding).all(system in ('http://dmp.no/fhir/NamingSystem/festLegemiddelDose' | 'http://dmp.no/fhir/NamingSystem/lmrLopenummer' | 'http://dmp.no/fhir/NamingSystem/festLegemiddelMerkevare' | 'http://dmp.no/fhir/NamingSystem/festLegemiddelPakning' | 'http://dmp.no/fhir/NamingSystem/fest-varenummer' | 'http://snomed.info/sct'))`
 
 ## Del av behandlingsregime (`lmdi-del-av-behandlingsregime`)
 

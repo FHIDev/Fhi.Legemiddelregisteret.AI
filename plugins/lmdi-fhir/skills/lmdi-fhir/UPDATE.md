@@ -20,9 +20,9 @@ bare siste gjennomgang.
 
 | Felt | Verdi |
 |---|---|
-| Analysedato | 2026-11-09 |
-| Grunnlag for `references/struktur.md` og `assets/` | Publisert IG (`gh-pages` i LMDI-repoet), bygd fra pinnen |
-| Verifiseringsmetode | `git diff 28460d020..9355f8e96 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` viser bare `releaseLabel` i `sushi-config.yaml`. `struktur.md` generert fra de publiserte StructureDefinitionene (med snapshot) og sammenholdt med `profiler.md`. Testendepunktet og Firely-validator er ikke brukt |
+| Analysedato | 2026-11-13 |
+| Grunnlag for `references/struktur.md` | `sushi -s .` (SUSHI med snapshot) på pinnen. `assets/` er uendret fra publisert IG 1.1.9, eksempelbundelen er ikke endret i 1.1.10 |
+| Verifiseringsmetode | `git diff 9355f8e96..6e34475b2 -- LMDI/input/fsh LMDI/sushi-config.yaml LMDI/input/pagecontent` lest i sin helhet, og diffen på generert `struktur.md` sammenholdt med `profiler.md` og `extensions.md`. SUSHI ble kjørt på branch-commiten `a96519b94` før merge. Kildestiene er identiske i merge-commiten `6e34475b2`. IG Publisher, testendepunktet og Firely-validator er ikke brukt |
 
 ## Prosedyre
 
@@ -151,6 +151,16 @@ forhold til lengden på descriptionen, kommer den ikke med.
 
 Bare de siste oppføringene står her. Resten ligger i git-historikken:
 `git log -- plugins/lmdi-fhir`.
+
+### 2026-11-13 (IG 1.1.10, `main @ 6e34475b2`)
+- Ny extension `AssosiertLegemiddel` (`lmdi-assosiert-legemiddel`) på Legemiddel, slice
+  `extension[assosiertLegemiddel]` 0..*, med invarianten `lmdi-assosiert-legemiddel-system`
+  (issue #136, PR #137). Nytt i `extensions.md`, `profiler.md`, `validering.md`, `sammenligning.md`.
+- Ny definisjon på `Legemiddel.code.coding[LokaltLegemiddel]` (PR #137 og #139).
+- Nytt eksempel `Legemiddel-LokaltLegemiddel-AssosiertLegemiddel` i `eksempler.md`.
+- `oversettelser.md`: tekster med flere avsnitt deles per avsnitt, og regeltekster oversettes i
+  den manuelle listen i `lag-en-doklag.py`.
+- Ny eval om `assosiertLegemiddel`.
 
 ### 2026-11-10 (IG 1.1.9, rettelser etter gjennomgang)
 - `SKILL.md` og `validering.md`: 200 fra `validateLegemiddelregisterBundle` betyr ikke «gyldig».

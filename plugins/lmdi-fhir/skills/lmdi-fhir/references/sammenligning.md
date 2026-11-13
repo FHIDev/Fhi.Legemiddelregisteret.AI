@@ -68,6 +68,8 @@ Begge er tillatt samtidig. Invariant `lmdi-medication-code-or-ingredient` krever
 
 **Kort regel**: Har du en offisiell kode (FEST, varenummer, SCT, lokal katalog) → bruk `code`. Har du ikke kode men vet hvilke virkestoffer som inngår → bruk `ingredient`. Har du begge deler → sett begge.
 
+**Lokalt legemiddel på generisk nivå** (fra 1.1.10): er det lokale legemiddelet definert overordnet, f.eks. «Ropivakain 2mg/ml Infusjonsvæske», kan de konkrete produktene som kan velges ved administrering, listes i `extension[assosiertLegemiddel]` (se `extensions.md`). Det kan brukes i stedet for eller sammen med `ingredient`. Definisjonen på `LokaltLegemiddel` nevner begge som måter FHI kan få informasjon om virkestoff og styrke på. Extensionen sier ikke hvilket produkt som faktisk ble gitt.
+
 ## 5b. `strength` (styrke) vs `strength.extension[mengde]` (mengde)
 
 Begge sitter på `Medication.ingredient.strength`. Detaljer i `extensions.md` og `validering.md` (`rat-1`).

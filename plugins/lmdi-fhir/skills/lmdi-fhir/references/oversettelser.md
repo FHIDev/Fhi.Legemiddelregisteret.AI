@@ -40,6 +40,8 @@ Samme mønster på elementnivå, f.eks. `* birthDate ^short.extension[+].url = .
 | `scripts/sjekk-oversettelser.py` | Kun lesende revisjon: lister felter som mangler engelsk oversettelse, og MS-definisjoner der oversettelsen ikke slår inn. |
 | `scripts/sjekk-en-output.py` | Kontroll av generert engelsk output. |
 
+Tekster med blanke linjer (flere avsnitt) deles i ett oversettelsespar per avsnitt, i tillegg til paret for hele teksten, fordi IG Publisher rendrer hvert avsnitt som en egen `<p>`. Det forutsetter at norsk og engelsk tekst har like mange avsnitt. Regeltekster (`Invariant: ... Description`) har bare norsk tekst i FSH. Den engelske teksten legges i den manuelle listen `SUPPLEMENTAL_REPLACEMENT_PAIRS` i skriptet. En ny invariant krever derfor en ny oppføring der.
+
 **Kjent begrensning**: substring-erstatningen krever eksakt treff. IG Publisher dropper siste punktum og legger til «(this element must be supported)» i mustSupport-tooltips, så lange `definition`-oversettelser slår ikke alltid inn der.
 
 ## Engelske dokumentasjonssider

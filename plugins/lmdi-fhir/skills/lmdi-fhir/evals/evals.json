@@ -65,6 +65,16 @@
   },
   {
     "skills": ["lmdi-fhir"],
+    "query": "Vi har et lokalt legemiddel «Ropivakain 2mg/ml Infusjonsvæske» som dekker flere FEST-produkter. Kan vi liste dem i assosiertLegemiddel med festLegemiddelVirkestoff som system, og viser det hvilket produkt pasienten fikk?",
+    "expected_behavior": [
+      "Sier at extensionen lmdi-assosiert-legemiddel (slice assosiertLegemiddel, 0..*, fra IG 1.1.10) er riktig sted, med én valueCoding per forekomst (references/extensions.md)",
+      "Svarer at festLegemiddelVirkestoff ikke er tillatt: invarianten lmdi-assosiert-legemiddel-system tillater bare FEST legemiddeldose, LMR-løpenummer, FEST merkevare, FEST pakning, varenummer og SNOMED CT",
+      "Svarer at extensionen angir valgalternativene, ikke hvilket legemiddel som faktisk ble administrert",
+      "Tar forbehold om at et mottak på eldre IG-versjon kan avvise extensionen, fordi extension-slicingen på Legemiddel er lukket (references/validering.md)"
+    ]
+  },
+  {
+    "skills": ["lmdi-fhir"],
     "query": "Skal signaturen i SignertKryptertBundle beregnes over Base64-strengen i encryptedContent eller over bytene?",
     "expected_behavior": [
       "Svarer at SHA-256-hashen beregnes over de rå krypterte bytene, før Base64-koding, med henvisning til SHA256.HashData(encryptedContent) i references/eksempelkode-cs.md",

@@ -1,13 +1,13 @@
 ---
 name: lmdi-fhir
-description: LMDI-implementasjonsguiden (FHIR R4) for innsending av legemiddeldata fra institusjon til Legemiddelregisteret, IG-versjon 1.1.9. Bruk ved spørsmål om LMDI-profiler og hvordan ressurser fylles ut (MedicationAdministration, MedicationRequest, Medication, Patient, Encounter, Condition, Organization, Practitioner, Substance), LegemiddelregisterBundle, extensions, valuesets og invariants, ved validering eller feilsøking av FHIR-JSON og OperationOutcome fra FhirMottak, når det skal lages eksempler, og ved signert og kryptert innsending (SignertKryptertBundle, Maskinporten). Hva LMR gjør med meldingen etter mottak, dekkes av skillen lmr.
+description: LMDI-implementasjonsguiden (FHIR R4) for innsending av legemiddeldata fra institusjon til Legemiddelregisteret, IG-versjon 1.1.10. Bruk ved spørsmål om LMDI-profiler og hvordan ressurser fylles ut (MedicationAdministration, MedicationRequest, Medication, Patient, Encounter, Condition, Organization, Practitioner, Substance), LegemiddelregisterBundle, extensions, valuesets og invariants, ved validering eller feilsøking av FHIR-JSON og OperationOutcome fra FhirMottak, når det skal lages eksempler, og ved signert og kryptert innsending (SignertKryptertBundle, Maskinporten). Hva LMR gjør med meldingen etter mottak, dekkes av skillen lmr.
 ---
 
 # LMDI – Legemiddeldata fra institusjon til Legemiddelregisteret
 
 Arbeidsinstruks og navigasjon for LMDI-spørsmål. Faktainnholdet ligger i `references/`, som er et øyeblikksbilde av LMDI-kildene. Skillen er selvstendig og krever ikke tilgang til LMDI-repoet for å svare.
 
-**Versjon**: IG `1.1.9` (FHIR `4.0.1`), repo [`folkehelseinstituttet/LMDI`](https://github.com/folkehelseinstituttet/LMDI), commit `9355f8e969425a59489ae724e7ba4b9bc545ea1f`.
+**Versjon**: IG `1.1.10` (FHIR `4.0.1`), repo [`folkehelseinstituttet/LMDI`](https://github.com/folkehelseinstituttet/LMDI), commit `6e34475b2f865af91cb40fe58968eccc24f77c4b`.
 
 Dette er det eneste stedet versjonen og commit-pinnen vedlikeholdes (i tillegg til `description` over og `version` i `marketplace.json`). `scripts/sjekk-skills.py` i plugin-repoet feiler hvis de ikke stemmer overens.
 
@@ -86,7 +86,7 @@ Canonical-mønster: `http://hl7.no/fhir/ig/lmdi/StructureDefinition/<id>`.
 |---|---|
 | Eksakt struktur per profil og extension (generert) | `references/struktur.md` |
 | Forklaring og praksis per profil | `references/profiler.md` |
-| Extensions (ATC, NPR, kjemoterapi, mengde ingrediens, administrert/rekvirert ved) | `references/extensions.md` |
+| Extensions (ATC, NPR, kjemoterapi, mengde ingrediens, administrert/rekvirert ved, assosiert legemiddel) | `references/extensions.md` |
 | ValueSets, CodeSystems, NamingSystems, OID-er | `references/terminologi.md` |
 | Sjekklister, testendepunkter, feilsøking | `references/validering.md` |
 | Bundle-struktur, referansetopologi, transport, krypto, API | `references/bundle-og-transport.md` |
