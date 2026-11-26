@@ -81,6 +81,22 @@ bash "$V" <uniqueName> > ny.json && mv ny.json baseline/<uniqueName>.json
 automatisk når det er under fire uker til utløp, og da endres `sertifikatThumbprints`. Skriv ny
 baseline. Baselinen inneholder ikke utløpsdatoen; se `SERTIFIKATER.md` i skillen.
 
+## Sjekke eierskap i Prod
+
+```bash
+bash scripts/sjekk-prod-eiere.sh            # alle fagområder
+bash scripts/sjekk-prod-eiere.sh lmr        # bare LMR (Kari)
+bash scripts/sjekk-prod-eiere.sh grossist   # bare Grossiststatistikken (Kristine)
+```
+
+Melder hver prod-app-registrering som har en annen eier enn fagpersonen (LMR: Kari, pluss
+`mi-lmr-sertifikatfornyelse-prod` på `Client.*`; Grossiststatistikken: Kristine), eller som mangler
+fagpersonen. Leser bare baselinene og endrer ingenting — kjør driftsjekken over først hvis du vil
+være sikker på at de stemmer med Entra. Bakgrunn: «Eierskap og tilgang» i `NHN-OG-ADMIN.md`.
+Fagområdet avgjøres av prefikset i `uniqueName` (`fhi-lmr-` / `fhi-grossiststatistikken-`). Et ukjent
+prefiks gir avvik, slik at en ny tjeneste ikke stille regnes med til feil fagområde.
+Reservasjonsregister er utenfor fagperson-modellen og hoppes over.
+
 ## Endre en app-registrering
 
 ### Rettigheter

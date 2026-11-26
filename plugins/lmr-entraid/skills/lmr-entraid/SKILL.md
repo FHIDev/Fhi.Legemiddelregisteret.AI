@@ -251,6 +251,15 @@ som gjelder for Grossiststatistikken: [NHN-OG-ADMIN.md](./references/NHN-OG-ADMI
     Bare en app som selv skal **administrere** medlemskap (i LMR: Kontroll) skal være eier av
     gruppene (gir legge til) og ha `Groups Administrator` på AU-en (gir fjerne). Gi aldri en vanlig
     webapp slike rettigheter — de gjelder de felles gruppene, altså tilgangene til alle LMR-appene.
+12. **Kun Prod — overlever eierskapet til fagpersonen.** I Prod skal ingen utvikler stå igjen som
+    fast eier: eieren kan tildele brukere direkte til app-roller og laste opp sertifikater, altså gi
+    seg selv tilgang uten godkjenning.
+    1. Fagpersonen står i `eiere` fra steg 3 (LMR: Kari, Grossiststatistikken: Kristine), ved siden
+       av deg. Du ble uansett eier da du opprettet app-registreringen med `Application Developer`.
+    2. Bestill hos NHN at PIM-gruppen får `Application Administrator` på den nye app-registreringen
+       **og** SP-en. Uten den kommer ingen utviklere til appen igjen etter neste punkt.
+    3. Når NHN har bekreftet: fjern deg selv som eier av app-registreringen og SP-en, skriv ny
+       baseline, og kjør `entraid/scripts/sjekk-prod-eiere.sh` — den skal ikke melde appen.
 
 ## Det Bicep ikke gjør
 

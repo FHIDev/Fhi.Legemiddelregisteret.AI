@@ -101,6 +101,8 @@ endre PIM-innstillingene og gi tilgang uten godkjenning.
   på den nye app-registreringen **og** SP-en, og fjerner seg selv som eier. For LMR `Client.*`: legg
   den også inn i `Fhi.Lmr.SertifikatFornyelse`. **Hver ny prod-app-registrering blir en liten
   NHN-bestilling.** Lista over app-registreringer per fagområde står i `entraid/baseline/`.
+  `entraid/scripts/sjekk-prod-eiere.sh` melder prod-app-registreringer med andre eiere enn
+  fagpersonen.
 - **Historikk** over aktiveringer og godkjenninger: Entra beholder den i 30 dager, NHN i ett år.
   Fag ber NHN om uttrekket for PIM-gruppen ved behov.
 
