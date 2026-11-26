@@ -47,7 +47,8 @@ argument). En gruppe i feil AU kan bare flyttes med en NHN-bestilling.
 ### Eierskap og tilgang: fagperson eier prod, utvikler låner via PIM
 
 ADO-feature **120885** («Teknisk: Overføring av EntraID-eierskap til fagansvarlige») og US
-**121935**. Pilot bestått 17.–18. november 2026; prod-oppsettet er bestilt hos NHN.
+**121935**. Pilot bestått 17.–18. november 2026. **LMR er satt opp av NHN 26. november 2026** og
+verifiseres med en første ekte aktivering. Grossiststatistikken bestilles når LMR er verifisert.
 
 #### Prinsippet
 
@@ -68,8 +69,8 @@ og har `Groups Administrator` på test-AU-ene.
 |---|---|---|
 | Fast eier av prod-app-registreringene og SP-ene | Kari (+ `mi-lmr-sertifikatfornyelse-prod` på `Client.*`) | Kristine |
 | Fast `Groups Administrator` på prod-AU-en | Kari + Kontroll `Client.Machine - Prod` | Kristine + Grossist `Client.Machine - Prod` |
-| Utviklernes tilgang | PIM-gruppen `P-LMR-Prod-Utvikler` | PIM-gruppen `P-Grossist-Prod-Utvikler` |
-| Godkjenner | godkjennergruppe, eier Kari, to faste medlemmer | godkjennergruppe, eier Kristine, to faste medlemmer |
+| Utviklernes tilgang | PIM-gruppen `P-AU-Legemiddelregisteret-Prod-GroupsAdministrator` | ikke bestilt ennå |
+| Godkjenner | `P-AU-Legemiddelregisteret-Prod-GroupsAdministrator-Approver`, eier Kari, medlemmer Kari + Siv | godkjennergruppe, eier Kristine, to faste medlemmer |
 
 **PIM-gruppen** (én per fagområde, role-assignable, ingen faste medlemmer, utviklerne er
 *eligible*) har permanent det en utvikler trenger i prod:
