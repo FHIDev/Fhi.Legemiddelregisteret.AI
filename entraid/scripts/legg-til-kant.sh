@@ -182,6 +182,10 @@ fi
 if ! $utfor; then
   echo "Tørrkjøring — ingenting er skrevet. Kjør med --utfor for å legge til kanten."
   echo "Reserver først klienten og API-et i Teams-kanalen Team A-informasjonsgruppe: 🔒 $kaller → $callee"
+  case "$kaller $callee" in
+    *-prod\ *|*-prod)
+      echo "PROD: aktiver PIM-gruppen for fagområdet og vent på godkjenning før --utfor (se NHN-OG-ADMIN.md i lmr-entraid)." ;;
+  esac
   exit 0
 fi
 

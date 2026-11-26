@@ -15,7 +15,7 @@
     },
     {
       "name": "lmr-entraid",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "source": "./plugins/lmr-entraid",
       "description": "EntraId-ressurser for LMR-tjenester: app-registreringer for .Api, .Client.Web og .Client.Machine provisjonert med Bicep, sertifikater og det som må bestilles fra NHN.",
       "author": {

@@ -83,6 +83,15 @@ baseline. Baselinen inneholder ikke utløpsdatoen; se `SERTIFIKATER.md` i skille
 
 ## Endre en app-registrering
 
+### Rettigheter
+
+- **Ny app-registrering** (alle miljøer): aktiver PIM-rollen `Application Developer` først. Den
+  utløper, og gir da `Authorization_RequestDenied` på `POST /applications`.
+- **Alt i Prod**, også `legg-til-kant.sh` mot `…-prod`: aktiver PIM-gruppen for fagområdet og vent
+  på godkjenning før du skriver noe. I Dev/Test/QA er utviklerne faste eiere, og ingen PIM trengs.
+
+Se «Rettigheter før du skriver i Entra» i skillen `lmr-entraid` og `NHN-OG-ADMIN.md` der.
+
 ### ⛔ Grunnregel: ingenting som finnes, skal overskrives
 
 **Bicep-malene brukes bare til å OPPRETTE nye app-registreringer.** En Bicep-mal beskriver hvordan

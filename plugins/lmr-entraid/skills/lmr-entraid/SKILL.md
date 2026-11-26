@@ -213,6 +213,19 @@ app-reg har én SP. Deler to miljøer app-registrering, gir medlemskap i `...-De
 rollen `godkjenn` i Prod — mens administrasjonsflaten ser isolert ut, fordi hvert miljø
 redigerer sine egne grupper.
 
+### Rettigheter før du skriver i Entra
+
+| Du skal | Du trenger |
+|---|---|
+| **Opprette** en ny app-registrering (Bicep, alle miljøer) | PIM-rollen **`Application Developer`**, aktivert. Den utløper etter noen timer; symptomet er `Authorization_RequestDenied` på `POST /applications` |
+| Endre en eksisterende app-registrering i Dev/Test/QA (kant, rolletildeling, redirect-URI, sertifikat) | Ingen PIM — utviklerne er faste eiere |
+| Endre **noe som helst i Prod** — også `legg-til-kant.sh` mot `…-prod`, rollegrupper og sertifikatfornyelse | Aktivert **PIM-gruppe** for fagområdet (LMR: `P-AU-Legemiddelregisteret-Prod-GroupsAdministrator`). Krever begrunnelse og godkjenning fra fagpersonen, og varer maks 8 timer |
+| Opprette en ny app-registrering **i Prod** | Begge: `Application Developer` for å opprette, deretter NHN-bestilling slik at PIM-gruppen får `Application Administrator` på den nye app-registreringen og SP-en |
+
+Aktiver **før** du starter, ikke når noe feiler. Vent på godkjenningen før du skriver noe i Prod.
+Hvelvet med sertifikathemmeligheter slår inn flere minutter etter Entra-rollene. Detaljer, og hva
+som gjelder for Grossiststatistikken: [NHN-OG-ADMIN.md](./references/NHN-OG-ADMIN.md).
+
 ## Rekkefølgen når du setter opp en ny tjeneste
 
 0. **`/lmr-entraid:entraid-ny-tjeneste <tjeneste> <variant>`** — kopierer malene til
