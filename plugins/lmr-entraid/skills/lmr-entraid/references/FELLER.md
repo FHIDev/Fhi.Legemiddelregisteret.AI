@@ -60,7 +60,8 @@ Etter at en app-registrering er opprettet, tar det tid før den er replikert nok
 service principal kan lages for den — erfaringsmessig opptil ~30 sekunder.
 
 Bicep orkestrerer selv gjennom ressursavhengigheter og traff det ikke i testkjøringen, men
-slår det til, er symptomet `Request_ResourceNotFound` rett etter opprettelse. Kjør på nytt.
+slår det til, er symptomet `Request_ResourceNotFound` rett etter opprettelse. App-registreringen
+finnes da, men ikke SP-en: se «Når en deploy feiler halvveis» i `entraid/README.md` i Fhi.Lmr.AI.
 
 ### Rollegrupper må OPPRETTES i AU-en, ikke flyttes dit
 
@@ -71,11 +72,13 @@ slår det til, er symptomet `Request_ResourceNotFound` rett etter opprettelse. K
 
 Lager du gruppa utenfor først, trenger du en NHN-bestilling for å rette det opp. Bruk
 `bicep/scripts/opprett-gruppe-i-au.sh`, som utleder riktig AU av miljøet i gruppenavnet.
+Flytting er mulig, bare admin-gated — se [NHN-OG-ADMIN.md](./NHN-OG-ADMIN.md).
 
-Flytting er ikke en blindvei, bare admin-gated: Grossiststatistikkens fire grupper ble flyttet
-fra `AU-Legemiddelregisteret` til `AU-Grossiststatistikken` med én NHN-bestilling (US 120849,
-september 2026). Senere ble begge fagområdene delt i en prod- og en test-AU på samme måte. Gruppene beholdt object-ID, medlemmer, eiere og app-rolletildelinger — det
-eneste som måtte følge med var `Groups Administrator`-tildelingene, som er scoped per AU.
+### Rollegruppene har ingen `uniqueName`
+
+Bare app-registreringene ble gitt `uniqueName` (25. november 2026). En Bicep-mal som slår opp en
+gruppe med `existing` på `uniqueName`, feiler derfor. Malene refererer gruppene med object ID
+(`gruppeObjektId`).
 
 ### ⚠️ `az rest` kan ikke tildele katalogroller
 
@@ -93,7 +96,7 @@ az account show --query tenantId   # skal være 54475f80-1baa-4ea9-9185-c0de5cc6
 az account set --subscription FHI-LMR-Dev
 ```
 
-Alle tre skriptene i `bicep/scripts/` sperrer for dette.
+Alle skriptene i `bicep/scripts/` og `entraid/scripts/` sperrer for dette.
 
 ### `az` siler bort norske tegn
 
@@ -120,18 +123,25 @@ som Learn-referansen viser. Learn beskriver en nyere type enn den som er publise
 ### `CannotDeleteOrUpdateEnabledEntitlement` ved endring av app-roller
 
 En app-rolle eller et delegert scope kan ikke fjernes eller erstattes mens det er aktivt. Sett
-`isEnabled: false` og deploy, fjern så i en andre deploy. Å endre `value` på en rolle som
-beholder samme `id` er greit.
+`isEnabled: false`, og fjern den i et andre steg. Hos oss gjøres det manuelt mot Graph, aldri
+med en redeploy av malen. Å endre `value` på en rolle som beholder samme `id` er greit.
 
 ### En re-deploy retter ikke drift
 
-Målt: er malen og parametrene uendret, hopper ARM over ressursen og sender ingenting. Og selv
-når ressursen sendes, fjernes ikke properties du har tatt ut av malen — `web: {}` ryddet ikke
-bort en `redirectUris` lagt til i portalen.
+Uendret mal sendes ikke i det hele tatt, og en endret mal legger seg oppå det som står der i
+stedet for å konvergere. Detaljer og målinger i [BICEP-OPPSETT.md](./BICEP-OPPSETT.md). Dette er
+grunnen til at malene hos oss bare brukes til å **opprette**: en redeploy mot en eksisterende
+app-registrering gjør verken det du tror eller det du vil.
 
-Deklarerte verdier håndheves når ressursen faktisk sendes (en `displayName` endret i portalen
-ble satt tilbake), men **malen konvergerer ikke** — den legger seg oppå. Bruk
-`scripts/verifiser.sh`, og rydd manuelt.
+### `az ad app credential reset` uten `--append` sletter de andre sertifikatene
+
+Uten `--append` erstattes alle eksisterende nøkler, og appen slutter å virke til den nye PEM-en
+er rullet ut overalt. Se «Fornyelse» i [SERTIFIKATER.md](./SERTIFIKATER.md).
+
+### Avvik i `sertifikatThumbprints` etter en sertifikatrotering
+
+`Fhi.Lmr.SertifikatFornyelse` roterer LMR-sertifikatene automatisk. Etterpå viser `verifiser.sh`
+avvik, og `entraid/scripts/legg-til-kant.sh` stopper. Det er forventet: skriv ny baseline.
 
 ### `uniqueName` frigjøres ikke ved sletting
 
@@ -158,7 +168,7 @@ Med `requestedAccessTokenVersion: 2` er `aud` i access-tokenet appId-GUID-en. Se
 `ApiTokenValidation:Audience = api://<appId>`, feiler valideringen med
 «The audience claim is invalid».
 
-De eldre v1-app-regene (Administreringslager, Meldingsformidler) sameksisterer fint — token-
+De eldre v1-app-regene (Administreringslager.Api og testappene for Fhi.Lmr.Authentication) sameksisterer fint — token-
 versjon settes per ressurs.
 
 ### Klient-scope er alltid `.default`

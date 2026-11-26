@@ -1,0 +1,78 @@
+{
+  "uniqueName": "fhi-grossiststatistikken-client-web-sandbox",
+  "displayName": "Fhi.Grossiststatistikken.Client.Web - Sandbox",
+  "appId": "d630336f-7863-4b97-b8a8-c6c5da9da706",
+  "spObjectId": "bb4f5698-f019-4ed8-8267-ee28dd27f7ee",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "d21fb12e-7c71-4f38-bb71-8beb6c15f580",
+      "value": "Admin",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "69ac95e5-f76d-4fa8-a986-8ca057fcff3e",
+      "value": "Bruker",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [
+    "https://grossiststatistikken-sandbox.skytest.fhi.no",
+    "https://localhost:8080"
+  ],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "25a320e8-9167-4075-b7d5-a062e4ec59d7",
+      "resourceAccess": [
+        {
+          "id": "a9459d28-7148-4b14-903f-c7a90d5ed3d3",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "2d5705a4-8c97-419d-b57c-f0b8611bf2f9",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "69ac95e5-f76d-4fa8-a986-8ca057fcff3e",
+      "principalId": "a82155e5-1ffe-4a9a-83fa-b64895468b99",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "d21fb12e-7c71-4f38-bb71-8beb6c15f580",
+      "principalId": "6b780369-e95e-4579-af49-62add4557439",
+      "principalType": "Group"
+    }
+  ],
+  "appRoleAssignments": []
+}

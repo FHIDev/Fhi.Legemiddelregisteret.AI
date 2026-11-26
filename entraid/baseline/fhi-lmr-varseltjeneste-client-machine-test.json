@@ -1,0 +1,113 @@
+{
+  "uniqueName": "fhi-lmr-varseltjeneste-client-machine-test",
+  "displayName": "Fhi.Lmr.Varseltjeneste.Client.Machine - Test",
+  "appId": "38557bca-3613-4e8d-9f7d-936ae3280705",
+  "spObjectId": "904e86d5-2535-44e3-a5f6-34dd2a24f5cf",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "40600F287B0F0E7032F9BD9D9F4414B1A0814032",
+    "5B3130FE179E5573538C881C36C2143358894491"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "26b97011-394c-43ae-8695-2874e975a699",
+      "resourceAccess": [
+        {
+          "id": "194d7881-ffea-4a74-88c0-30b075c314b5",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "3527e4a1-14ba-4e8a-8876-8d7eb1ae7504",
+      "resourceAccess": [
+        {
+          "id": "e3a9b001-b628-41a1-8197-38c648f5966e",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "53093a72-a4e9-4a42-8c66-c0c243276451",
+      "resourceAccess": [
+        {
+          "id": "a05b8e17-882e-4336-8e54-7644488ca26a",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "60d6fde6-c45c-409f-bf34-027f8edf447b",
+      "resourceAccess": [
+        {
+          "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "826b23c7-80a4-4a28-b971-901e8b47c181",
+      "resourceAccess": [
+        {
+          "id": "0c7064c8-6ef1-424e-95fb-ca405200df14",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "cbb38b05-e894-45f8-8186-5263ad794d02",
+      "resourceAccess": [
+        {
+          "id": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "d686e391-e806-422e-92e9-9529eef7262c",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "33359a56-8d0f-49ba-88c2-b22cb6c482f4",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "resourceId": "0258b589-ae90-424d-a64d-0bc9f3adcbf6"
+    },
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "resourceId": "21277954-4a10-46d5-90b9-049c6e291a4e"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "resourceId": "3b3eaf67-34f7-49c3-9d0d-4e69137c5c3f"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "resourceId": "7859e62e-c756-4856-9f3c-a165edf79d9c"
+    },
+    {
+      "appRoleId": "0c7064c8-6ef1-424e-95fb-ca405200df14",
+      "resourceId": "8641dc89-86d6-4082-9e46-8c87cc839e4d"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "resourceId": "bef39a2e-b91b-46e7-b458-e046b3df22dd"
+    }
+  ]
+}

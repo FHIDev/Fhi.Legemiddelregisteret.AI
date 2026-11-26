@@ -1,0 +1,72 @@
+{
+  "uniqueName": "fhi-lmr-internstatistikk-client-machine-dev",
+  "displayName": "Fhi.Lmr.InternStatistikk.Client.Machine - Dev",
+  "appId": "74480e50-fab2-41f2-904f-df759ae7a2eb",
+  "spObjectId": "0089b309-b5bb-4bef-bc88-f1bfbe584302",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "CEE9AB7E770BC197CE39B02FE5EA968D7E9B9EDB"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "60d6fde6-c45c-409f-bf34-027f8edf447b",
+      "resourceAccess": [
+        {
+          "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "7ee29174-7b24-489b-b9cd-d8d1eaf315bd",
+      "resourceAccess": [
+        {
+          "id": "782b15dd-137d-4800-aee9-7d72d7d54480",
+          "type": "Role"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "bb80ea6a-692a-4f02-8f1c-7c213e33d7a6",
+      "resourceAccess": [
+        {
+          "id": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "33359a56-8d0f-49ba-88c2-b22cb6c482f4",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+      "resourceId": "4f6d6b11-3571-4973-b219-bf6c1572a1ba"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "resourceId": "7859e62e-c756-4856-9f3c-a165edf79d9c"
+    },
+    {
+      "appRoleId": "782b15dd-137d-4800-aee9-7d72d7d54480",
+      "resourceId": "7edccc52-55ec-4af1-9e43-805589c9aaf8"
+    }
+  ]
+}

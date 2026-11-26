@@ -23,9 +23,13 @@ Thumbs.db
 
 # NB: *.cer er BEVISST ikke blokkert her, i motsetning til i
 # Fhi.Lmr.EntraIdMigrering. Det offentlige sertifikatet er ikke en hemmelighet,
-# og base64 av det committes i .bicepparam-filene under plugins/lmr-entraid/skills/lmr-entraid/bicep/.
+# og base64 av det committes i .bicepparam-filene under entraid/tjenester/.
 
 # Kompilert Bicep-output. Bygges lokalt for validering, committes ikke.
 plugins/lmr-entraid/skills/lmr-entraid/bicep/*.json
 plugins/lmr-entraid/skills/lmr-entraid/bicep/moduler/*.json
 !plugins/lmr-entraid/skills/lmr-entraid/bicep/bicepconfig.json
+entraid/tjenester/*/*.json
+entraid/tjenester/*/moduler/*.json
+!entraid/tjenester/*/bicepconfig.json
+# NB: entraid/baseline/*.json er fasiten og SKAL committes.

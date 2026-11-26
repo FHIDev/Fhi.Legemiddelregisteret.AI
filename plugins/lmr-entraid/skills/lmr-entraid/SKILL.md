@@ -51,15 +51,47 @@ stabile UUID-er. Den hører hjemme i et repo som versjoneres og reviewes.
 Bruk **`/lmr-entraid:entraid-ny-tjeneste`**, som kopierer riktig variant ut til et repo du velger og
 fyller inn det den kan. Eller kopier manuelt.
 
-### Hvor den utfylte fila bor
+### Hvor den utfylte fila bor — `entraid/` i Fhi.Lmr.AI
 
-**Slik er det i dag:** malene kopieres ut, og den utfylte fila legges i et repo teamet
-kontrollerer — typisk `infra/entraid/` i tjenestens eget repo. Det finnes **ikke** noe felles
-infra-repo for EntraId.
+Fasiten for **alle** app-registreringene til LMR og Grossiststatistikken ligger samlet i
+toppnivåkatalogen `entraid/` i repoet Fhi.Lmr.AI — utenfor `plugins/`, så den distribueres ikke
+som cache:
 
-Det er et bevisst mellomsteg, ikke en anbefaling for all framtid. Skal oppsettet samles ett
-sted — sammen med kall-grafen og ID-registeret — bør det opprettes et eget repo i DevOps. Ta
-den beslutningen når det er flere enn en håndfull tjenester på Bicep.
+| | |
+|---|---|
+| `entraid/tjenester/<tjeneste>/` | utfylte maler og parameterfiler |
+| `entraid/baseline/<uniqueName>.json` | tilstanden til hver app-registrering, fra `verifiser.sh` |
+
+**Ikke** i tjenestens eget repo. En m2m-kant endrer kallerens `.Client.Machine`, mens app-rollen
+tilhører callee — spredt på tjenesterepoene ville én kant blitt to PR-er, og drift-sjekken ville
+ikke sett alle app-registreringene.
+
+Alle eksisterende app-registreringer har `uniqueName` og en baseline (siden 25. november 2026),
+også de som ble laget før Bicep.
+
+### ⛔ Malene brukes bare til å OPPRETTE
+
+En Bicep-mal beskriver hvordan app-registreringen *skal se ut*. Deployes den mot en som finnes
+fra før, settes de deklarerte propertyene til malens verdi — uten `what-if` som viser det på
+forhånd. Properties malen ikke deklarerer blir stående (målt), men deklarerte lister som kantene,
+app-rollene og redirect-URI-ene er ikke målt med færre elementer enn i Entra; Graph erstatter
+normalt hele lista, så anta at det som mangler kan forsvinne. Derfor:
+
+| Hva | Hvordan |
+|---|---|
+| Ny app-registrering | Bicep, én gang. `sjekk-uniquename.sh` stopper (exit 2) hvis navnet finnes. |
+| Ny m2m-kant på en eksisterende klient | `entraid/scripts/legg-til-kant.sh` i Fhi.Lmr.AI — det eneste skriptet for eksisterende, kan bare legge til |
+| Sertifikatfornyelse | automatisk for LMR (`Fhi.Lmr.SertifikatFornyelse`), ellers additivt med `--append` — se [SERTIFIKATER.md](./references/SERTIFIKATER.md) |
+| Annen endring på en eksisterende | manuelt mot Graph, med `verifiser.sh` før og etter — spør brukeren først |
+| Fjerne noe | manuelt og bevisst, aldri via mal eller skript |
+
+**Deploy aldri en mal mot en app-registrering som finnes**, heller ikke for å «rette opp» noe eller
+fullføre en deploy som feilet halvveis (se `entraid/README.md`).
+Parameterfila i `entraid/tjenester/` beskriver hvordan app-registreringen ble laget; baselinen er
+fasiten for hvordan den ser ut nå.
+
+⚠️ **Terraform-oppsettet (`Fhi.Lmr.Terraform`) er pensjonert.** Kjør det ikke. Modulene gjenskaper
+app-registreringen med ny appId når en kant eller et sertifikat endres.
 
 
 ## Modellen: tre roller, aldri flere
@@ -153,7 +185,9 @@ er at de **samme gruppene** tildeles **samme `appRoleId`** i hver app. Derfor er
 | har brukerinnlogging | `bicep/brukerinnlogging.bicep` |
 | er en SPA (public client, PKCE) | `bicep/spa.bicep` — **ingen LMR-tjeneste bruker denne**, kun Grossiststatistikken |
 
-19 av 22 LMR-repoer er ren m2m. Brukerinnlogging gjelder Kontroll og InternStatistikk.
+De fleste LMR-tjenestene er ren m2m. Brukerinnlogging med denne malen gjelder Kontroll og
+InternStatistikk. Reservasjonsregister har brukerinnlogging med et eget oppsett
+(`Microsoft.Identity.Web`), laget før malene.
 
 ## Konvensjoner
 
@@ -161,7 +195,7 @@ er at de **samme gruppene** tildeles **samme `appRoleId`** i hver app. Derfor er
 |---|---|
 | Tenant | `54475f80-1baa-4ea9-9185-c0de5cc603fe` |
 | Display name | `Fhi.Lmr.<Tjeneste>.<Rolle> - <Miljø>` |
-| `uniqueName` | `fhi-lmr-<tjeneste>-<rolle>-<miljo>`, små bokstaver. **Immutable.** |
+| `uniqueName` | `fhi-<navn>-<rolle>-<miljo>` fra visningsnavnet, små bokstaver — f.eks. `fhi-lmr-grunndata-api-test`, `fhi-grossiststatistikken-client-web-prod`. **Immutable.** |
 | App-rolleverdi (m2m) | `Fhi.Lmr.<Tjeneste>.All` |
 | Sikkerhetsgruppe | `A-FHI-App-Lmr-<Miljø>-<Rolle>`, i fagområdets AU for miljøet — LMR: `AU-Legemiddelregisteret-Prod` for Prod, `AU-Legemiddelregisteret-Test` for Dev/Test/QA. Grossiststatistikken tilsvarende (se NHN-OG-ADMIN.md) |
 | Token-versjon | v2 på alt nytt |
@@ -169,8 +203,10 @@ er at de **samme gruppene** tildeles **samme `appRoleId`** i hver app. Derfor er
 
 ### Miljøregelen — den er ikke kosmetisk
 
-- **M2M: kun `Test` og `Prod`.** AzureDev og QA deler Test-app-registreringen.
-- **Brukerinnlogging: egen app-registrering per miljø** (`Dev`, `Test`, `QA`, `Prod`).
+- **M2M: kun `Test` og `Prod`.** AzureDev og QA deler Test-app-registreringen. En klient i Dev
+  eller QA kaller derfor callee sin **Test**-app-registrering.
+- **Brukerinnlogging: egen app-registrering per miljø** (`Dev`, `Test`, `QA`, `Prod`) — for alle
+  tre app-registreringene, også `.Client.Machine`.
 
 Grunnen er `roles`-claimet: det beregnes fra tildelinger på app-regens service principal, og én
 app-reg har én SP. Deler to miljøer app-registrering, gir medlemskap i `...-Dev-Godkjenn` også
@@ -179,25 +215,55 @@ redigerer sine egne grupper.
 
 ## Rekkefølgen når du setter opp en ny tjeneste
 
-0. **`/lmr-entraid:entraid-ny-tjeneste <tjeneste> <variant>`** — kopierer malene ut og stilaserer parameterfila.
+0. **`/lmr-entraid:entraid-ny-tjeneste <tjeneste> <variant>`** — kopierer malene til
+   `entraid/tjenester/<tjeneste>/` i Fhi.Lmr.AI og stilaserer parameterfila.
+   Har tjenesten app-registreringer fra før (sjekk `entraid/baseline/`), skal de **ikke**
+   deployes på nytt. En ny kant gis med `entraid/scripts/legg-til-kant.sh`.
 1. Generér sertifikat (`cert-tooling/`) — kun for klient-app-regene. Rene ressurser trenger det ikke.
 2. Generér stabile UUID-er for app-roller og scopes. **Én gang. Endres aldri.**
 3. Fyll `.bicepparam`.
-4. `bicep/scripts/sjekk-uniquename.sh` — bekreft OPPRETTER vs. OPPDATERER.
+4. `bicep/scripts/sjekk-uniquename.sh` — må gi exit 0 (ingen av navnene finnes). Stopper den, **ikke deploy**.
 5. `az deployment group create ...`
-6. `bicep/scripts/verifiser.sh <uniqueName> > baseline.json`
-7. Legg IDene fra `outputs` inn i appsettings.
-8. PEM inn i secret-mekanismen for miljøet. **Aldri i git.**
-9. Admin consent — se [NHN-OG-ADMIN.md](./references/NHN-OG-ADMIN.md). Application permissions
-   kan du gi selv; delegerte scopes må bestilles.
-10. Ved brukerinnlogging: legg medlemmer i rollegruppene. **Uten medlemskap kommer det ingen
+6. Baseline for hver ny app-registrering i `entraid/baseline/` (kommando i `entraid/README.md`).
+7. M2M-kanter fra en ny `.Client.Machine`: `entraid/scripts/legg-til-kant.sh` per callee. Malen
+   gir ikke rolletildelingene selv (`giAdminConsent = false`).
+8. Legg IDene fra `outputs` inn i appsettings.
+9. PEM inn i secret-mekanismen for miljøet. **Aldri i git.** For LMR: legg tjenesten inn i
+   `Fhi.Lmr.SertifikatFornyelse`, så sertifikatet fornyes automatisk.
+10. Delegerte scopes (brukerinnlogging) krever admin consent fra NHN — se
+    [NHN-OG-ADMIN.md](./references/NHN-OG-ADMIN.md).
+11. Ved brukerinnlogging: legg medlemmer i rollegruppene. **Uten medlemskap kommer det ingen
     `roles`-claims, og brukeren får «mangler tilgang» selv med korrekt consent.**
+    En app som bare **leser** rollene fra tokenet, trenger **ingen** rettigheter på gruppene.
+    Bare en app som selv skal **administrere** medlemskap (i LMR: Kontroll) skal være eier av
+    gruppene (gir legge til) og ha `Groups Administrator` på AU-en (gir fjerne). Gi aldri en vanlig
+    webapp slike rettigheter — de gjelder de felles gruppene, altså tilgangene til alle LMR-appene.
 
 ## Det Bicep ikke gjør
 
 **Sikkerhetsgrupper opprettes ikke av Bicep.** Extensionen har ingen
 `Microsoft.Graph/administrativeUnits`, og gruppene må ligge i fagområdets AU.
 Bruk `bicep/scripts/opprett-gruppe-i-au.sh` (utleder AU-en av miljøet i gruppenavnet, eller
-tar den som tredje argument); malene refererer gruppene med `existing`.
+tar den som tredje argument). Malene refererer gruppene med **object ID** (`gruppeObjektId`), fordi
+de eksisterende rollegruppene ikke har `uniqueName`. De felles LMR-rollegruppene
+(`A-FHI-App-Lmr-<Miljø>-<Rolle>`) finnes for alle fire miljøer — der trengs bare object ID-en.
+
+### Ny app med NYE rollegrupper
+
+Eieren av en rollegruppe kan legge til medlemmer, og dermed gi tilgang til appen. Eier skal derfor
+være **appen som administrerer medlemskapet** (i LMR: Kontrolls `.Client.Machine`), aldri den nye
+appen selv når den bare leser rollene fra tokenet (se punkt 11 over). Administrerer den nye appen
+medlemskapet selv, er det dens `.Client.Machine`, og da finnes eieren først etter deploy.
+
+1. Deploy med `gruppeObjektId: ''` på rollene som får nye grupper — malen hopper over
+   tildelingen for dem.
+2. Lag gruppene med `bicep/scripts/opprett-gruppe-i-au.sh <navn> <SP-objectId til gruppeforvalteren>`.
+3. Tildel hver gruppe app-rollen på **både** `.Api` og `.Client.Web` — manuelt, ikke ved å deploye
+   malen på nytt:
+   ```bash
+   az rest --method POST      --uri "https://graph.microsoft.com/v1.0/servicePrincipals/<sp-object-id>/appRoleAssignedTo"      --headers "Content-Type=application/json"      --body '{"principalId":"<gruppe-id>","resourceId":"<sp-object-id>","appRoleId":"<appRoleId>"}'
+   ```
+   (én gang med `apiSpObjectId`, én gang med Client.Web sin SP)
+4. Ny baseline for begge app-registreringene.
 
 Full forklaring i [BICEP-OPPSETT.md](./references/BICEP-OPPSETT.md).

@@ -1,0 +1,46 @@
+{
+  "uniqueName": "fhi-grossiststatistikken-client-machine-test",
+  "displayName": "Fhi.Grossiststatistikken.Client.Machine - Test",
+  "appId": "7fc02fbf-c61a-4081-97fb-dd4352a715bd",
+  "spObjectId": "12096492-a13e-4480-a3e5-0daa7bccb12f",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "E6916A46EDEF1EB414AB279492740798EE258E7F"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "97235f07-e226-4f63-ace3-39588e11d3a1",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "2d5705a4-8c97-419d-b57c-f0b8611bf2f9",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "97235f07-e226-4f63-ace3-39588e11d3a1",
+      "resourceId": "d7ec3e68-9431-4ba9-8019-fbe4bafd1880"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "uniqueName": "fhi-lmr-kontroll-api-prod",
+  "displayName": "Fhi.Lmr.Kontroll.Api - Prod",
+  "appId": "ab5f7d9b-54e2-482d-acb8-77021ac1df0e",
+  "spObjectId": "157dffde-cf23-413b-a8ee-e62f19b1be27",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://ab5f7d9b-54e2-482d-acb8-77021ac1df0e"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [
+    {
+      "id": "e1f53cc8-0e77-45af-be44-555c04f02d35",
+      "value": "Fhi.Lmr.Kontroll.All",
+      "type": "Admin",
+      "isEnabled": true
+    }
+  ],
+  "appRoller": [
+    {
+      "id": "6750f1e6-6c4d-4e56-859e-c3a1ae7f08fe",
+      "value": "endreatc",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "0142c73c-3089-4888-875a-dc0ebcd76be4",
+      "value": "godkjenn",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "e396de96-7305-47ed-9a66-f3a4bd665382",
+      "value": "individdatauttrekk",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "bfb0f358-6e89-4e3d-ad15-005a75b740e0",
+      "value": "internstatistikk",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "97590f02-045f-4b4d-a965-9f338c15160f",
+      "value": "lesogskriv",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "0142c73c-3089-4888-875a-dc0ebcd76be4",
+      "principalId": "9ed226fb-149a-4816-9817-c157f18d3a47",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "6750f1e6-6c4d-4e56-859e-c3a1ae7f08fe",
+      "principalId": "ff8c5ec2-10c3-4c13-ae53-c64f3b7bd1a7",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "97590f02-045f-4b4d-a965-9f338c15160f",
+      "principalId": "13343daf-c910-404b-99f9-edb1117741a1",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "bfb0f358-6e89-4e3d-ad15-005a75b740e0",
+      "principalId": "04db1710-459c-41f9-8a5c-55d5977f3d0a",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "e396de96-7305-47ed-9a66-f3a4bd665382",
+      "principalId": "345d9d23-3c44-467d-938d-f5019f7c6f10",
+      "principalType": "Group"
+    }
+  ],
+  "appRoleAssignments": []
+}

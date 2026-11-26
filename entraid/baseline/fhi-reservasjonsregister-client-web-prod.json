@@ -1,0 +1,49 @@
+{
+  "uniqueName": "fhi-reservasjonsregister-client-web-prod",
+  "displayName": "Fhi.Reservasjonsregister.Client.Web - PROD",
+  "appId": "139b69a7-b8df-4f4e-830c-5156f3864018",
+  "spObjectId": "ca1874e3-01f5-410f-86a3-db40021816a6",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [
+    "https://reservasjonsregisteret.fhi.no/signin-oidc"
+  ],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "020b7787-c3a9-42eb-aaf1-56b7508ced02",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "2d5705a4-8c97-419d-b57c-f0b8611bf2f9",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "69949afd-7a4c-4bac-9fb1-1ad36eaab8bc",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": []
+}

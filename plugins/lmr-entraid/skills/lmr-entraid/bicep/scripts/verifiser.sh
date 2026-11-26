@@ -11,13 +11,20 @@
 #   ./verifiser.sh <uniqueName>                    # skriv baseline til stdout
 #   ./verifiser.sh <uniqueName> baseline.json      # sammenlign mot baseline, exit 1 ved avvik
 #
-# Typisk flyt:
-#   ./verifiser.sh fhi-lmr-mintjeneste-api-test > baseline/api-test.json   # rett etter deploy
-#   ./verifiser.sh fhi-lmr-mintjeneste-api-test baseline/api-test.json     # senere, i CI
+# Typisk flyt (fasiten ligger i entraid/baseline/ i Fhi.Lmr.AI):
+#   ./verifiser.sh fhi-lmr-mintjeneste-api-test > ny.json && mv ny.json entraid/baseline/fhi-lmr-mintjeneste-api-test.json
+#   ./verifiser.sh fhi-lmr-mintjeneste-api-test entraid/baseline/fhi-lmr-mintjeneste-api-test.json
+#
+# Baselinen inneholder bare ID-er og verdier fra app-registreringen, ingen personnavn. Navn kommer
+# ut av az med ødelagte norske tegn på enkelte maskiner, og ville gitt falsk drift.
+#
+# Feiler noe underveis (oppslag, SP mangler, jq), avslutter skriptet med exit 1 og skriver
+# INGENTING til stdout — en halv baseline er verre enn ingen.
 #
 set -uo pipefail
 
 FHI_TENANT="54475f80-1baa-4ea9-9185-c0de5cc603fe"
+GRAPH="https://graph.microsoft.com/v1.0"
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   echo "Bruk: $0 <uniqueName> [baseline.json]" >&2
@@ -27,45 +34,56 @@ fi
 unikt_navn="$1"
 baseline="${2:-}"
 
-aktiv_tenant="$(az account show --query tenantId -o tsv 2>/dev/null || true)"
+tmp="$(mktemp)"; tmpdiff="$(mktemp)"; feilfil="$(mktemp)"
+trap 'rm -f "$tmp" "$tmpdiff" "$feilfil"' EXIT
+
+feil() { echo "FEIL: $*" >&2; exit 1; }
+
+aktiv_tenant="$(az account show --query tenantId -o tsv 2>/dev/null | tr -d '\r' || true)"
 if [ "$aktiv_tenant" != "$FHI_TENANT" ]; then
   echo "FEIL: az står på tenant '${aktiv_tenant:-<ingen>}', ikke FHI ($FHI_TENANT)." >&2
   echo "      Fiks: az account set --subscription FHI-LMR-Dev" >&2
   exit 1
 fi
 
+# Henter en liste fra Graph og følger @odata.nextLink, slik at lister over 100 elementer
+# (f.eks. rolletildelinger) ikke blir avkuttet.
+hent_alle() {
+  local uri="$1" side alle='[]'
+  while [ -n "$uri" ]; do
+    # stderr holdes utenfor: az kan skrive advarsler der også når kallet lykkes.
+    side="$(az rest --method GET --uri "$uri" 2>"$feilfil")" || { cat "$feilfil" >&2; return 1; }
+    alle="$(jq -c --argjson a "$alle" '$a + .value' <<<"$side")" || return 1
+    uri="$(jq -r '."@odata.nextLink" // empty' <<<"$side")"
+  done
+  printf '%s' "$alle"
+}
+
 app="$(az rest --method GET \
-  --uri "https://graph.microsoft.com/v1.0/applications(uniqueName='${unikt_navn}')?\$expand=owners" \
-  2>/dev/null || true)"
+  --uri "$GRAPH/applications(uniqueName='${unikt_navn}')?\$expand=owners" 2>"$feilfil")" \
+  || feil "fant ingen app-registrering med uniqueName '${unikt_navn}': $(head -c 300 "$feilfil")"
 
-if [ -z "$(printf '%s' "$app" | jq -r '.appId // empty' 2>/dev/null || true)" ]; then
-  echo "FEIL: fant ingen app-registrering med uniqueName '${unikt_navn}'." >&2
-  exit 1
-fi
+app_id="$(jq -r '.appId // empty' <<<"$app")"
+[ -n "$app_id" ] || feil "svaret for '${unikt_navn}' mangler appId."
 
-app_id="$(printf '%s' "$app" | jq -r '.appId')"
 sp_object_id="$(az rest --method GET \
-  --uri "https://graph.microsoft.com/v1.0/servicePrincipals(appId='${app_id}')?\$select=id" \
-  2>/dev/null | jq -r '.id // empty' || true)"
+  --uri "$GRAPH/servicePrincipals(appId='${app_id}')?\$select=id" 2>/dev/null | jq -r '.id // empty')"
+[ -n "$sp_object_id" ] || feil "fant ingen service principal for appId $app_id. Rett etter opprettelse kan det ta et minutt; kjør på nytt."
 
-# App-rolletildelinger på SP-en (admin consent for application permissions, og gruppe→rolle).
-tildelinger='[]'
-if [ -n "$sp_object_id" ]; then
-  tildelinger="$(az rest --method GET \
-    --uri "https://graph.microsoft.com/v1.0/servicePrincipals/${sp_object_id}/appRoleAssignedTo" \
-    2>/dev/null | jq '[.value[] | {appRoleId, principalId, principalDisplayName}]' || echo '[]')"
-fi
+# Tildelinger på denne SP-en som RESSURS (consent gitt til kallere, og grupper → roller).
+tildelt_til="$(hent_alle "$GRAPH/servicePrincipals/${sp_object_id}/appRoleAssignedTo?\$select=appRoleId,principalId,principalType")" \
+  || feil "klarte ikke å hente appRoleAssignedTo."
+# Tildelinger denne SP-en HAR FÅTT som kaller (consent for dens egne m2m-kanter).
+har_faatt="$(hent_alle "$GRAPH/servicePrincipals/${sp_object_id}/appRoleAssignments?\$select=appRoleId,resourceId")" \
+  || feil "klarte ikke å hente appRoleAssignments."
 
-# Normaliser: sorter alt som er en mengde, og drop felter som endrer seg av seg selv
-# (createdDateTime, @odata.context osv.). Uten sortering gir Graph tilfeldig rekkefølge,
-# og da ville diffen slått ut på ingenting.
-#
 # ⚠️ owners hentes med $expand. GET /applications/{id}/owners returnerer IKKE
 # service-principal-eiere — den ser tom ut selv når eieren er satt.
-printf '%s' "$app" | jq --argjson tildelinger "$tildelinger" '{
+jq --arg sp "$sp_object_id" --argjson tildeltTil "$tildelt_til" --argjson harFaatt "$har_faatt" '{
   uniqueName,
   displayName,
   appId,
+  spObjectId: $sp,
   signInAudience,
   identifierUris: (.identifierUris // [] | sort),
   requestedAccessTokenVersion: (.api.requestedAccessTokenVersion),
@@ -80,30 +98,26 @@ printf '%s' "$app" | jq --argjson tildelinger "$tildelinger" '{
     resourceAccess: [.resourceAccess[] | {id, type}] | sort_by(.id)
   }] | sort_by(.resourceAppId),
   eiere: [.owners[]? | .id] | sort,
-  appRoleAssignedTo: ($tildelinger | sort_by(.appRoleId, .principalId))
-}' > /tmp/verifiser-$$.json
+  appRoleAssignedTo: ($tildeltTil | map({appRoleId, principalId, principalType}) | sort_by(.appRoleId, .principalId)),
+  appRoleAssignments: ($harFaatt | map({appRoleId, resourceId}) | sort_by(.resourceId, .appRoleId))
+}' <<<"$app" > "$tmp" || feil "jq klarte ikke å bygge baselinen."
+
+[ -s "$tmp" ] || feil "baselinen ble tom."
 
 if [ -z "$baseline" ]; then
-  cat /tmp/verifiser-$$.json
-  rm -f /tmp/verifiser-$$.json
+  cat "$tmp"
   exit 0
 fi
 
-if [ ! -f "$baseline" ]; then
-  echo "FEIL: baseline-fila '$baseline' finnes ikke." >&2
-  rm -f /tmp/verifiser-$$.json
-  exit 1
-fi
+[ -f "$baseline" ] || feil "baseline-fila '$baseline' finnes ikke."
 
-if diff -u "$baseline" /tmp/verifiser-$$.json > /tmp/verifiser-diff-$$.txt; then
+if diff -u "$baseline" "$tmp" > "$tmpdiff"; then
   echo "OK: ingen avvik mellom Entra og baseline for '${unikt_navn}'."
-  rm -f /tmp/verifiser-$$.json /tmp/verifiser-diff-$$.txt
   exit 0
 else
   echo "⚠️  AVVIK mellom baseline og faktisk tilstand i Entra for '${unikt_navn}':"
   echo "    (- = baseline, + = slik det faktisk er nå)"
   echo
-  cat /tmp/verifiser-diff-$$.txt
-  rm -f /tmp/verifiser-$$.json /tmp/verifiser-diff-$$.txt
+  cat "$tmpdiff"
   exit 1
 fi

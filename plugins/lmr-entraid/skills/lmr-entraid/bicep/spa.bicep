@@ -1,6 +1,11 @@
 /*
   VARIANT 4 av 4 — SPA-VARIANTEN (.Api + .Client.Web som SPA + .Client.Machine)
 
+  ⛔ KUN FOR Å OPPRETTE NYE APP-REGISTRERINGER. Deploy aldri denne malen mot en uniqueName som
+  finnes: deklarerte verdier blir skrevet over, og det malen ikke har med kan forsvinne.
+  scripts/sjekk-uniquename.sh stopper med exit 2 hvis navnet finnes. Nye kanter på en
+  eksisterende klient: entraid/scripts/legg-til-kant.sh i Fhi.Lmr.AI.
+
   Varianten Fhi.Grossiststatistikken bruker. Tas med for fullstendighet -
   LMR-tjenestene bruker IKKE denne.
 
@@ -28,7 +33,7 @@ param apiScopeId string
 @description('Scope-verdi, f.eks. access_as_user.')
 param apiScopeValue string
 
-@description('Rollesettet: { nokkel, visningsnavn, beskrivelse, appRoleId, gruppeUniktNavn }. Typisk Admin + Bruker.')
+@description('Rollesettet: { nokkel, visningsnavn, beskrivelse, appRoleId, gruppeObjektId }. Typisk Admin + Bruker.')
 param roller object[]
 
 @description('Redirect-URI-er på SPA-plattformen. Public client — ingen client secret.')
@@ -182,24 +187,21 @@ resource clientMachineSp 'Microsoft.Graph/servicePrincipals@v1.0' = {
   }
 }
 
-resource rolleGrupper 'Microsoft.Graph/groups@v1.0' existing = [
-  for r in roller: {
-    uniqueName: r.gruppeUniktNavn
-  }
-]
+// Rollegruppene refereres med object ID (gruppeObjektId). De lages av scripts/opprett-gruppe-i-au.sh.
+// En rolle uten gruppeObjektId får ingen tildeling her; tildel den etterpå (se SKILL.md), ikke redeploy.
 
 resource tildelingApi 'Microsoft.Graph/appRoleAssignedTo@v1.0' = [
-  for (r, i) in roller: {
+  for r in roller: if (!empty(r.?gruppeObjektId ?? '')) {
     appRoleId: r.appRoleId
-    principalId: rolleGrupper[i].id
+    principalId: r.gruppeObjektId
     resourceId: apiSp.id
   }
 ]
 
 resource tildelingWeb 'Microsoft.Graph/appRoleAssignedTo@v1.0' = [
-  for (r, i) in roller: {
+  for r in roller: if (!empty(r.?gruppeObjektId ?? '')) {
     appRoleId: r.appRoleId
-    principalId: rolleGrupper[i].id
+    principalId: r.gruppeObjektId
     resourceId: clientWebSp.id
   }
 ]

@@ -11,8 +11,8 @@ param eiere = [
   '00000000-0000-0000-0000-000000000000'
 ]
 
-// Én oppføring per kant i kall-grafen. IDene hentes fra callee-tjenestens outputs
-// (apiAppId / apiSpObjectId / defaultScope), eller fra kall-graf.md sitt ID-register.
+// Én oppføring per kant. IDene står i entraid/baseline/<callee>.json i Fhi.Lmr.AI:
+// apiAppId = appId, apiSpObjectId = spObjectId, appRoleId = appRoller[].id.
 param callees = [
   {
     navn: 'Grunndata'
@@ -22,5 +22,5 @@ param callees = [
   }
 ]
 
-// Application permissions kan app-eier gi selv. Sett false hvis consent skal samlebestilles.
-param giAdminConsent = true
+// false: tildelingene gis etterpå med entraid/scripts/legg-til-kant.sh (se malen for hvorfor).
+param giAdminConsent = false

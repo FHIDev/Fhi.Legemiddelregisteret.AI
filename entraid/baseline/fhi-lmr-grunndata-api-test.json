@@ -1,0 +1,105 @@
+{
+  "uniqueName": "fhi-lmr-grunndata-api-test",
+  "displayName": "Fhi.Lmr.Grunndata.Api - Test",
+  "appId": "60d6fde6-c45c-409f-bf34-027f8edf447b",
+  "spObjectId": "7859e62e-c756-4856-9f3c-a165edf79d9c",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://60d6fde6-c45c-409f-bf34-027f8edf447b"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "value": "Fhi.Lmr.Grunndata.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "0089b309-b5bb-4bef-bc88-f1bfbe584302",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "0163c758-fe9b-4d13-a2d7-dadbcc4d44fb",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "04ef33be-5085-4e98-860f-3519517d36b4",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "2531891f-47dd-4eba-ab8b-b5305dc8a9b9",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "345641c2-3fc1-4f0d-b693-4c5cc7d9855b",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "5e5668c3-7f0f-4a67-a976-74966ad33584",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "7e76b8ea-8891-4263-9927-9fa589624bc7",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "904e86d5-2535-44e3-a5f6-34dd2a24f5cf",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "c376201d-1482-4dfa-92e4-f635fedbd6cf",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "caf1968e-11b3-4c9e-a66b-e1c0435a2c9e",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "cbefe4a9-5b42-43b1-84b2-398c98d97127",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "cc5ed8c5-3f19-4393-af5a-479aaa3a49b1",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "f1a9d6ce-814d-48dc-a44c-46c28256ef60",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "principalId": "f5e4cc80-9d22-40f2-a8c5-08bb3da923df",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

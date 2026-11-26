@@ -1,0 +1,65 @@
+{
+  "uniqueName": "fhi-lmr-utleveringslager-api-test",
+  "displayName": "Fhi.Lmr.Utleveringslager.Api - Test",
+  "appId": "cbb38b05-e894-45f8-8186-5263ad794d02",
+  "spObjectId": "3b3eaf67-34f7-49c3-9d0d-4e69137c5c3f",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://cbb38b05-e894-45f8-8186-5263ad794d02"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "value": "Fhi.Lmr.Utleveringslager.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "2531891f-47dd-4eba-ab8b-b5305dc8a9b9",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "7e76b8ea-8891-4263-9927-9fa589624bc7",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "904e86d5-2535-44e3-a5f6-34dd2a24f5cf",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "bb4fc7fa-7ca7-47e6-bd48-34f2cf2e4414",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "cbefe4a9-5b42-43b1-84b2-398c98d97127",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "f5e4cc80-9d22-40f2-a8c5-08bb3da923df",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

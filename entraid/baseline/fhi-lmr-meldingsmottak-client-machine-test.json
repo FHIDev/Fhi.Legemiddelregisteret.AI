@@ -1,0 +1,47 @@
+{
+  "uniqueName": "fhi-lmr-meldingsmottak-client-machine-test",
+  "displayName": "Fhi.Lmr.Meldingsmottak.Client.Machine - Test",
+  "appId": "8cc1fc3e-65ba-4e24-b48d-6a2b6cdd1fd3",
+  "spObjectId": "345641c2-3fc1-4f0d-b693-4c5cc7d9855b",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "FB6D82B5CB033BF744A90C5DB19DE0C8A34A0AA1"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "60d6fde6-c45c-409f-bf34-027f8edf447b",
+      "resourceAccess": [
+        {
+          "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "d686e391-e806-422e-92e9-9529eef7262c",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "33359a56-8d0f-49ba-88c2-b22cb6c482f4",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "resourceId": "7859e62e-c756-4856-9f3c-a165edf79d9c"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "uniqueName": "fhi-lmr-utleveringslager-api-prod",
+  "displayName": "Fhi.Lmr.Utleveringslager.Api - Prod",
+  "appId": "5532d808-b987-4ab9-94e8-dece091d7258",
+  "spObjectId": "f20707ed-4801-43a3-b4e8-83c631ffba51",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://5532d808-b987-4ab9-94e8-dece091d7258"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "value": "Fhi.Lmr.Utleveringslager.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "8c073b07-6813-43cd-abfd-6f4b474d72a0",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "9ec0cbca-7f0a-4eff-be13-ff6ff068c6ab",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "72ab7163-1a6d-4a21-b1dc-98c827765cc0",
+      "principalId": "d7e55b9a-33b8-491f-b879-008c3cbfe803",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

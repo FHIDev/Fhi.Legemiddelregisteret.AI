@@ -1,0 +1,39 @@
+{
+  "uniqueName": "fhi-lmr-dataprodukter-api-prod",
+  "displayName": "Fhi.Lmr.Dataprodukter.Api - Prod",
+  "appId": "f514736c-7d83-4aea-9567-34d709a4a012",
+  "spObjectId": "d0b5cb5f-4d91-4597-86ca-18a1d8d1a400",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://f514736c-7d83-4aea-9567-34d709a4a012"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "3df831ad-809e-4c8d-9f88-1cf5863ce92b",
+      "value": "Fhi.Lmr.Dataprodukter.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "3df831ad-809e-4c8d-9f88-1cf5863ce92b",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

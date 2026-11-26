@@ -1,0 +1,46 @@
+{
+  "uniqueName": "fhi-lmr-utleveringslager-client-machine-prod",
+  "displayName": "Fhi.Lmr.Utleveringslager.Client.Machine - Prod",
+  "appId": "cb4e7963-bd9c-4674-9bd6-47da1e1f86cc",
+  "spObjectId": "c33b6541-1894-416a-b618-c5e1809948c3",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "15447FF889C39E53500E8EEE6FA2B3B2C21E5CAC"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "3893a0d5-7bc0-434b-b00f-aca33aabfd7d",
+      "resourceAccess": [
+        {
+          "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "950fcb91-93df-4a70-a150-3e7458cf6d8a",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "33359a56-8d0f-49ba-88c2-b22cb6c482f4",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "resourceId": "99709224-5dd6-4193-abeb-0892571b64a3"
+    }
+  ]
+}

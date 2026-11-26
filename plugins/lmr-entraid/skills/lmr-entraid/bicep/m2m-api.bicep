@@ -1,6 +1,11 @@
 /*
   VARIANT 1 av 4 — REN M2M, RESSURSSIDEN (.Api)
 
+  ⛔ KUN FOR Å OPPRETTE NYE APP-REGISTRERINGER. Deploy aldri denne malen mot en uniqueName som
+  finnes: deklarerte verdier blir skrevet over, og det malen ikke har med kan forsvinne.
+  scripts/sjekk-uniquename.sh stopper med exit 2 hvis navnet finnes. Nye kanter på en
+  eksisterende klient: entraid/scripts/legg-til-kant.sh i Fhi.Lmr.AI.
+
   Tjenesten eksponerer et API som andre LMR-tjenester kaller maskin-til-maskin med
   client credentials. Oppretter .Api-app-registreringen, dens service principal, og
   application-app-rollen kallerne får tildelt.

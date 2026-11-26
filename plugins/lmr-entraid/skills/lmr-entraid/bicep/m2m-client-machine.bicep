@@ -1,6 +1,11 @@
 /*
   VARIANT 2 av 4 — REN M2M, KLIENTSIDEN (.Client.Machine)
 
+  ⛔ KUN FOR Å OPPRETTE NYE APP-REGISTRERINGER. Deploy aldri denne malen mot en uniqueName som
+  finnes: deklarerte verdier blir skrevet over, og det malen ikke har med kan forsvinne.
+  scripts/sjekk-uniquename.sh stopper med exit 2 hvis navnet finnes. Nye kanter på en
+  eksisterende klient: entraid/scripts/legg-til-kant.sh i Fhi.Lmr.AI.
+
   Tjenesten gjør utgående maskin-til-maskin-kall mot andre LMR-API-er. Autentiserer med
   sertifikat (client assertion / private_key_jwt). Oppretter klient-app-registreringen,
   dens service principal, og consent-tildelingen mot hvert callee-API.
@@ -36,10 +41,12 @@ API-ene denne klienten skal kunne kalle. Én oppføring per kant i kall-grafen:
 param callees object[]
 
 @description('''
-Om admin consent (appRoleAssignedTo) skal gis her. Application permissions kan app-eier gi selv.
-Sett false hvis consent skal samlebestilles — da erklæres kun requiredResourceAccess.
+Om rolletildelingen (appRoleAssignedTo) skal gis i samme deploy. Standard false: da erklæres kun
+requiredResourceAccess, og tildelingene gis etterpå med entraid/scripts/legg-til-kant.sh. Det krever
+eierskap til CALLEE (i prod: Application Administrator via PIM), og feiler det midt i deployen, står
+app-registreringen halvferdig — og malen skal ikke deployes på nytt mot en som finnes.
 ''')
-param giAdminConsent bool = true
+param giAdminConsent bool = false
 
 var visningsnavn = 'Fhi.${tjenesteNavn}.Client.Machine - ${miljo}'
 var uniktNavn = toLower('fhi-${replace(tjenesteNavn, '.', '-')}-client-machine-${miljo}')

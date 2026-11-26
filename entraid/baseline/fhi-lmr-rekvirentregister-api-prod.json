@@ -1,0 +1,59 @@
+{
+  "uniqueName": "fhi-lmr-rekvirentregister-api-prod",
+  "displayName": "Fhi.Lmr.Rekvirentregister.Api - Prod",
+  "appId": "357a96ac-b76f-4abf-b210-f0289f2f72de",
+  "spObjectId": "90b4724f-acce-45ba-a49b-326a650b9803",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://357a96ac-b76f-4abf-b210-f0289f2f72de"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "value": "Fhi.Lmr.Rekvirentregister.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "principalId": "8c073b07-6813-43cd-abfd-6f4b474d72a0",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "principalId": "9ec0cbca-7f0a-4eff-be13-ff6ff068c6ab",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "principalId": "ba197545-f911-45e4-9e0c-d0efbd2bb335",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "e3a9b001-b628-41a1-8197-38c648f5966e",
+      "principalId": "d7e55b9a-33b8-491f-b879-008c3cbfe803",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

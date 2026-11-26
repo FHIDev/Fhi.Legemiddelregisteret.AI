@@ -13,7 +13,7 @@ imperative og udokumenterte). Bicep gir:
 | | |
 |---|---|
 | Deklarativt | App-reg, service principal, roller, tillatelser og consent i én fil |
-| Idempotent | `uniqueName` gir upsert — samme fil kan kjøres om igjen uten å opprette duplikater |
+| Navngitt | `uniqueName` gjør at app-registreringen kan slås opp og verifiseres. ⛔ Hos oss brukes malen likevel bare til å **opprette** — se under |
 | Ingen state | Ingenting lokalt som kan mistes eller komme ut av synk |
 | Eierskap deklareres | `owners` er en property, ikke en bivirkning av hvilken auth-path du brukte |
 | Reviewbart | Alt som endrer en app-registrering er en `git diff` |
@@ -67,12 +67,14 @@ User Access Administrator. Unødvendig hos oss, og admin-gated.
 `Microsoft.Graph/groups`. Extensionen bruker den til upsert: finnes den, oppdateres appen;
 finnes den ikke, opprettes en ny.
 
-Det gjør at samme fil kan kjøres om igjen uten å opprette duplikater — men det flytter
-risikoen ett sted: **en skrivefeil i `uniqueName` oppretter en ny app-registrering** med ny
-appId, stille.
+⛔ **I LMR brukes malene bare til å OPPRETTE.** En deploy mot en `uniqueName` som finnes, setter
+de deklarerte propertyene til malens verdi, og en mal som ikke har med alt, kan fjerne kanter,
+roller og redirect-URI-er. Nye kanter på eksisterende klienter legges til med
+`entraid/scripts/legg-til-kant.sh` i Fhi.Lmr.AI, som bare kan legge til.
 
-Derfor: kjør **`scripts/sjekk-uniquename.sh`** før hver deploy. Den sier OPPDATERER eller
-OPPRETTER for hver `uniqueName`.
+Kjør **`scripts/sjekk-uniquename.sh`** rett før hver deploy. Den **stopper med exit 2** hvis noen
+av navnene finnes. Går den gjennom, vil deployen bare opprette — men sjekk navnene: **en
+skrivefeil i `uniqueName` oppretter en ny app-registrering** med ny appId, stille.
 
 Konvensjon: `fhi-lmr-<tjeneste>-<rolle>-<miljo>`, små bokstaver.
 
@@ -150,23 +152,23 @@ Det slår inn når du fjerner en rolle fra `appRoles`, bytter `id` på den, elle
 **Å endre `value` eller `displayName` på en rolle som beholder samme `id` er derimot greit**
 (verifisert).
 
-**Fjerning krever to deployer:**
-
-1. Behold rollen i malen, men sett `isEnabled: false`. Deploy.
-2. Fjern rollen fra malen. Deploy.
-
-⚠️ Kombinert med at en re-deploy ikke fjerner udeklarerte properties (se over): å bare stryke
-rollen fra malen gjør **ingenting**. Den blir stående.
+Fjerning av en rolle gjøres derfor i to steg mot Graph: sett `isEnabled: false`, og fjern den
+etterpå. Hos oss gjøres det **manuelt og bevisst**, aldri med en redeploy av malen — se
+⛔-avsnittet under «`uniqueName`» over. Sjekk først at ingen tildelinger peker på rollen.
 
 ## Brownfield — adoptere eksisterende app-registreringer
 
-LMR har allerede ~31 app-registreringer i Entra fra før Bicep ble tatt i bruk. De ble
-provisjonert med et eldre verktøyoppsett som **ikke er tilgjengelig for teamet**, så i praksis
-er de i dag ikke forvaltet av noe som helst — de kan bare endres i portalen, eller adopteres
-inn i en Bicep-mal.
+LMR og Grossiststatistikken har 83 app-registreringer, og de fleste ble laget før Bicep — med
+Terraform (nå pensjonert) eller i portalen.
 
-Kjennetegnet på en slik app-registrering: **den har ingen `uniqueName`.** Etterfyll den én
-gang, så kan malen ta over:
+**Alle 83 har fått `uniqueName` og en baseline** (25. november 2026, med
+`entraid/scripts/adopter-uniquename.sh` i Fhi.Lmr.AI). De kan altså slås opp med `verifiser.sh`
+og `legg-til-kant.sh`. De skal **ikke** tas inn i en Bicep-mal og deployes: fasiten for dem er
+`entraid/baseline/<uniqueName>.json`, og endringer gjøres med `entraid/scripts/legg-til-kant.sh`
+(nye kanter) eller manuelt med `verifiser.sh` før og etter.
+
+Dukker det opp en app-registrering **uten** `uniqueName` (for eksempel en laget i portalen
+senere), etterfyll den én gang:
 
 ```bash
 az rest --method PATCH \
@@ -178,7 +180,8 @@ az rest --method PATCH \
 ⚠️ **`<OBJECT-ID>`, ikke `appId`.** De to forveksles lett.
 ⚠️ Immutable etterpå — du får ett forsøk.
 
-Samme for grupper (`/v1.0/groups/<objectId>`). Etterpå kan de refereres:
+Samme for grupper (`/v1.0/groups/<objectId>`). Etterpå kan de refereres med `existing` — det er
+en ren referanse og endrer ikke gruppa:
 
 ```bicep
 resource gruppe 'Microsoft.Graph/groups@v1.0' existing = {
@@ -198,10 +201,7 @@ Finn en eksisterende app-registrering og dens object-id:
 az ad app list --display-name "Fhi.Lmr.<Tjeneste>.Api - Test"   --query "[0].{appId:appId, objectId:id, uniqueName:uniqueName}" -o json
 ```
 
-⚠️ Skriv malen slik at den matcher **det som faktisk står i Entra** før du deployer — kjør
-`scripts/verifiser.sh` først og bruk output som fasit. Deployer du en mal som mangler noe app-
-registreringen har, blir det stående (se «Hva en re-deploy FAKTISK gjør»), men deployer du feil
-*verdier*, blir de skrevet over.
+Etter etterfyllingen: ta en baseline med `verifiser.sh` og legg den i `entraid/baseline/`.
 
 ## ⚠️ Det finnes ingen `what-if`
 
@@ -213,12 +213,19 @@ dekker de to tingene som faktisk kan gå galt:
 
 | Skript | Når | Hva det fanger |
 |---|---|---|
-| `scripts/sjekk-uniquename.sh` | **før** deploy | Skrivefeil i `uniqueName` som ville opprettet en ny app-reg |
+| `scripts/sjekk-uniquename.sh` | **før** deploy | At ingen av navnene finnes (stopper ellers), og gir deg sjansen til å se skrivefeil som ville opprettet en ny app-reg |
 | `scripts/verifiser.sh` | **etter** deploy, og senere | Ekte drift: sammenligner faktisk tilstand i Entra mot en committet baseline |
 
 ```bash
-./scripts/verifiser.sh fhi-lmr-mintjeneste-api-test > baseline/api-test.json   # etter deploy
-./scripts/verifiser.sh fhi-lmr-mintjeneste-api-test baseline/api-test.json     # senere
+# Fra roten av Fhi.Lmr.AI
+V=plugins/lmr-entraid/skills/lmr-entraid/bicep/scripts/verifiser.sh
+N=fhi-lmr-mintjeneste-api-test
+
+# Etter deploy: via temp-fil, så en feil (f.eks. utløpt innlogging) ikke tømmer baselinen
+bash "$V" "$N" > ny.json && mv ny.json "entraid/baseline/$N.json"
+
+# Senere: sammenlign
+bash "$V" "$N" "entraid/baseline/$N.json"
 ```
 
 `verifiser.sh` normaliserer og sorterer alt før sammenligning — Graph returnerer lister i
@@ -226,7 +233,8 @@ tilfeldig rekkefølge, så uten sortering ville diffen slått ut på ingenting.
 
 ## ⚠️ Hva en re-deploy FAKTISK gjør — målt, ikke antatt
 
-Dette er den mest overraskende delen, og den er verifisert ved å deploye mot ekte Entra,
+Dette er grunnen til at vi **aldri** deployer en mal mot en app-registrering som finnes. Det er
+den mest overraskende delen, og den er verifisert ved å deploye mot ekte Entra,
 endre ting utenfor malen, og deploye på nytt.
 
 | Situasjon | Resultat |
@@ -269,15 +277,14 @@ Lar du Bicep opprette gruppa, havner den i katalogroten — og å flytte den inn
 NHN-bestilling.
 
 **Derfor:** kjør `scripts/opprett-gruppe-i-au.sh` først (AU-en utledes av miljøet i
-gruppenavnet, eller oppgis som tredje argument), og la Bicep referere gruppa med `existing`. Scriptet treffer AU-endepunktet
+gruppenavnet, eller oppgis som tredje argument), og la Bicep referere gruppa med object ID (`gruppeObjektId`). Scriptet treffer AU-endepunktet
 direkte og krever **ingen ny rettighet**.
 
 Dette er en begrensning i extensionen, ikke i Bicep som sådan — AU-medlemskap finnes rett og
 slett ikke som ressurstype ennå.
 
-**Omfanget er lite:** de 20 gruppene finnes allerede, `opprett_grupper = false` var normalen fra
-app nummer to i et miljø, og de to m2m-variantene rører aldri en gruppe. Nye grupper trengs kun
-ved ny rolle eller nytt miljø.
+**Omfanget er lite:** de felles LMR-rollegruppene finnes allerede for alle fire miljøer, og de to
+m2m-variantene rører aldri en gruppe. Nye grupper trengs kun ved ny rolle eller nytt miljø.
 
 ## Øvrige begrensninger
 

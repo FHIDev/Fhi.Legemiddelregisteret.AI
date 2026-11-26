@@ -19,7 +19,11 @@ param apiScopeValue = 'Fhi.Lmr.MinTjeneste.All'
   ⚠️ Pseudo-rollen 'ingen' i Kontroll skal IKKE med — den betyr «hvilken som helst
   innlogget bruker» og finnes verken i databasen eller som app-rolle.
 
-  gruppeUniktNavn må matche uniqueName som scripts/opprett-gruppe-i-au.sh satte på gruppa.
+  gruppeObjektId er object ID-en til gruppa FOR DET MILJØET DU DEPLOYER. Gruppene finnes for
+  Dev/Test/QA/Prod med samme navn bortsett fra miljøet, så en ID fra feil miljø gir roller på tvers
+  av miljøer. Slå opp og kontroller navnet før deploy:
+    az ad group show --group 'A-FHI-App-Lmr-<Miljø>-<Rolle>' --query "{id:id, navn:displayName}"
+  La feltet stå tomt ("") for en rolle med en NY gruppe som ikke finnes ennå — den tildeles etterpå.
 */
 param roller = [
   {
@@ -27,35 +31,35 @@ param roller = [
     visningsnavn: 'Les og skriv'
     beskrivelse: 'Basistilgang. Tilgang til å se og endre alt utenom å behandle godkjenninger og gjøre endringer på individdatauttrekk.'
     appRoleId: '97590f02-045f-4b4d-a965-9f338c15160f'
-    gruppeUniktNavn: 'a-fhi-app-lmr-test-lesogskriv'
+    gruppeObjektId: '<object ID til A-FHI-App-Lmr-<Miljø>-LesOgSkriv>'
   }
   {
     nokkel: 'endreatc'
     visningsnavn: 'Endre ATC'
     beskrivelse: 'Tilgang til å se alt, men kun editere ATC-koder.'
     appRoleId: '6750f1e6-6c4d-4e56-859e-c3a1ae7f08fe'
-    gruppeUniktNavn: 'a-fhi-app-lmr-test-endreatc'
+    gruppeObjektId: '<object ID til A-FHI-App-Lmr-<Miljø>-EndreAtc>'
   }
   {
     nokkel: 'godkjenn'
     visningsnavn: 'Godkjenn'
     beskrivelse: 'Tilgang til å godkjenne endring av rettigheter.'
     appRoleId: '0142c73c-3089-4888-875a-dc0ebcd76be4'
-    gruppeUniktNavn: 'a-fhi-app-lmr-test-godkjenn'
+    gruppeObjektId: '<object ID til A-FHI-App-Lmr-<Miljø>-Godkjenn>'
   }
   {
     nokkel: 'individdatauttrekk'
     visningsnavn: 'Individdatauttrekk'
     beskrivelse: 'Tilgang til å se og bruke individdatauttrekk og dataprodukt.'
     appRoleId: 'e396de96-7305-47ed-9a66-f3a4bd665382'
-    gruppeUniktNavn: 'a-fhi-app-lmr-test-individdatauttrekk'
+    gruppeObjektId: '<object ID til A-FHI-App-Lmr-<Miljø>-Individdatauttrekk>'
   }
   {
     nokkel: 'internstatistikk'
     visningsnavn: 'Intern statistikkløsning'
     beskrivelse: 'Tilgang til intern statistikkløsning for LMR.'
     appRoleId: 'bfb0f358-6e89-4e3d-ad15-005a75b740e0'
-    gruppeUniktNavn: 'a-fhi-app-lmr-test-internstatistikk'
+    gruppeObjektId: '<object ID til A-FHI-App-Lmr-<Miljø>-InternStatistikk>'
   }
 ]
 
@@ -80,10 +84,12 @@ param eiere = [
   '00000000-0000-0000-0000-000000000000'
 ]
 
-// M2M-kanter: hentes fra callee-tjenestens outputs eller kall-graf.md.
+// M2M-kanter: apiAppId, apiSpObjectId (= spObjectId) og appRoleId (appRoller[].id) står i
+// entraid/baseline/<callee>.json i Fhi.Lmr.AI.
 param callees = []
 
-// Delegerte kanter (On-Behalf-Of) — kun når kallet må bære sluttbrukerens identitet.
+// Delegerte kanter (webappen kaller med brukerens eget token, ikke OBO) — kun når kallet må bære
+// sluttbrukerens identitet. Krever admin consent fra NHN.
 param delegerteKanter = []
 
 // true kun for appen som administrerer rolletildelinger via Graph (i LMR: Kontroll).

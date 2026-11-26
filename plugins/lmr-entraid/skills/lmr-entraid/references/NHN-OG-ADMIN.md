@@ -10,7 +10,7 @@ verifisering i denne migreringen mer enn én gang.
 |---|---|---|
 | Opprette app-registrering + SP | ✅ | PIM `Application Developer` |
 | Sette `owners` på egne app-regs | ✅ | app-eier |
-| **Application permission** (`appRoleAssignedTo`) — m2m-consent | ✅ | eier av ressurs-app-regen |
+| **Application permission** (`appRoleAssignedTo`) — m2m-consent | ✅ | eier av ressurs-app-regen, eller `Application Administrator` på den (prod: via PIM) |
 | **Delegert scope** (`oauth2PermissionGrants`) — brukerinnlogging | ❌ | Cloud Application Administrator / Application Administrator |
 | Opprette gruppe **inne i** fagområdets AU | ✅ | `Groups Administrator` scoped til AU-en |
 | **Flytte** eksisterende gruppe inn i en AU | ❌ | **Privileged Role Administrator** |
@@ -30,10 +30,10 @@ prod. Prod-AU-en er den opprinnelige, med nytt navn; gruppene ble flyttet, ikke 
 
 | AU | Object ID | Grupper | `Groups Administrator` scoped til AU-en |
 |---|---|---|---|
-| `AU-Legemiddelregisteret-Prod` | `a563113b-80b4-4187-a938-a8d97992c3ce` | Prod: 5 × `A-FHI-App-Lmr-Prod-<Rolle>` + sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine - Prod` |
-| `AU-Legemiddelregisteret-Test` | `7aa36d85-8358-42f1-96fb-d511f49b40f2` | Dev/Test/QA: 15 rollegrupper + Test-sertifikathemmelighetsgruppa | Ludvig, `Fhi.Lmr.Kontroll.Client.Machine` Dev + Test + QA |
-| `AU-Grossiststatistikken-Prod` | `94d49e82-a17c-458f-93b1-5bab0c2fcfb2` | `…-Prod-Admin`, `…-Prod-Bruker` | Ludvig, `Fhi.Grossiststatistikken.Client.Machine - Prod` |
-| `AU-Grossiststatistikken-Test` | `60f3749d-721f-4b0c-8793-90949662ffb9` | Sandbox/Test × Admin/Bruker | Ludvig, `Fhi.Grossiststatistikken.Client.Machine` Sandbox + Test |
+| `AU-Legemiddelregisteret-Prod` | `a563113b-80b4-4187-a938-a8d97992c3ce` | Prod: 5 × `A-FHI-App-Lmr-Prod-<Rolle>` + sertifikathemmelighetsgruppa | `Fhi.Lmr.Kontroll.Client.Machine - Prod` + personer, se «Eierskap og tilgang» |
+| `AU-Legemiddelregisteret-Test` | `7aa36d85-8358-42f1-96fb-d511f49b40f2` | Dev/Test/QA: 15 rollegrupper + Test-sertifikathemmelighetsgruppa | `Fhi.Lmr.Kontroll.Client.Machine` Dev + Test + QA + Ludvig (målbilde: alle utviklerne) |
+| `AU-Grossiststatistikken-Prod` | `94d49e82-a17c-458f-93b1-5bab0c2fcfb2` | `…-Prod-Admin`, `…-Prod-Bruker` | `Fhi.Grossiststatistikken.Client.Machine - Prod` + personer, se «Eierskap og tilgang» |
+| `AU-Grossiststatistikken-Test` | `60f3749d-721f-4b0c-8793-90949662ffb9` | Sandbox/Test × Admin/Bruker | `Fhi.Grossiststatistikken.Client.Machine` Sandbox + Test + Ludvig (målbilde: alle utviklerne) |
 
 En AU har ikke «eier». Det som gir noen rett til å legge til og fjerne medlemmer i gruppene er
 `Groups Administrator` scoped til AU-en — samme mekanisme for en bruker som for en applikasjon.
@@ -44,88 +44,86 @@ Nye grupper opprettes i riktig AU med `bicep/scripts/opprett-gruppe-i-au.sh`. Sc
 AU-en av miljøet i gruppenavnet, og nekter å gjette for andre navn (oppgi da AU som tredje
 argument). En gruppe i feil AU kan bare flyttes med en NHN-bestilling.
 
-### TODO: overføring til fagansvarlig — målbildet
+### Eierskap og tilgang: fagperson eier prod, utvikler låner via PIM
 
-Ikke gjort, og bevisst ikke del av 120849. ADO-feature **120885** («Teknisk: Overføring av
-EntraID-eierskap til fagansvarlige», Team A) beskriver overføringen; 120849 er første steg under den.
+ADO-feature **120885** («Teknisk: Overføring av EntraID-eierskap til fagansvarlige») og US
+**121935**. Pilot bestått 17.–18. november 2026; prod-oppsettet er bestilt hos NHN.
 
-| AU | Til | Når |
-|---|---|---|
-| `AU-Legemiddelregisteret-Prod` + `-Test` | Kari | når EntraID-arbeidet for LMR er i prod og verifisert |
-| `AU-Grossiststatistikken-Prod` + `-Test` | Kristine Olsen | når Grossiststatistikken er ferdig utviklet og i prod |
+#### Prinsippet
 
-Inntil da har Ludvig `Groups Administrator` på alle fire.
-
-**⚠️ Nåsituasjonen er en bus-faktor på én person, målt 4. sep 2026:** alle 75 app-registreringene
-(`Fhi.Lmr.*` + `Fhi.Grossist*`) har **nøyaktig én eier**, og bare én bruker har `Groups
-Administrator` på AU-ene. Når den kontoen deaktiveres, blir app-regene eierløse, og hver
-endring — inkludert sertifikatfornyelsen for Prod i **2028** — blir en NHN-bestilling med
-Cloud Application Administrator.
-
-#### Prinsippet: fagperson eier, utvikler låner
-
-En utvikler skal **ikke** kunne gi seg selv tilgang til Prod. Merk at det ikke holder å nekte
-utvikleren `Groups Administrator`: **eieren av en app-registrering kan tildele en bruker direkte
-til en app-rolle** («Users and groups» på enterprise-appen), og `roles`-claimet beregnes fra alle
+En utvikler skal **ikke** kunne gi seg selv tilgang til Prod. Det holder ikke å nekte utvikleren
+`Groups Administrator`: **eieren av en app-registrering kan tildele en bruker direkte til en
+app-rolle** («Users and groups» på enterprise-appen), og `roles`-claimet beregnes fra alle
 tildelinger, ikke bare gruppene. Eieren kan også laste opp nytt sertifikat på `Client.Machine` og
 hente tokens som appen. Permanent eierskap i Prod gir altså samme makt som `Groups Administrator`.
 
-Målbildet er derfor:
+#### Målbildet
 
-| Hvem | Hva | Varighet |
+**Dev / Test / QA / Sandbox — ingen PIM.** Utviklerne på teamet er faste eiere av app-registreringene
+og har `Groups Administrator` på test-AU-ene.
+
+**Prod:**
+
+| | LMR | Grossiststatistikken |
 |---|---|---|
-| Fagperson (Kari / Kristine Olsen) | `Groups Administrator` scoped til sin AU **+ eier av fagområdets app-registreringer**, alle miljøer | permanent |
-| Utviklere | **PIM-eligible** for `Groups Administrator` scoped til AU-en og `Cloud Application Administrator` scoped til hver app-registrering. **Godkjenner: fagperson.** | aktiveres per endring, utløper selv |
+| Fast eier av prod-app-registreringene og SP-ene | Kari (+ `mi-lmr-sertifikatfornyelse-prod` på `Client.*`) | Kristine |
+| Fast `Groups Administrator` på prod-AU-en | Kari + Kontroll `Client.Machine - Prod` | Kristine + Grossist `Client.Machine - Prod` |
+| Utviklernes tilgang | PIM-gruppen `P-LMR-Prod-Utvikler` | PIM-gruppen `P-Grossist-Prod-Utvikler` |
+| Godkjenner | godkjennergruppe, eier Kari, to faste medlemmer | godkjennergruppe, eier Kristine, to faste medlemmer |
 
-Ingen utvikler har noe permanent. Fagpersonen eier medlemskapet i det daglige, og godkjenner
-når strukturen skal endres. Alt logges av PIM.
+**PIM-gruppen** (én per fagområde, role-assignable, ingen faste medlemmer, utviklerne er
+*eligible*) har permanent det en utvikler trenger i prod:
 
-**Hvorfor ikke én AU for ikke-prod og én for prod:** en rolle finnes alltid i alle miljøer, og
-endringen gjøres i alle miljøer i samme økt — én aktivering dekker jobben. Det utviklerne gjør i
-Test til daglig (medlemskap) går gjennom Kontrolls søknadsflyt, som virker fordi Kontrolls egen
-SP har rollen. Blir godkjenning på Test-arbeid plagsomt, er justeringen å gjøre Test-app-regene
-eligible **uten** godkjenning — det er en policy per app-reg, ikke en ny AU.
+- `Groups Administrator` avgrenset til prod-AU-en
+- `Application Administrator` avgrenset til **hver** prod-app-registrering **og** hver SP
+- *Key Vault Secrets Officer* på prod-hvelvet for sertifikathemmeligheter
 
-**Hvorfor ikke NHN-bestilling per endring:** to bestillinger per endring (gi + fjern), den siste
-glemmes (`User Administrator` på LMR-AU-en var et slikt tilfelle), ukers latens, og kontrollen
-ligger hos NHN i stedet for hos fagpersonen. PIM er den innebygde varianten av «midlertidig
-tildeling», med fagpersonen som godkjenner og automatisk fjerning.
+Aktivering krever begrunnelse, MFA og godkjenning, og varer maks 8 timer. **Eierskap kan ikke
+lånes via PIM** — det er ikke en rolle — så `Application Administrator` på objektet er det som
+erstatter det. Piloten bekreftet at app- og SP-avgrenset `Application Administrator` virker når
+mottakeren er en gruppe.
 
-#### Hva en ny rolle faktisk krever (så man ser hvorfor utviklerne trenger å låne)
+**Godkjennergruppen** har faste medlemmer (minst to — en PIM-søknad når bare godkjennerne som fantes
+da den ble sendt), ligger **utenfor** AU-ene (ellers kunne alle med `Groups Administrator` der,
+også en utvikler med aktivert PIM, endre hvem som godkjenner), og har ingen utviklere som eier
+eller medlem. Fagpersonen bytter vikar selv. Fagpersonen eier **ikke** PIM-gruppen: en eier kan
+endre PIM-innstillingene og gi tilgang uten godkjenning.
 
-1. Ny app-rolle på `.Api` og `.Client.Web` i hvert miljø — app-eier / Cloud Application Administrator på app-regen.
-2. Ny sikkerhetsgruppe **inne i** AU-en — `Groups Administrator` scoped til AU-en (fagperson kan gjøre dette selv i portalen: Admin units → Groups → Add).
-3. Tildeling gruppe → app-rolle på begge service principalene — app-eier / Cloud Application Administrator.
-4. Kode og config: autorisasjonsattributt, rollekonstant, `Tilgangsstyring:GruppeIder` i alle appsettings, SPA — utvikler + deploy.
-5. Gjenta 1–3 per miljø.
+#### Konsekvenser i det daglige
 
-Fire av fem steg er utviklerarbeid. Uten PIM blir hvert av dem en NHN-bestilling.
-
-#### Bestillingen ved overføring (mal)
-
-Én bestilling per fagområde, som gjør **alt** samtidig:
-
-1. `Groups Administrator` scoped til AU-en → fagperson (permanent).
-2. Fjern Ludvigs `Groups Administrator` på samme AU.
-3. Legg fagperson til som eier på fagområdets app-registreringer (gjøres av nåværende eier selv, før kontoen deaktiveres — krever ingen NHN-rolle).
-4. PIM-eligible for utviklerne: `Groups Administrator` scoped til AU-en + `Cloud Application Administrator` scoped til hver app-registrering, med fagperson som godkjenner. Lista over app-regs genereres fra Graph (`az rest GET /applications?$filter=startswith(displayName,'Fhi.Lmr.')`).
-
-Presedens: Application Developer er alt PIM-basert hos NHN. Det som må bekreftes er at de
-tildeler eligible-rettigheter **scoped** til AU og til enkelt-app-regs, ikke tenant-vidt.
-Fallback hvis NHN sier nei: bestilling per endring, men da med tildeling **og** fjerningsdato i
-samme bestilling.
+- **Alt prod-arbeid i Entra** — ny kant (`legg-til-kant.sh` mot prod), redirect-URI, rollegruppe,
+  manuell sertifikatfornyelse: aktiver PIM-gruppen, vent på godkjenning, gjør jobben.
+- ⚠️ **Hvelvet slår inn flere minutter etter Entra-rollene.** Får du `ForbiddenByRbac` rett etter
+  godkjenning, vent ~10 minutter og kjør `az login` på nytt.
+- **Ny prod-app-registrering:** utvikleren oppretter den (og blir eier via `Application Developer`),
+  legger til fagpersonen som eier, bestiller hos NHN at PIM-gruppen får `Application Administrator`
+  på den nye app-registreringen **og** SP-en, og fjerner seg selv som eier. For LMR `Client.*`: legg
+  den også inn i `Fhi.Lmr.SertifikatFornyelse`. **Hver ny prod-app-registrering blir en liten
+  NHN-bestilling.** Lista over app-registreringer per fagområde står i `entraid/baseline/`.
+- **Historikk** over aktiveringer og godkjenninger: Entra beholder den i 30 dager, NHN i ett år.
+  Fag ber NHN om uttrekket for PIM-gruppen ved behov.
 
 ⚠️ Det som ikke lukkes av dette: den som kan deploye Kontroll til Prod eller lese
 Prod-sertifikatet i Octopus, kan handle *som* Kontroll, som selv har `Groups Administrator`.
 Den døren lukkes med tilgangsstyring og godkjenning i Octopus, ikke i Entra.
+
+#### Hva en ny rolle krever
+
+1. Ny app-rolle på `.Api` og `.Client.Web` i hvert miljø — `Application Administrator` på app-regen (manuelt mot Graph, ikke redeploy).
+2. Ny sikkerhetsgruppe **inne i** AU-en — `Groups Administrator` på AU-en (`bicep/scripts/opprett-gruppe-i-au.sh`).
+3. Tildeling gruppe → app-rolle på begge service principalene — `Application Administrator`.
+4. Kode og config: autorisasjonsattributt, rollekonstant, `Tilgangsstyring:GruppeIder` i alle appsettings, SPA.
+5. Gjenta 1–3 per miljø. I prod med aktivert PIM-gruppe.
 
 ## Admin consent
 
 ### ⚠️ Skillet som koster tid
 
 **Application permissions kan du gi selv.** `appRoleAssignedTo` er en tildeling på
-ressurs-APIets service principal, og eier av den app-registreringen kan opprette den — det er
-det `giAdminConsent`-parameteren i `m2m-client-machine.bicep` gjør.
+ressurs-APIets service principal, og eier av den app-registreringen (eller den som har
+`Application Administrator` på den) kan opprette den. Hos oss gjøres det med
+`entraid/scripts/legg-til-kant.sh` i Fhi.Lmr.AI, også rett etter at en ny klient er opprettet
+(`giAdminConsent` i `m2m-client-machine.bicep` står derfor som `false`).
 
 **Delegerte scopes kan du ikke.** `oauth2PermissionGrants` — altså «Client.Web får kalle Api på
 vegne av innlogget bruker» — krever Cloud Application Administrator eller Application
@@ -244,11 +242,13 @@ Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq '<SP-object-
 
 ## ⚠️ Flytte en eksisterende gruppe inn i en AU
 
-Krever **`Privileged Role Administrator`** — altså en NHN-bestilling. Det er gjort én gang:
-Grossiststatistikkens fire grupper ble flyttet til egen AU i september 2026 (US 120849).
-Gruppene beholdt object-ID, medlemmer, eiere og app-rolletildelinger; det eneste som måtte
-følge med var `Groups Administrator`-tildelingene, siden de er scoped per AU. Mal for en slik
-bestilling: `Fhi.Lmr.EntraIdMigrering/docs/2026-09-04-bestilling-au-grossiststatistikken.md`.
+Krever **`Privileged Role Administrator`** — altså en NHN-bestilling. Det er gjort to ganger:
+Grossiststatistikkens fire grupper ble flyttet til egen AU i september 2026 (US 120849), og ved
+delingen i prod- og test-AU i november ble gruppene flyttet på nytt. Gruppene beholdt object-ID,
+medlemmer, eiere og app-rolletildelinger; det eneste som måtte følge med var
+`Groups Administrator`-tildelingene, siden de er scoped per AU. En bestilling må derfor liste
+både gruppene (navn + object ID), mål-AU-en og hvilke `Groups Administrator`-tildelinger som skal
+gis på nytt.
 
 Å **opprette** en gruppe inne i AU-en krever derimot bare AU-scoped `Groups Administrator`,
 som du har.
@@ -262,7 +262,9 @@ Bicep gjøre det — trenger du en bestilling for å rette det opp.
 Rollen som lar deg opprette app-registreringer er tidsbegrenset i PIM og **utløper midt i
 arbeidet**. Symptomet er `Authorization_RequestDenied` på `POST /applications`.
 
-Ingenting blir halvveis opprettet når det skjer — reaktiver rollen og kjør på nytt.
+Skjer det på første `POST /applications`, blir ingenting opprettet — reaktiver rollen og kjør på
+nytt (`sjekk-uniquename.sh` sier da fortsatt OPPRETTER). Utløper den senere i deployen, kan noe
+være opprettet: se «Når en deploy feiler halvveis» i `entraid/README.md`.
 
 ## Hva som ikke lar seg verifisere uten admin
 

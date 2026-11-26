@@ -1,0 +1,70 @@
+{
+  "uniqueName": "fhi-grossiststatistikken-api-sandbox",
+  "displayName": "Fhi.Grossiststatistikken.Api - Sandbox",
+  "appId": "25a320e8-9167-4075-b7d5-a062e4ec59d7",
+  "spObjectId": "4f8a8587-6bf2-40d0-8c60-fa10752dccd5",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://25a320e8-9167-4075-b7d5-a062e4ec59d7"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [
+    {
+      "id": "a9459d28-7148-4b14-903f-c7a90d5ed3d3",
+      "value": "Fhi.Grossiststatistikken.All",
+      "type": "Admin",
+      "isEnabled": true
+    }
+  ],
+  "appRoller": [
+    {
+      "id": "6cbb8556-3ba7-4e61-b099-f9da99bc89e8",
+      "value": "Admin",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "07994175-0c9c-45e8-a559-9d3c2b94fd28",
+      "value": "Bruker",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "07994175-0c9c-45e8-a559-9d3c2b94fd28",
+      "principalId": "a82155e5-1ffe-4a9a-83fa-b64895468b99",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "6cbb8556-3ba7-4e61-b099-f9da99bc89e8",
+      "principalId": "6b780369-e95e-4579-af49-62add4557439",
+      "principalType": "Group"
+    }
+  ],
+  "appRoleAssignments": []
+}

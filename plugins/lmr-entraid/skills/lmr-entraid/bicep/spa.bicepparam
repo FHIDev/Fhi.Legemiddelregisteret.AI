@@ -12,14 +12,14 @@ param roller = [
     visningsnavn: 'Admin'
     beskrivelse: 'Administrerer tilganger til tjenesten.'
     appRoleId: '00000000-0000-0000-0000-000000000000'
-    gruppeUniktNavn: 'a-fhi-app-minspatjeneste-test-admin'
+    gruppeObjektId: '<object ID til A-FHI-App-MinSpaTjeneste-Test-Admin>'
   }
   {
     nokkel: 'Bruker'
     visningsnavn: 'Bruker'
     beskrivelse: 'Vanlig bruker av tjenesten.'
     appRoleId: '00000000-0000-0000-0000-000000000000'
-    gruppeUniktNavn: 'a-fhi-app-minspatjeneste-test-bruker'
+    gruppeObjektId: '<object ID til A-FHI-App-MinSpaTjeneste-Test-Bruker>'
   }
 ]
 

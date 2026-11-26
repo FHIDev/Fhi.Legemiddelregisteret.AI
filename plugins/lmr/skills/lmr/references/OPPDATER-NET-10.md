@@ -8,7 +8,7 @@ Oppgrader en .NET 8-tjeneste til .NET 10, bytt ut gamle autentiseringspakker med
 - Steg 1–2: målrammeverk og pakker
 - Steg 3–4: wrapper-filen og `Startup.cs`/`Program.cs`
 - Steg 5: appsettings (Entra ID som mål)
-- Steg 6: Swagger-attributter
+- Steg 6: Swagger-attributter og metadata på minimal API-er
 - Steg 7: pipelines
 - Steg 8: agentfilene
 - Avklarende spørsmål
@@ -312,20 +312,45 @@ if (UseAuth)
 app.UseAuthentication();
 ```
 
-**Legg til** OpenAPI/Scalar kun i ikke-prod, inne i `endpoints`-blokken:
+**Legg til** OpenAPI/Scalar kun i miljøene som skal vise dokumentasjonen, inne i `endpoints`-blokken.
+Bruk en **eksplisitt liste over miljøer som skal vise den**, ikke en sperre mot prod:
+
 ```csharp
-if (!env.IsProduction())
+// ⚠️ Ikke env.IsProduction(): LMR-miljøet heter "Prod", ikke "Production", så IsProduction()
+// er alltid false. Og ikke !env.IsEnvironment("Prod") heller: mangler ASPNETCORE_ENVIRONMENT,
+// bruker ASP.NET Core "Production", og da ville dokumentasjonen blitt publisert.
+// En liste over miljøer som SKAL vise den, feiler trygt — et ukjent miljø viser ingenting.
+string[] miljoerMedApiDokumentasjon = ["Development", "Docker", "AzureDev", "Test", "QA"];
+if (miljoerMedApiDokumentasjon.Any(miljo => env.IsEnvironment(miljo)))
 {
-    endpoints.MapOpenApi();
+    endpoints.MapOpenApi().AllowAnonymous();
     endpoints.MapScalarApiReference(options =>
-        options.WithTitle("API for <TjenestenNavn>").WithTheme(ScalarTheme.Kepler));
+        options.WithTitle("API for <TjenestenNavn>").WithTheme(ScalarTheme.Kepler))
+        .AllowAnonymous();
 }
 ```
+
+Tilpass lista til miljøene repoet faktisk har (se `appsettings.<Miljø>.json`). Kontroller etterpå at
+`/scalar/v1` og `/openapi/v1.json` svarer **404** både med `ASPNETCORE_ENVIRONMENT=Prod` og **uten**
+miljøvariabelen satt.
 
 Husk å legge til `.AllowAnonymous()` på helsesjekk-endepunktet:
 ```csharp
 endpoints.MapHealthChecks("/health", new HealthCheckOptions { ... }).AllowAnonymous();
 ```
+
+> **⚠️ Fallback-policyen stenger endepunkter som var åpne.** `TokenValidation` registrerer en
+> `FallbackPolicy` som krever innlogging + `DefaultScope` på **alle** endepunkter uten egen
+> autorisasjonsmetadata. Gamle `Fhi.HelseId.Api` gjorde ikke det. Endepunkter som var åpne fordi
+> ingen hadde tenkt på dem, svarer derfor **401** etter løftet:
+> - Swagger var middleware og gikk utenom autorisasjonen; `MapOpenApi`/`MapScalarApiReference` er
+>   endepunkter og trenger `.AllowAnonymous()` (over).
+> - `/health`, `/version` o.l. som skal være åpne.
+> - Endepunkter andre kaller **uten token** — i Logging var det `POST /api/SerilogSink`, som alle
+>   tjenestenes Serilog-sink poster til. Uten `.AllowAnonymous()` hadde logging fra hele LMR stoppet.
+>
+> Gå gjennom alle endepunkter uten `[Authorize]`/`RequireAuthorization`/`AllowAnonymous` og avgjør
+> hver enkelt. Test med `UseAuth: true` og **uten** token: det som skal være åpent må svare 200.
 
 ### 4g. Oppdater launchUrl i launchSettings.json
 
@@ -503,6 +528,25 @@ public async Task<ActionResult> GetVarselListe(...)
 
 > `[SwaggerResponse(...)]` bortfaller helt. `[EndpointSummary("...")]` erstatter `[SwaggerOperation(Summary = "...")]` og `[EndpointDescription("...")]` erstatter `[SwaggerOperation(Description = "...")]`. **VIKTIG:** Bevar alle eksisterende descriptions — ikke utelat dem selv om de ligner på summary. Scalar viser begge.
 
+### 6c. Minimal API: `.WithOpenApi(...)` gjør ingenting lenger
+
+Metadata satt med `.WithOpenApi(operation => new(operation) { Summary = …, Description = … })` blir
+**ikke** lest av den innebygde generatoren (`AddOpenApi`/`MapOpenApi`). Bygget er grønt, men alle
+summaries og descriptions forsvinner stille fra dokumentet. Bytt til:
+
+```csharp
+app.MapGet("/figurer/1/1", ...)
+   .WithSummary("Figur 1.1 – ...")
+   .WithDescription("...")
+   .WithTags("Figurer");
+```
+
+`Tags = { new() { Name = "X" } }` kompilerer heller ikke lenger (Microsoft.OpenApi 2.0) — bruk
+`.WithTags("X")`.
+
+**Verifiser ved å telle**, ikke ved å se på Scalar: hent `/openapi/v1.json` og tell `summary` før og
+etter. I Rak.Api gikk tallet fra 45 til 0 med `.WithOpenApi()`, og tilbake til 45 etter omskrivingen.
+
 ---
 
 ## Steg 7: Pipeline YAML-filer
@@ -598,6 +642,15 @@ Fjern alle eksisterende DeployInfo-tasks (enten `powershell:` eller `task: Power
         $content | ForEach-Object { Write-Host "  $_" }
       displayName: 'Generer DeployInfo.txt'
 ```
+
+> **⚠️ Sjekk koden som leser DeployInfo.txt før du bytter blokk.** Blokka skriver `buildversion: X`
+> (uten mellomrom før kolon), sortert alfabetisk — linje 1 er altså `branch`. To feil har dukket opp:
+> - En parser som krevde `"buildversion :"` (med mellomrom) ga «Ikke kjent» i alle miljøer (FhirMottak).
+> - En parser som leste versjonen fra **linje 1** returnerte branch-navnet (InternStatistikk, Krl.Admin).
+>
+> Les feltet på **navn**, og splitt bare på **første** kolon (`buildtime` inneholder selv kolon).
+> `Fhi.Lmr.Felles.Status.BuildInformation` leser `buildversion` og `buildconfiguration` riktig (den
+> hopper over `buildtime`, fordi den krever nøyaktig to deler). Repoer som ikke leser fila, er upåvirket.
 
 **Bytt ut GitVersion-variabelnavn** i git tag-script og stage-avhengigheter:
 

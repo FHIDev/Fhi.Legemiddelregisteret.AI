@@ -1,0 +1,39 @@
+{
+  "uniqueName": "fhi-lmr-varseltjeneste-api-prod",
+  "displayName": "Fhi.Lmr.Varseltjeneste.Api - Prod",
+  "appId": "25c320b4-735c-4e19-b457-6d14896de191",
+  "spObjectId": "f7ebad2e-0085-4543-ba32-c5255c3793a5",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://25c320b4-735c-4e19-b457-6d14896de191"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "ef12fb4b-0233-41ab-89c4-68fedd4cc3b6",
+      "value": "Fhi.Lmr.Varseltjeneste.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "ef12fb4b-0233-41ab-89c4-68fedd4cc3b6",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

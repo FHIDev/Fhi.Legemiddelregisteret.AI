@@ -1,0 +1,75 @@
+{
+  "uniqueName": "fhi-lmr-pasientregister-api-test",
+  "displayName": "Fhi.Lmr.Pasientregister.Api - Test",
+  "appId": "26b97011-394c-43ae-8695-2874e975a699",
+  "spObjectId": "bef39a2e-b91b-46e7-b458-e046b3df22dd",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://26b97011-394c-43ae-8695-2874e975a699"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "value": "Fhi.Lmr.Pasientregister.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "2531891f-47dd-4eba-ab8b-b5305dc8a9b9",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "5e5668c3-7f0f-4a67-a976-74966ad33584",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "7e76b8ea-8891-4263-9927-9fa589624bc7",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "904e86d5-2535-44e3-a5f6-34dd2a24f5cf",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "bb4fc7fa-7ca7-47e6-bd48-34f2cf2e4414",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "cbefe4a9-5b42-43b1-84b2-398c98d97127",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "e53033cf-63f6-49f0-a524-4be118de66c4",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "f5e4cc80-9d22-40f2-a8c5-08bb3da923df",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

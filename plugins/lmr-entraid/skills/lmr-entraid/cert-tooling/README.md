@@ -16,28 +16,30 @@ ikke sertifikat.
 
 | Script | Hva |
 |---|---|
-| `genererOgEksporterSertifikat.ps1` | Lager self-signed cert (RSA 2048, utløp styres av `-NotAfterYears`, default 100), eksporterer `.cer` (public) til Downloads, printer **thumbprint** (= `kid`) og **privatnøkkel som PEM** (PKCS8, med literal `\n` klar for env-var). Fjerner cert fra store etterpå. |
-| `export_private_key_from_pfx.ps1` | Henter privatnøkkel (PEM) ut av en eksisterende `.pfx`. |
-| `compare_keys.ps1` | Sammenligner nøkler (verifisering). |
+| `genererOgEksporterSertifikat.ps1` | Lager self-signed cert (RSA 2048, utløp styres av `-NotAfterYears`, default 100), eksporterer `.cer` (public) til Downloads og skriver ut **thumbprint** (= `kid`). Privatnøkkelen (PKCS8-PEM) skrives til fila i **`-PemFil`** med ekte linjeskift — eller, uten den, til konsollet med literal `\n`. Fjerner cert fra store etterpå, men bare hvis eksporten lyktes. |
 
 ## Utløpstid (policy)
 
 - **Test-sertifikater: 100 år** (scriptets default — slipper fornyelse i test).
-- **Prod-sertifikater: 2 år** — bedre sikkerhetshygiene. **Må fornyes annethvert år:** generer nytt
-  cert i god tid før utløp, last opp ny `.cer` på app-regen, oppdater secret med ny PEM, fjern gammel `.cer`.
+- **Prod-sertifikater: 2 år** — bedre sikkerhetshygiene. **Må fornyes annethvert år.** For LMR gjør
+  `Fhi.Lmr.SertifikatFornyelse` det automatisk; ellers se «Fornyelse» i `../references/SERTIFIKATER.md`
+  (additivt, med `--append`).
 
 ## Flyt per klient-app-reg
 
 1. Generér cert:
-   - **Test:** `./genererOgEksporterSertifikat.ps1 -Name "<Tjeneste>-Test"` (100 år, default)
-   - **Prod:** `./genererOgEksporterSertifikat.ps1 -Name "<Tjeneste>-Prod" -NotAfterYears 2`
+   - **Test:** `pwsh -File genererOgEksporterSertifikat.ps1 -Name "<Tjeneste>-Test" -PemFil <sti>.pem` (100 år, default)
+   - **Prod:** `pwsh -File genererOgEksporterSertifikat.ps1 -Name "<Tjeneste>-Prod" -NotAfterYears 2 -PemFil <sti>.pem`
+
+   Legg PEM-fila utenfor alle repoer, og slett den når nøkkelen er satt som secret.
 2. Last opp `.cer` (public) til `Client.Machine`-app-regen (`keyCredentials`).
 3. `kid` = thumbprint → `OidcClients:EntraIdClient:kid` i appsettings (ikke hemmelig).
 4. PEM (privatnøkkel) → secret-mekanisme per miljø (Azure App Service / Octopus / user secrets),
    nøkkel `OidcClients:EntraIdClient:PrivateKey`. **Aldri** inn i appsettings/git.
 
-> **Med Bicep er steg 2 automatisert:** `.cer`-en base64-es inn i `.bicepparam`, og
-> `keyCredentials` settes av malen. Utvikler trenger kun å sette PEM-en som secret.
+> **For en ny app-registrering er steg 2 automatisert:** `.cer`-en base64-es inn i `.bicepparam`,
+> og `keyCredentials` settes av malen ved opprettelsen. Malen deployes ikke på nytt for å bytte
+> sertifikat.
 >
 > ```bash
 > base64 -w0 ~/Downloads/<Tjeneste>-<Miljo>.cer

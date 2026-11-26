@@ -1,0 +1,60 @@
+{
+  "uniqueName": "fhi-reservasjonsregister-client-web-test",
+  "displayName": "Fhi.Reservasjonsregister.Client.Web -TEST",
+  "appId": "c3d6b0df-54e5-4da1-b91e-0b4f839c74c5",
+  "spObjectId": "43da3dab-b2ea-447f-9f67-9504e3eeea45",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [
+    "https://localhost:7114/signin-oidc",
+    "https://test-reservasjonsregister.azurewebsites.net/signin-oidc"
+  ],
+  "redirectUrisSpa": [],
+  "logoutUrl": "https://localhost:7114/",
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "020b7787-c3a9-42eb-aaf1-56b7508ced02",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "2d5705a4-8c97-419d-b57c-f0b8611bf2f9",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "5a97c6da-0282-47e1-ab1b-779a656ad988",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "69949afd-7a4c-4bac-9fb1-1ad36eaab8bc",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "e1eea024-8341-430e-bb5f-a19ed6f1c684",
+      "principalType": "User"
+    }
+  ],
+  "appRoleAssignments": []
+}

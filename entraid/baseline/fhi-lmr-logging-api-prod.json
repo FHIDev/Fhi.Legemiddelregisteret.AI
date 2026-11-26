@@ -1,0 +1,39 @@
+{
+  "uniqueName": "fhi-lmr-logging-api-prod",
+  "displayName": "Fhi.Lmr.Logging.Api - Prod",
+  "appId": "c62e43d9-70f7-4445-a3c5-e90addbf673b",
+  "spObjectId": "d63ab0d8-dd97-430e-b233-b63b39d203e3",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://c62e43d9-70f7-4445-a3c5-e90addbf673b"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "465b6600-a6b5-432b-b33b-927feb58774c",
+      "value": "Fhi.Lmr.Logging.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "465b6600-a6b5-432b-b33b-927feb58774c",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

@@ -1,6 +1,11 @@
 /*
   VARIANT 3 av 4 — BRUKERINNLOGGING (.Api + .Client.Web + .Client.Machine)
 
+  ⛔ KUN FOR Å OPPRETTE NYE APP-REGISTRERINGER. Deploy aldri denne malen mot en uniqueName som
+  finnes: deklarerte verdier blir skrevet over, og det malen ikke har med kan forsvinne.
+  scripts/sjekk-uniquename.sh stopper med exit 2 hvis navnet finnes. Nye kanter på en
+  eksisterende klient: entraid/scripts/legg-til-kant.sh i Fhi.Lmr.AI.
+
   Tjenesten har pålogging av mennesker, og rolletildelingen ligger i EntraID i stedet for
   i en database. Oppretter alle tre app-registreringene og knytter rollegruppene til
   app-rollene på både .Api og .Client.Web.
@@ -32,7 +37,7 @@ param apiScopeId string
 @description('Scope-verdi (havner i scp-claimet). MÅ matche ApiTokenValidation:DefaultScope.')
 param apiScopeValue string
 
-@description('Rollesettet. Delt mellom LMR-appene: det som gjør rollene felles er at de SAMME gruppene tildeles matchende app-roller i hver app — derfor må appRoleId være lik på tvers av appene. Felt: nokkel, visningsnavn, beskrivelse, appRoleId, gruppeUniktNavn.')
+@description('Rollesettet. Delt mellom LMR-appene: det som gjør rollene felles er at de SAMME gruppene tildeles matchende app-roller i hver app — derfor må appRoleId være lik på tvers av appene. Felt: nokkel, visningsnavn, beskrivelse, appRoleId, gruppeObjektId.')
 param roller object[]
 
 @description('Redirect-URI-er på Client.Web sin WEB-plattform (confidential client, ikke SPA).')
@@ -53,7 +58,7 @@ param eiere string[] = []
 @description('M2M-kanter for Client.Machine: { navn, apiAppId, apiSpObjectId, appRoleId }.')
 param callees object[] = []
 
-@description('DELEGERTE kanter for Client.Web (On-Behalf-Of): { navn, apiAppId, scopeId }. Brukes når kallet må bære sluttbrukerens identitet, ikke appens.')
+@description('DELEGERTE kanter for Client.Web: { navn, apiAppId, scopeId }. Webappen kaller med brukerens eget token (ikke OBO). Brukes når kallet må bære sluttbrukerens identitet, ikke appens.')
 param delegerteKanter object[] = []
 
 @description('Om Client.Machine skal be om Graph User.ReadBasic.All. Trengs kun av appen som administrerer rolletildelinger.')
@@ -243,32 +248,32 @@ resource clientMachineSp 'Microsoft.Graph/servicePrincipals@v1.0' = {
 }
 
 /*
-  Sikkerhetsgruppene refereres, ikke opprettes — de ligger i AU-Legemiddelregisteret-Prod/-Test og
-  lages av scripts/opprett-gruppe-i-au.sh. 'existing' slår opp på uniqueName, som må være
-  etterfylt på gruppa (scriptet gjør det).
+  Sikkerhetsgruppene refereres med object ID, ikke opprettes. De ligger i fagområdets AU og
+  lages av scripts/opprett-gruppe-i-au.sh. Object ID brukes i stedet for 'existing' på
+  uniqueName fordi de eksisterende rollegruppene ikke har uniqueName.
+
+  En rolle UTEN gruppeObjektId får ingen tildeling her. Det trengs for en ny app med NYE grupper
+  som lages etter deploy. Eier av gruppene er appen som administrerer medlemskapet (i LMR:
+  Kontroll), ikke en app som bare leser rollene. Tildel dem etterpå manuelt, se «Ny app med NYE
+  rollegrupper» i SKILL.md — deploy ikke malen på nytt.
 */
-resource rolleGrupper 'Microsoft.Graph/groups@v1.0' existing = [
-  for r in roller: {
-    uniqueName: r.gruppeUniktNavn
-  }
-]
 
 /*
   Rolletildeling = gruppemedlemskap. Gruppa tildeles app-rollen på BÅDE Api og Client.Web,
   slik at rollen kommer med i 'roles'-claimet i begge tokens.
 */
 resource tildelingApi 'Microsoft.Graph/appRoleAssignedTo@v1.0' = [
-  for (r, i) in roller: {
+  for r in roller: if (!empty(r.?gruppeObjektId ?? '')) {
     appRoleId: r.appRoleId
-    principalId: rolleGrupper[i].id
+    principalId: r.gruppeObjektId
     resourceId: apiSp.id
   }
 ]
 
 resource tildelingWeb 'Microsoft.Graph/appRoleAssignedTo@v1.0' = [
-  for (r, i) in roller: {
+  for r in roller: if (!empty(r.?gruppeObjektId ?? '')) {
     appRoleId: r.appRoleId
-    principalId: rolleGrupper[i].id
+    principalId: r.gruppeObjektId
     resourceId: clientWebSp.id
   }
 ]

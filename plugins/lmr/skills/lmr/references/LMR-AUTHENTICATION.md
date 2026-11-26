@@ -18,6 +18,8 @@ De to pakkene er uavhengige. En tjeneste kan bruke én eller begge.
 - Feilsøking (klientsiden, serversiden, DPoP)
 - Siste steg: oppdater agentfilene
 
+Brukerinnlogging (OIDC i webappene) dekkes ikke av pakkene og står i [BRUKERINNLOGGING.md](./BRUKERINNLOGGING.md).
+
 ## Utløserkriteria
 
 Les denne referansen når brukeren ber om å:

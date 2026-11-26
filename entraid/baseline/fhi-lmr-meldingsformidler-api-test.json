@@ -1,0 +1,50 @@
+{
+  "uniqueName": "fhi-lmr-meldingsformidler-api-test",
+  "displayName": "Fhi.Lmr.Meldingsformidler.Api - Test",
+  "appId": "b85c14b2-1b2b-43ec-a2a9-7ac3d83407c9",
+  "spObjectId": "479961e8-2206-4f19-af9f-259ae1881491",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://b85c14b2-1b2b-43ec-a2a9-7ac3d83407c9"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "c8fde248-0623-42ef-a5b0-da08c7a7632f",
+      "value": "Fhi.Lmr.Meldingsformidler.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "c8fde248-0623-42ef-a5b0-da08c7a7632f",
+      "principalId": "7e76b8ea-8891-4263-9927-9fa589624bc7",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "c8fde248-0623-42ef-a5b0-da08c7a7632f",
+      "principalId": "cbefe4a9-5b42-43b1-84b2-398c98d97127",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "c8fde248-0623-42ef-a5b0-da08c7a7632f",
+      "principalId": "f5e4cc80-9d22-40f2-a8c5-08bb3da923df",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

@@ -1,0 +1,64 @@
+{
+  "uniqueName": "fhi-lmr-pasientregister-api-prod",
+  "displayName": "Fhi.Lmr.Pasientregister.Api - Prod",
+  "appId": "82c7dd88-3910-4f28-8344-5ae8d96b72d2",
+  "spObjectId": "e0ddbbbc-23d1-4a0d-af8a-5bad7cdefe27",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://82c7dd88-3910-4f28-8344-5ae8d96b72d2"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "value": "Fhi.Lmr.Pasientregister.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "4211dd3e-3947-4fc1-9498-38926a910fcc",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "8c073b07-6813-43cd-abfd-6f4b474d72a0",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "9ec0cbca-7f0a-4eff-be13-ff6ff068c6ab",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "ba197545-f911-45e4-9e0c-d0efbd2bb335",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "194d7881-ffea-4a74-88c0-30b075c314b5",
+      "principalId": "d7e55b9a-33b8-491f-b879-008c3cbfe803",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

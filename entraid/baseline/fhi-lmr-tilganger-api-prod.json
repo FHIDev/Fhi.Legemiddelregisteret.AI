@@ -1,0 +1,49 @@
+{
+  "uniqueName": "fhi-lmr-tilganger-api-prod",
+  "displayName": "Fhi.Lmr.Tilganger.Api - Prod",
+  "appId": "8b193345-2c97-4f09-9992-355c9993d52a",
+  "spObjectId": "c0fe294d-5ae7-454e-a743-9e2847453502",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://8b193345-2c97-4f09-9992-355c9993d52a"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+      "value": "Fhi.Lmr.Tilganger.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+      "principalId": "ba197545-f911-45e4-9e0c-d0efbd2bb335",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "269bd9ed-019a-4b8e-a8dc-857b2653f0df",
+      "principalId": "f7771b70-6071-40f8-ab09-f6d294f59c98",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

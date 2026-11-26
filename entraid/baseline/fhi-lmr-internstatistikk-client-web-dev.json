@@ -1,0 +1,112 @@
+{
+  "uniqueName": "fhi-lmr-internstatistikk-client-web-dev",
+  "displayName": "Fhi.Lmr.InternStatistikk.Client.Web - Dev",
+  "appId": "21b48de4-bf14-431a-a10b-2cdce752c449",
+  "spObjectId": "f31925f3-be6c-4615-95ed-29b0c10d96b9",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "6750f1e6-6c4d-4e56-859e-c3a1ae7f08fe",
+      "value": "endreatc",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "0142c73c-3089-4888-875a-dc0ebcd76be4",
+      "value": "godkjenn",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "e396de96-7305-47ed-9a66-f3a4bd665382",
+      "value": "individdatauttrekk",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "bfb0f358-6e89-4e3d-ad15-005a75b740e0",
+      "value": "internstatistikk",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "97590f02-045f-4b4d-a965-9f338c15160f",
+      "value": "lesogskriv",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [
+    "https://legemiddelregisteret-internstatistikk-tweb.azurewebsites.net/authentication/login",
+    "https://legemiddelregisteret-internstatistikk-tweb.azurewebsites.net/signin-oidc",
+    "https://localhost:7105/authentication/login",
+    "https://localhost:7105/signin-oidc"
+  ],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "F7FC3D5322F73E3ABF5FC25670EB4C8C6962C6CE"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "0a357578-d679-4ba3-9c95-0086c0b02a69",
+      "resourceAccess": [
+        {
+          "id": "9494ec1e-05af-4e67-8569-1abdf8fe1705",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "33359a56-8d0f-49ba-88c2-b22cb6c482f4",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "0142c73c-3089-4888-875a-dc0ebcd76be4",
+      "principalId": "22e8dc7f-0f90-4e0b-8dec-1745d5bdf9d5",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "6750f1e6-6c4d-4e56-859e-c3a1ae7f08fe",
+      "principalId": "7d4e14af-d804-4076-a632-de120b23cebd",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "97590f02-045f-4b4d-a965-9f338c15160f",
+      "principalId": "d5dfd1d0-2140-4680-8fa6-6d459ece994d",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "bfb0f358-6e89-4e3d-ad15-005a75b740e0",
+      "principalId": "406fe952-048e-44c4-8e31-00da2492dcc5",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "e396de96-7305-47ed-9a66-f3a4bd665382",
+      "principalId": "7b3f18bd-de24-40b0-a6a7-b99d4c8970fe",
+      "principalType": "Group"
+    }
+  ],
+  "appRoleAssignments": []
+}

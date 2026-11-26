@@ -41,9 +41,10 @@ Kjør disse slash-kommandoene i Claude Code:
 
 ## Kommandoer
 
-- **`/lmr-entraid:entraid-ny-tjeneste [tjeneste] [variant]`** (pluginen `lmr-entraid`) – kopierer EntraId Bicep-malene og
-  skriptene ut fra pluginen til et repo du kontrollerer, og stilaserer parameterfila.
-  Malene skal ikke redigeres i plugin-katalogen; den byttes ut ved `/plugin update`.
+- **`/lmr-entraid:entraid-ny-tjeneste [tjeneste] [variant]`** (pluginen `lmr-entraid`) – kopierer EntraId Bicep-malene
+  ut fra pluginen til `entraid/tjenester/<tjeneste>/` i dette repoet, og stilaserer
+  parameterfila. Malene skal ikke redigeres i plugin-katalogen; den byttes ut ved `/plugin update`.
+  Fasiten for alle app-registreringene (parameterfiler og baselines) ligger i [`entraid/`](entraid/README.md).
 - **`/lmr:gjennomga-agentoppsett [sti til Test-Agentfiler.ps1]`** (pluginen `lmr`) – gjennomgår agentoppsettet
   (`CLAUDE.md`, `AGENTS.md`, `.claude/settings.json` og repo-skillene) i repoet du står i.
   Kommandoen kontrollerer hver påstand mot koden, kjører `Test-Agentfiler.ps1` fra

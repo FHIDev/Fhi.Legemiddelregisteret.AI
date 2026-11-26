@@ -1,0 +1,70 @@
+{
+  "uniqueName": "fhi-lmr-administreringslager-api-test",
+  "displayName": "Fhi.Lmr.Administreringslager.Api - TEST",
+  "appId": "53093a72-a4e9-4a42-8c66-c0c243276451",
+  "spObjectId": "0258b589-ae90-424d-a64d-0bc9f3adcbf6",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://53093a72-a4e9-4a42-8c66-c0c243276451"
+  ],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "value": "Fhi.Lmr.Administreringslager.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "887ab5f3-d781-49d3-8af3-7b44e867408a",
+    "fab97387-6bdc-4bcd-9415-81240e39cba0"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "principalId": "7e76b8ea-8891-4263-9927-9fa589624bc7",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "principalId": "904e86d5-2535-44e3-a5f6-34dd2a24f5cf",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "principalId": "bb4fc7fa-7ca7-47e6-bd48-34f2cf2e4414",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "principalId": "cbefe4a9-5b42-43b1-84b2-398c98d97127",
+      "principalType": "ServicePrincipal"
+    },
+    {
+      "appRoleId": "a05b8e17-882e-4336-8e54-7644488ca26a",
+      "principalId": "f5e4cc80-9d22-40f2-a8c5-08bb3da923df",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}

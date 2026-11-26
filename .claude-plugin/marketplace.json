@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "lmr",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "source": "./plugins/lmr",
       "description": "Systemkunnskap om Legemiddelregisteret (LMR): repoer, tjenester, meldingsflyter, arkitektur og integrasjoner, autentisering, .NET 10-oppgradering, domenemodeller og gjennomgang av agentoppsettet.",
       "author": {
@@ -15,7 +15,7 @@
     },
     {
       "name": "lmr-entraid",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "source": "./plugins/lmr-entraid",
       "description": "EntraId-ressurser for LMR-tjenester: app-registreringer for .Api, .Client.Web og .Client.Machine provisjonert med Bicep, sertifikater og det som må bestilles fra NHN.",
       "author": {

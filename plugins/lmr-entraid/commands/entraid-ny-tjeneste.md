@@ -10,9 +10,10 @@ Begge kan være tomme — avklar da med brukeren i stedet for å gjette.
 
 ## Hvorfor denne kommandoen finnes
 
-Malene ligger i pluginen, men **den utfylte fila hører hjemme i et repo brukeren
-kontrollerer**. Plugin-katalogen byttes ut ved `/plugin update`, så alt som redigeres der går
-tapt. Denne kommandoen kopierer derfor malene ut.
+Malene ligger i pluginen, men **den utfylte fila hører hjemme i `entraid/tjenester/<tjeneste>/`
+i repoet Fhi.Lmr.AI**, der fasiten for alle app-registreringene ligger. Plugin-katalogen byttes
+ut ved `/plugin update`, så alt som redigeres der går tapt. Denne kommandoen kopierer derfor
+malene ut.
 
 ## Steg
 
@@ -33,40 +34,60 @@ allerede er lastet. Den har variant-velgeren, navnekonvensjonene og miljøregele
 (`Dev`/`Test`/`QA`/`Prod`) — les miljøregelen i SKILL.md og forklar den hvis brukeren velger
 noe annet.
 
-**4. Avklar målkatalog.** Foreslå `infra/entraid/` i tjenestens eget repo hvis du står i et.
-Spør hvis du er usikker — ikke skriv filer utenfor det brukeren forventer.
+**4. Finn målkatalogen.** Den er `entraid/tjenester/<tjeneste>/` i en klone av Fhi.Lmr.AI
+(tjenestenavnet med små bokstaver, uten `Fhi.`/`Lmr.`, f.eks. `grunndata`). Spør hvor klonen
+ligger hvis du ikke står i den. **Ikke** legg filene i tjenestens eget repo.
+
+**4b. ⛔ Sjekk hver app-registrering malen vil opprette.** Utled de konkrete `uniqueName`-ene
+for valgt variant og miljø (`fhi-<navn>-api-<miljo>`, `fhi-<navn>-client-machine-<miljo>`,
+`fhi-<navn>-client-web-<miljo>`), og se etter hver av dem i `entraid/baseline/`:
+
+- **Ingen finnes:** fortsett.
+- **Noen finnes:** malen brukes bare til å opprette, og en deploy mot en eksisterende
+  app-registrering kan overskrive verdier og erstatte lister som kantene. Velg en variant som bare
+  oppretter det som mangler — f.eks. kun `m2m-client-machine` når `.Api` finnes og tjenesten skal
+  få sin første klient. Finnes alt, stopp: en ny kant på en eksisterende klient gis med
+  `entraid/scripts/legg-til-kant.sh`.
+
+`sjekk-uniquename.sh` gjør samme kontroll mot Entra rett før deploy og stopper hvis et navn finnes.
 
 **5. Kopier fra `${CLAUDE_PLUGIN_ROOT}/skills/lmr-entraid/bicep/`:**
 
 Alltid:
 - `bicepconfig.json`
 - `moduler/api-applikasjon.bicep` (kun hvis varianten bruker den — alle utenom `m2m-client-machine`)
-- `scripts/` (alle tre)
 
 Per valgt variant: `<variant>.bicep` + `<variant>.bicepparam`
 
-**6. Tilpass parameterfila.** Døp den om til `<tjeneste>-<miljo>.bicepparam`, og fyll inn:
+**Ikke** kopier `scripts/`. Skriptene brukes fra pluginen i samme repo
+(`plugins/lmr-entraid/skills/lmr-entraid/bicep/scripts/`), så det finnes én versjon av dem.
+
+**6. Tilpass parameterfila.** Døp den om til `<variant>-<miljo>.bicepparam` (f.eks.
+`m2m-api-test.bicepparam`, slik at `m2m-api` og `m2m-client-machine` ikke kolliderer), og fyll inn:
 - `tjenesteNavn` og `miljo` fra argumentene
 - **nye stabile UUID-er** for app-roller og scopes — generér dem nå (`uuidgen` eller
   `[guid]::NewGuid()`) og skriv dem inn. De skal aldri endres senere.
   ⚠️ **Unntak:** bruker tjenesten det felles LMR-rollesettet (brukerinnlogging), skal
   UUID-ene i `brukerinnlogging.bicepparam` **kopieres som de er** — de er allerede i bruk i
   EntraID, og nye UUID-er ville gjort rollene appspesifikke.
-- `eiere` — hent brukerens object-id med `az ad signed-in-user show --query id -o tsv`
+- `eiere` — hent brukerens object-id med `az ad signed-in-user show --query id -o tsv`.
+  **I Prod** skal fagpersonen også være eier (LMR: Kari, Grossiststatistikken: Kristine) — se
+  `references/NHN-OG-ADMIN.md`.
 
 La sertifikat-base64 og callee-IDer stå som placeholder; de fylles inn når sertifikatet er
 generert og callee-tjenestene er kjent.
 
-**7. Ikke deploy.** Denne kommandoen stilaserer bare. Fortell brukeren hva som gjenstår:
+**7. Ikke deploy.** Denne kommandoen stilaserer bare. Fortell brukeren hva som gjenstår.
+Skriptene ligger i `plugins/lmr-entraid/skills/lmr-entraid/bicep/scripts/` (forkortet `S`):
 
 1. Generér sertifikat — `${CLAUDE_PLUGIN_ROOT}/skills/lmr-entraid/cert-tooling/` (kun for
    klient-app-regene; rene ressurser trenger det ikke)
 2. `base64 -w0 <navn>.cer` inn i `.bicepparam`
-3. `./scripts/sjekk-uniquename.sh <uniqueName>` — bekreft OPPRETTER vs. OPPDATERER
+3. `S/sjekk-uniquename.sh <uniqueName> …` — må gi exit 0. Stopper den, finnes app-registreringen
+   allerede: **ikke deploy**, bruk `entraid/scripts/legg-til-kant.sh`
 4. `az deployment group create -g <rg> --template-file <variant>.bicep --parameters <fil>.bicepparam`
-5. `./scripts/verifiser.sh <uniqueName> > baseline.json`
-6. Admin consent — se `references/NHN-OG-ADMIN.md`
-
-**8. Nevn kort** at malene bevisst kopieres ut fordi det ikke finnes et felles infra-repo for
-EntraId i dag, og at et slikt repo kan opprettes senere hvis teamet vil samle oppsettet ett
-sted. Ikke gjør noe med det nå.
+5. Baseline for hver ny app-registrering:
+   `S/verifiser.sh <uniqueName> > ny.json && mv ny.json entraid/baseline/<uniqueName>.json`
+6. M2M-kanter fra en ny `.Client.Machine`: `entraid/scripts/legg-til-kant.sh` per callee
+7. Commit parameterfil, baselines og `KALL-GRAF-ENTRAID.md` i samme PR i Fhi.Lmr.AI
+8. Delegerte scopes krever admin consent fra NHN — se `references/NHN-OG-ADMIN.md`

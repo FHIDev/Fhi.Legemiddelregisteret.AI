@@ -1,0 +1,40 @@
+{
+  "uniqueName": "fhi-lmr-fhirmottak-client-machine-prod",
+  "displayName": "Fhi.Lmr.FhirMottak.Client.Machine - Prod",
+  "appId": "2e7c25e2-4136-40c3-a181-3bd12f536a2c",
+  "spObjectId": "75515a80-7f99-4326-aa81-715941e15669",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [
+    "5772F9329A265E019871FB91AE1B98336DD2C13F"
+  ],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "3893a0d5-7bc0-434b-b00f-aca33aabfd7d",
+      "resourceAccess": [
+        {
+          "id": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+          "type": "Role"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "950fcb91-93df-4a70-a150-3e7458cf6d8a",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [],
+  "appRoleAssignments": [
+    {
+      "appRoleId": "2eb684a9-1a43-4da2-8456-7d6a69c76229",
+      "resourceId": "99709224-5dd6-4193-abeb-0892571b64a3"
+    }
+  ]
+}

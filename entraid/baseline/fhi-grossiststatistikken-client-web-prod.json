@@ -1,0 +1,67 @@
+{
+  "uniqueName": "fhi-grossiststatistikken-client-web-prod",
+  "displayName": "Fhi.Grossiststatistikken.Client.Web - Prod",
+  "appId": "c5b9bd2f-57d0-4ca3-9247-983cbbe0b6d2",
+  "spObjectId": "cfd8d2a1-5744-492a-9b4f-8692fb78bae1",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [],
+  "requestedAccessTokenVersion": null,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "b502950d-16d1-42e5-8d81-fc9cb49a63fd",
+      "value": "Admin",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    },
+    {
+      "id": "4e590c6c-3a37-4d79-9503-cb5e7c7e4a79",
+      "value": "Bruker",
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [
+    "https://grossiststatistikken.sky.fhi.no/"
+  ],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "be7226a6-3ff4-437a-87cc-8c2e64408d6a",
+      "resourceAccess": [
+        {
+          "id": "943ef714-84c0-4579-8755-b49d8f26f28d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "af7e2f5c-58c1-4a7d-b675-d9a312bb431e"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "00000000-0000-0000-0000-000000000000",
+      "principalId": "2d5705a4-8c97-419d-b57c-f0b8611bf2f9",
+      "principalType": "User"
+    },
+    {
+      "appRoleId": "4e590c6c-3a37-4d79-9503-cb5e7c7e4a79",
+      "principalId": "14f5cb92-d713-43a5-8437-2971abec9250",
+      "principalType": "Group"
+    },
+    {
+      "appRoleId": "b502950d-16d1-42e5-8d81-fc9cb49a63fd",
+      "principalId": "9f143cd3-8033-466e-8744-8d82fe34f0b0",
+      "principalType": "Group"
+    }
+  ],
+  "appRoleAssignments": []
+}

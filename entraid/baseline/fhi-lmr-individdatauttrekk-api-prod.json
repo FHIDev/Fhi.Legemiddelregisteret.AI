@@ -1,0 +1,39 @@
+{
+  "uniqueName": "fhi-lmr-individdatauttrekk-api-prod",
+  "displayName": "Fhi.Lmr.Individdatauttrekk.Api - Prod",
+  "appId": "00a9acc9-67a0-4444-a74e-f1b4c8fb6b2d",
+  "spObjectId": "cd3ac5e2-8728-4451-807d-23de5a2f34eb",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://00a9acc9-67a0-4444-a74e-f1b4c8fb6b2d"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "6cfd97b5-a11b-4786-a712-9a6e0077665a",
+      "value": "Fhi.Lmr.Individdatauttrekk.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [
+    {
+      "appRoleId": "6cfd97b5-a11b-4786-a712-9a6e0077665a",
+      "principalId": "686fbd59-ea95-4422-bdf0-708a1dbc7579",
+      "principalType": "ServicePrincipal"
+    }
+  ],
+  "appRoleAssignments": []
+}
