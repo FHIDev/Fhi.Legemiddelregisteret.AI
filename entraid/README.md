@@ -139,7 +139,12 @@ gjenskaper app-registreringen med ny appId når en kant eller et sertifikat endr
 
 1. `/lmr-entraid:entraid-ny-tjeneste` legger malene i `tjenester/<tjeneste>/`.
 2. `sjekk-uniquename.sh <uniqueName> …` rett før deploy — må gi exit 0.
-3. Deploy.
+3. Deploy, alltid i `RG-Legemiddelregisteret-Test` i `FHI-LMR-Dev`, også for Prod:
+   `az deployment group create --subscription FHI-LMR-Dev -g RG-Legemiddelregisteret-Test --name <tjeneste>-<rolle>-<miljo> …`.
+   Bicep krever en ressursgruppe som ramme, men app-registreringen havner i tenanten, ikke i
+   ressursgruppen, så det eneste som lagres der er deploy-loggen. Å deploye i
+   `RG-Legemiddelregisteret-Prod` krever `Owner` på hele prod-abonnementet, som er langt mer enn
+   jobben trenger. Gi deployen et navn med miljøet i, så Prod-loggen ikke forveksles med Test.
 4. Baseline for hver ny app-registrering (se «Sjekke drift» for kommandoen).
 5. Kanter fra en ny `.Client.Machine`: `scripts/legg-til-kant.sh` for hver callee. Malen gir
    ikke rolletildelingene selv (`giAdminConsent = false`).

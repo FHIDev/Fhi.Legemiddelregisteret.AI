@@ -1,0 +1,33 @@
+{
+  "uniqueName": "fhi-lmr-dataproduktformidler-api-prod",
+  "displayName": "Fhi.Lmr.DataproduktFormidler.Api - Prod",
+  "appId": "333ad4ad-962e-467e-96bc-6ceb62e19f96",
+  "spObjectId": "878faa32-6be2-44dd-8e4d-eb5009042842",
+  "signInAudience": "AzureADMyOrg",
+  "identifierUris": [
+    "api://333ad4ad-962e-467e-96bc-6ceb62e19f96"
+  ],
+  "requestedAccessTokenVersion": 2,
+  "delegerteScopes": [],
+  "appRoller": [
+    {
+      "id": "dab6461f-9c64-486c-98fb-56fa0acb8b2a",
+      "value": "Fhi.Lmr.DataproduktFormidler.All",
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "isEnabled": true
+    }
+  ],
+  "redirectUrisWeb": [],
+  "redirectUrisSpa": [],
+  "logoutUrl": null,
+  "sertifikatThumbprints": [],
+  "requiredResourceAccess": [],
+  "eiere": [
+    "5a97c6da-0282-47e1-ab1b-779a656ad988",
+    "b53747d8-b2a0-4297-b430-5bfb3919f4bd"
+  ],
+  "appRoleAssignedTo": [],
+  "appRoleAssignments": []
+}
