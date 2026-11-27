@@ -217,7 +217,7 @@ redigerer sine egne grupper.
 
 | Du skal | Du trenger |
 |---|---|
-| **Opprette** en ny app-registrering (Bicep, alle miljøer) | PIM-rollen **`Application Developer`**, aktivert. Den utløper etter noen timer; symptomet er `Authorization_RequestDenied` på `POST /applications` |
+| **Opprette** en ny app-registrering (Bicep, alle miljøer) | PIM-rollen **`Application Developer`**, aktivert. Den utløper etter noen timer; symptomet er `Authorization_RequestDenied` på `POST /applications`. **Bare Ludvig har rollen i dag** — se «PIM: `Application Developer`» i NHN-OG-ADMIN.md |
 | Endre en eksisterende app-registrering i Dev/Test/QA (kant, rolletildeling, redirect-URI, sertifikat) | Ingen PIM — utviklerne er faste eiere |
 | Endre **noe som helst i Prod** — også `legg-til-kant.sh` mot `…-prod`, rollegrupper og sertifikatfornyelse | Aktivert **PIM-gruppe** for fagområdet (LMR: `P-AU-Legemiddelregisteret-Prod-GroupsAdministrator`). Krever begrunnelse og godkjenning fra fagpersonen, og varer maks 8 timer |
 | Opprette en ny app-registrering **i Prod** | Begge: `Application Developer` for å opprette, deretter NHN-bestilling slik at PIM-gruppen får `Application Administrator` på den nye app-registreringen og SP-en |

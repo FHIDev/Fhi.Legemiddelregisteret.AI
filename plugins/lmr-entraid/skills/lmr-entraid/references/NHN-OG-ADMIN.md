@@ -8,7 +8,7 @@ verifisering i denne migreringen mer enn én gang.
 
 | Handling | Kan du selv? | Kreves |
 |---|---|---|
-| Opprette app-registrering + SP | ✅ | PIM `Application Developer` |
+| Opprette app-registrering + SP | ⚠️ kun Ludvig | PIM `Application Developer` — se «PIM: `Application Developer`» under |
 | Sette `owners` på egne app-regs | ✅ | app-eier |
 | **Application permission** (`appRoleAssignedTo`) — m2m-consent | ✅ | eier av ressurs-app-regen, eller `Application Administrator` på den (prod: via PIM) |
 | **Delegert scope** (`oauth2PermissionGrants`) — brukerinnlogging | ❌ | Cloud Application Administrator / Application Administrator |
@@ -96,7 +96,8 @@ endre PIM-innstillingene og gi tilgang uten godkjenning.
   manuell sertifikatfornyelse: aktiver PIM-gruppen, vent på godkjenning, gjør jobben.
 - ⚠️ **Hvelvet slår inn flere minutter etter Entra-rollene.** Får du `ForbiddenByRbac` rett etter
   godkjenning, vent ~10 minutter og kjør `az login` på nytt.
-- **Ny prod-app-registrering:** utvikleren oppretter den (og blir eier via `Application Developer`),
+- **Ny prod-app-registrering:** utvikleren med `Application Developer` oppretter den og blir eier
+  (i dag bare Ludvig, se «PIM: `Application Developer`» under),
   legger til fagpersonen som eier, bestiller hos NHN at PIM-gruppen får `Application Administrator`
   på den nye app-registreringen **og** SP-en, og fjerner seg selv som eier. For LMR `Client.*`: legg
   den også inn i `Fhi.Lmr.SertifikatFornyelse`. **Hver ny prod-app-registrering blir en liten
@@ -261,6 +262,11 @@ som du har.
 Bicep gjøre det — trenger du en bestilling for å rette det opp.
 
 ## PIM: `Application Developer`
+
+**Svært få får denne rollen.** I teamet er det i dag bare Ludvig som har den, så det er han som
+oppretter nye app-registreringer, i alle miljøer. Resten av teamet kan endre eksisterende
+app-registreringer (i Dev/Test/QA som eiere, i Prod via PIM-gruppen), men ikke opprette nye.
+Den dagen Ludvig slutter, må noen andre i teamet få rollen. Det er ikke bestilt i dag.
 
 Rollen som lar deg opprette app-registreringer er tidsbegrenset i PIM og **utløper midt i
 arbeidet**. Symptomet er `Authorization_RequestDenied` på `POST /applications`.

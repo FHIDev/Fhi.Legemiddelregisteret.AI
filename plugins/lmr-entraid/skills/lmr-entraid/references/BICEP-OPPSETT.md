@@ -300,7 +300,8 @@ m2m-variantene rører aldri en gruppe. Nye grupper trengs kun ved ny rolle eller
 
 - `az login` mot FHI-tenanten (`54475f80-1baa-4ea9-9185-c0de5cc603fe`)
 - **PIM `Application Developer` aktivert** — den utløper, og gir
-  `Authorization_RequestDenied` på `POST /applications` når den har gjort det
+  `Authorization_RequestDenied` på `POST /applications` når den har gjort det. Bare Ludvig har
+  rollen i dag, se «PIM: `Application Developer`» i [NHN-OG-ADMIN.md](./NHN-OG-ADMIN.md)
 - Contributor på resource-gruppa du deployer i
 - `Groups Administrator` scoped til AU-en, hvis du skal opprette grupper
 
